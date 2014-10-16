@@ -6,22 +6,32 @@ subject=$2
 subjdir=${basedir}/${subject}
 epiregdir=${subjdir}/BOLD/fm
 anatdir=${basedir}/${subject}/anatomy
-mkdir -p ${epiregdir}
+unwarpdir=${anatdir}/bbreg/data/unwarp
+
+if [ ! -d ${epiregdir} ]; then
+    echo "epi_reg directory ${epiregdir} does not exist. Run epi_reg first." >&2
+    exit 1
+fi
+
 mkdir -p ${subjdir}/logs
-mkdir -p ${subjdir}/anatomy/antsreg/data/unwarp
+mkdir -p ${unwarpdir}
 now=$(date +"%m%d%Y")
 log=${basedir}/${subject}/logs/reg_unwarped_${now}.log
 
-# calculate orig to func transform
-ANTS 3 -m MI[${epiregdir}/refvol_unwarp.nii.gz,${anatdir}/orig.nii.gz,1,32] \
-    -o ${epiregdir}/orig2unwarp_ --rigid-affine true -i 0 >> $log
+if [ -e $log ]; then
+    rm $log
+fi
 
-# apply transformations to functional space
-WarpImageMultiTransform 3 $anatdir/orig.nii.gz \
-    $anatdir/antsreg/data/unwarp/orig.nii.gz \
-    -R ${epiregdir}/refvol_unwarp.nii.gz ${epiregdir}/orig2unwarp_Affine.txt >> $log
+# map structurals to unwarped functional space
+echo "Tranforming structural images to unwarped functional space..." >> $log
+flirt -v -ref ${epiregdir}/refvol_unwarp.nii.gz -in ${anatdir}/orig.nii.gz \
+    -applyxfm -init ${epiregdir}/epireg_inv.mat -out ${unwarpdir}/orig.nii.gz >> $log
 
-WarpImageMultiTransform 3 $anatdir/aparc+aseg.nii.gz \
-    $anatdir/antsreg/data/unwarp/aparc+aseg.nii.gz \
-    -R ${epiregdir}/refvol_unwarp.nii.gz ${epiregdir}/orig2unwarp_Affine.txt >> $log
+flirt -v -ref ${epiregdir}/refvol_unwarp.nii.gz -in ${anatdir}/orig_brain.nii.gz \
+    -applyxfm -init ${epiregdir}/epireg_inv.mat -out ${unwarpdir}/orig_brain.nii.gz >> $log
+
+# use nearest-neighbor interpolation for anatomical labels
+flirt -v -ref ${epiregdir}/refvol_unwarp.nii.gz -in ${anatdir}/aparc+aseg.nii.gz \
+    -applyxfm -init ${epiregdir}/epireg_inv.mat -interp nearestneighbour \
+    -out ${unwarpdir}/aparc+aseg.nii.gz >> $log
 

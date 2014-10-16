@@ -18,7 +18,7 @@ basedir=$1
 subject=$2
 
 subjdir=${basedir}/${subject}
-parcfile=${subjdir}/anatomy/antsreg/data/unwarp/aparc+aseg.nii.gz
+parcfile=${subjdir}/anatomy/bbreg/data/unwarp/aparc+aseg.nii.gz
 
 if [ ! -d ${subjdir} ]; then
     echo "Subject directory does not exist: ${basedir}/${subject}" >&2
