@@ -5,7 +5,7 @@ then
     echo "Prepare level 1 analysis from an FSL template"
     echo
     echo "Usage:"
-    echo "`basename $0` [template] [glmdir] [model] [subjids] [runids]"
+    echo "`basename $0` [template] [studydir] [model] [subjids] [runids]"
     echo
     echo "Inputs:"
     echo "studydir   path to base study directory"
