@@ -35,3 +35,7 @@ flirt -v -ref ${epiregdir}/refvol_unwarp.nii.gz -in ${anatdir}/aparc+aseg.nii.gz
     -applyxfm -init ${epiregdir}/epireg_inv.mat -interp nearestneighbour \
     -out ${unwarpdir}/aparc+aseg.nii.gz >> $log
 
+flirt -v -ref ${epiregdir}/refvol_unwarp.nii.gz -in ${anatdir}/brainmask.nii.gz \
+    -applyxfm -init ${epiregdir}/epireg_inv.mat -interp nearestneighbour \
+    -out ${unwarpdir}/brainmask.nii.gz >> $log
+
