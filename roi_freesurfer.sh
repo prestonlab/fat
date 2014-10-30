@@ -32,6 +32,23 @@ fi
 cp ${parcfile} ${outdir}/parcels.nii.gz
 cd ${outdir}
 
+# erc   entorhinal cortex
+# fus   fusiform gyrus
+# it    inferior temporal cortex
+# phc   parahippocampal cortex
+# hip   hippocampus
+# lofc  lateral orbitofrontal cortex
+# lo    lateral occipital
+# oper  pars opercularis
+# tria  pars triangularis
+# orbi  pars orbitalis
+# mofc  medial orbitofrontal cortex
+# fropo frontopolar?
+# sfg   superior frontal gyrus
+# rmfg  rostral middle frontal gyrus
+# cmfg  caudal middle frontal gyrus
+# vidc  ?
+
 fslmaths parcels.nii.gz -thr 1006 -uthr 1006 -bin l_erc.nii.gz
 fslmaths parcels.nii.gz -thr 2006 -uthr 2006 -bin r_erc.nii.gz
 fslmaths parcels.nii.gz -thr 1007 -uthr 1007 -bin l_fus.nii.gz
@@ -65,6 +82,9 @@ fslmaths parcels.nii.gz -thr 2003 -uthr 2003 -bin r_cmfg.nii.gz
 fslmaths parcels.nii.gz -thr 28 -uthr 28 -bin l_vidc.nii.gz
 fslmaths parcels.nii.gz -thr 60 -uthr 60 -bin r_vidc.nii.gz
 
+# ctx   all cortical regions
+# subco all subcortical regions
+
 fslmaths parcels.nii.gz -thr 1000 -uthr 1035 -bin l_ctx.nii.gz
 fslmaths parcels.nii.gz -thr 2000 -uthr 2035 -bin r_ctx.nii.gz
 
@@ -78,6 +98,8 @@ fslmaths l_lo.nii.gz -add r_lo.nii.gz b_lo.nii.gz
 fslmaths l_oper.nii.gz -add r_oper.nii.gz b_oper.nii.gz
 fslmaths l_orbi.nii.gz -add r_orbi.nii.gz b_orbi.nii.gz
 fslmaths l_tria.nii.gz -add r_tria.nii.gz b_tria.nii.gz
+
+# ifg   inferior frontal gyrus
 
 fslmaths b_oper.nii.gz -add b_orbi.nii.gz -add b_tria.nii.gz b_ifg.nii.gz
 fslmaths l_oper.nii.gz -add l_orbi.nii.gz -add l_tria.nii.gz l_ifg.nii.gz
@@ -95,9 +117,14 @@ fslmaths l_sfg.nii.gz -add r_sfg.nii.gz b_sfg.nii.gz
 fslmaths l_rmfg.nii.gz -add r_rmfg.nii.gz b_rmfg.nii.gz
 fslmaths l_cmfg.nii.gz -add r_cmfg.nii.gz b_cmfg.nii.gz
 
+# gray  cortical and subcortical gray matter
+
 fslmaths l_ctx.nii.gz -add r_ctx.nii.gz b_ctx.nii.gz
 fslmaths l_subco.nii.gz -add r_subco.nii.gz b_subco.nii.gz
 fslmaths b_subco -add b_ctx b_gray
+
+# ostemporal    temporal regions
+# ostemporal_lo temporal and lateral occipital regions
 
 fslmaths b_erc.nii.gz -add b_fus.nii.gz -add b_it.nii.gz -add b_phc ostemporal.nii.gz
 fslmaths b_erc.nii.gz -add b_fus.nii.gz -add b_it.nii.gz -add b_phc -add b_lo.nii.gz ostemporal_lo.nii.gz
