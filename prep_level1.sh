@@ -9,9 +9,9 @@ then
     echo
     echo "Inputs:"
     echo "studydir   path to base study directory"
-    echo "model     name of statistical model"
-    echo "subjids   list of subject IDs"
-    echo "runids    list of run IDs"
+    echo "model      name of statistical model"
+    echo "subjids    list of subject IDs"
+    echo "runids     list of run IDs"
     echo
     echo "Level 1 Template variables:"
     echo "STUDYDIR   path to directory with study data"
