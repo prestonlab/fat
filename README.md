@@ -5,6 +5,8 @@ Functional analysis toolbox: scripts for analysis of fMRI data
 
 # Installation
 
+## Getting a copy of a project from GitHub
+
 * Get an account on GitHub
 * Send an owner (currently Neal, Mike, or Evan) your username so they
 can add you to the prestonlab group
