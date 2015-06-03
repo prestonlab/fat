@@ -28,7 +28,7 @@ right, click on SSH so that the SSH clone URL is displayed. This is
 the URL you need to clone the repository.
   * On the computer where you want the code, type `git clone
   [SSH clone URL]`, for example `git clone
-  https://github.com/prestonlab/fat.git` to download the repository.
+  git@github.com:prestonlab/fat.git` to download the repository.
 * To install using HTTPS (requires entering a password when making any
 changes):
   * On GitHub, go to the page of the project you want. In the lower
