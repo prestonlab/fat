@@ -62,11 +62,11 @@ class SubjLog:
         outfile.write('\nRunning: ' + cmd + '\n')
         if not self.dry_run:
             # actually running the command
-            p = sub.Popen(cmd.split(' '), stdout=sub.PIPE, stderr=sub.PIPE)
+            p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
             output, errors = p.communicate()
-            outfile.write('Output: ' + output + '\n')
+            outfile.write('Output: ' + output)
             if errors:
-                outfile.write('ERROR: ' + errors + '\n')
+                outfile.write('ERROR: ' + errors)
                 print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
