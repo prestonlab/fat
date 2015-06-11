@@ -10,9 +10,7 @@ export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSWDIR}/local/lib:${SWDIR}/lib:${SW
 export PATH="${PATH}:${PSWDIR}:${SWDIR}/local/bin:${SWDIR}/bin:${SWDIR}/MATLAB_R2012a/bin"
 
 # setup python using EPD 
-module load python
-module load hdf5
-export PYTHONPATH="${PSWDIR}/python/lib/python2.7/site-packages:${PYTHONHOME}/lib/python2.7/site-packages/:${SWDIR}/local/openfmripipeline/src:${SWDIR}/local/lib/python"
+export PYTHONPATH="${PSWDIR}/python/lib/python2.7/site-packages:${PYTHONHOME}/lib/python2.7/site-packages/:${SWDIR}/local/openfmripipeline/src:${SWDIR}/local/lib/python:${SWDIR}/python/lib/python2.7/site-packages"
 export PATH="${PATH}:${PYTHONHOME}/bin"
 
 # FSL
@@ -65,3 +63,8 @@ export PATH="$PATH:$RHOME/bin"
 
 # java
 export PATH=${PATH}:${SWDIR}/python/bin
+
+module load python
+module load hdf5
+module swap intel gcc
+
