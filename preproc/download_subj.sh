@@ -5,6 +5,7 @@ if [ $# -ne 1 ]; then
     echo "Uses environment variables:"
     echo "  STUDY    study name"
     echo "  DATADIR  main data directory for all experiments"
+    exit 1
 fi
 
 SUBJID=$1
