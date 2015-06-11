@@ -13,5 +13,10 @@ echo "Creating job file $file..."
 echo "Command: $command"
 echo $command > $file
 chmod +x $file
+
+if [ ! -e $file ]; then
+    echo "Problem creating job file."
+    exit 1
+fi
 echo "Job file created."
 
