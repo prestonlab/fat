@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Author (presumably): Michael Mack
 # Usage: >./check_volumecounts.sh <experiment directory> <subject directory>
 
 if [ $# -lt 2 ]
