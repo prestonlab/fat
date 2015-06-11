@@ -4,7 +4,20 @@ import os
 import subprocess as sub
 from datetime import datetime
 from glob import glob
+from argparse import ArgumentParser
 
+class SubjParser(ArgumentParser):
+    def __init__(self):
+        ArgumentParser.__init__(self)
+        self.add_argument('subject', type=str,
+                          help="full subject identifier string")
+        self.add_argument('--dry-run',
+                          help="display commands without executing",
+                          default=False, action="store_true")
+        self.add_argument('--clean-logs',
+                          help="remove existing similar logs",
+                          default=False, action="store_true")
+    
 class SubjPath:
     """Information about subject directory structure."""
 
@@ -57,17 +70,21 @@ class SubjLog:
 
     def run(self, cmd):
 
+        if self.dry_run:
+            print cmd
+            return
+        
         # open log file and print command to run
         outfile = open(self.log_file, 'a')
         outfile.write('\nRunning: ' + cmd + '\n')
-        if not self.dry_run:
-            # actually running the command
-            p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
-            output, errors = p.communicate()
-            outfile.write('Output: ' + output)
-            if errors:
-                outfile.write('ERROR: ' + errors)
-                print '%s: ERROR: ' % self.subject + errors
+
+        # actually running the command
+        p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
+        output, errors = p.communicate()
+        outfile.write('Output: ' + output)
+        if errors:
+            outfile.write('ERROR: ' + errors)
+            print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
     def write(self, message):
