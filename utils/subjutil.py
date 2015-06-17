@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import subprocess as sub
 from datetime import datetime
 from glob import glob
@@ -46,6 +47,18 @@ class SubjPath:
         paths = glob(os.path.join(self.d[std], *args))
         return paths
 
+    def bold(self, run_pattern='^\D+_\d+$'):
+        bold_dir = self.path('bold')
+        d = os.listdir(bold_dir)
+        test = re.compile(run_pattern)
+        run_dirs = []
+        for i in range(len(d)):
+            full = os.path.join(bold_dir, d[i])
+            if test.match(d[i]) and os.path.isdir(full):
+                run_dirs.append(full)
+        run_dirs.sort()
+        return run_dirs
+
 class SubjLog:
     """Class for logging subject processing."""
 
@@ -76,18 +89,19 @@ class SubjLog:
         
         # open log file and print command to run
         outfile = open(self.log_file, 'a')
-        outfile.write('\nRunning: ' + cmd + '\n')
+        outfile.write('\nRUNNING: ' + cmd + '\n')
 
         # actually running the command
         p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
         output, errors = p.communicate()
-        outfile.write('Output: ' + output)
+        if output:
+            outfile.write('OUTPUT:  ' + output)
         if errors:
-            outfile.write('ERROR: ' + errors)
+            outfile.write('ERROR:   ' + errors)
             print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
     def write(self, message):
         outfile = open(self.log_file, 'a')
-        outfile.write(message + '\n')
+        outfile.write('\nMESSAGE: ' + message + '\n')
         outfile.close()
