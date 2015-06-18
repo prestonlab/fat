@@ -3,8 +3,8 @@
 if [ $# -lt 3 ]; then
     echo "rename_func.sh   Rename and renumber functional scans."
     echo
-    echo "Usage:   rename_func.sh bolddir oldbase newbase"
-    echo "Example: rename_func.sh /corral-repl/utexas/prestonlab/bender/bender_1/BOLD functional_loc_ loc_"
+    echo "Usage:   rename_func.sh olddir newdir oldbase newbase"
+    echo "Example: rename_func.sh /corral-repl/utexas/prestonlab/bender/bender_1a/BOLD /corral-repl/utexas/prestonlab/bender/bender_1/BOLD functional_study_ study_"
     exit 1
 fi
 
