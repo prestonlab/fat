@@ -43,6 +43,11 @@ class SubjPath:
         fulldir = os.path.join(self.d[std], *args)
         return fulldir
 
+    def proj_path(self, std, *args):
+        proj_dir = os.path.dirname(os.path.dirname(__file__))
+        fulldir = os.path.join(proj_dir, *args)
+        return fulldir
+
     def glob(self, std, *args):
         paths = glob(os.path.join(self.d[std], *args))
         return paths
@@ -65,6 +70,7 @@ class SubjLog:
     def __init__(self, subject, base, rm_existing=False, dry_run=False):
 
         self.subject = subject
+        self.name = base
         self.dry_run = dry_run
 
         # set the log file
@@ -81,6 +87,33 @@ class SubjLog:
                 os.remove(filepath)
         self.log_file = log_file
 
+    def start(self):
+        if self.dry_run:
+            return
+        
+        # print a header
+        logo = self.get_logo()
+        wrap = False
+        self.write(logo, wrap)
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.write('Starting %s for %s at: %s\n' % (
+            self.name, self.subject, timestamp), wrap)
+
+    def finish(self):
+        if self.dry_run:
+            return
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.write('Finished %s for %s at: %s\n' % (
+            self.name, self.subject, timestamp), False)
+        
+    def get_logo(self):
+        proj_dir = os.path.dirname(os.path.dirname(__file__))
+        logo_file = os.path.join(proj_dir, 'resources', 'prestonlab_logo.txt')
+        f = open(logo_file, 'r')
+        logo = f.read()
+        f.close()
+        return logo
+        
     def run(self, cmd):
 
         if self.dry_run:
@@ -101,7 +134,10 @@ class SubjLog:
             print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
-    def write(self, message):
+    def write(self, message, wrap=True):
         outfile = open(self.log_file, 'a')
-        outfile.write('\nMESSAGE: ' + message + '\n')
+        if wrap:
+            outfile.write('\nMESSAGE: ' + message + '\n')
+        else:
+            outfile.write(message)
         outfile.close()
