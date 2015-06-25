@@ -10,6 +10,29 @@ creating standard directory structure and file names. These tools
 include most of the basic functionality of `setup_subject.py`, and are
 designed to be easier to understand and fix when problems arise.
 
+Here is a list of available preprocessing scripts in the usual order
+of execution:
+
+* `download_subj.py` Gets data from the XNAT server (not tested yet).
+* `convert_dicom.py` Converts DICOM files to Nifti format. This should
+  work on either data downloaded from XNAT or files that were exported
+  manually.
+* `rename_nifti.py` Creates standard sub-directories and renames Nifti
+  files to standard names.
+* `run_freesurfer.sh` Simple script that submits a job to run a
+  standard FreeSurfer reconstruction on a subject.
+* `convert_freesurfer.py` Converts some important FreeSurfer files
+  into Nifti format and places them in the anatomy directory.
+* `unwarp_bold.py` Uses the output of `epi_reg` (included with FSL) to
+  unwarp EPI images.
+* `reg_unwarp_bold.py` Uses the output of `epi_reg` and
+  `unwarp_bold.py`. Calculates alignment of each unwarped average
+  functional scan to an unwarped average reference scan, then does
+  unwarping and co-registration of each functional series in a single
+  step.
+
+## Setting up your environment
+
 To use these scripts, you must first set up a few environment
 variables:
 
@@ -27,26 +50,6 @@ variables:
 See
 [this sample profile](https://github.com/prestonlab/bender/blob/master/bender_profile)
 for an example of how to set these environment variables correctly.
-
-Scripts in usual order of execution:
-
-
-* `download_subj.py` Gets data from the XNAT server (not tested yet).
-* `convert_dicom.py` Converts DICOM files to Nifti format. This should
-  work on either data downloaded from XNAT or files that were exported
-  manually.
-* `rename_nifti.py` Creates standard sub-directories and renames Nifti
-  files to standard names.
-* `run_freesurfer.sh` Simple script that submits a job to run a
-  standard FreeSurfer reconstruction on a subject.
-* `convert_freesurfer.py` Converts some important FreeSurfer files
-  into Nifti format and places them in the anatomy directory.
-* `unwarp_bold.py` Uses the output of `epi_reg` (included with FSL) to
-  unwarp EPI images.
-* `reg_unwarp_bold.py` Calculates alignment of each unwarped average
-  functional scan to an unwarped average reference scan, then does
-  unwarping and co-registration of each functional series in a single
-  step.
 
 ## Testing and batch processing
 
