@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import dicom
-import os, re
+import os,re,pickle
 
 def dicom_filetype(hdr):
     scan_protocols = {
@@ -39,8 +39,11 @@ def dicom_headers(sp):
     hdrs = {}
     dirs = {}
     for d in dcmdirs:
-        # get all dicom files for this scan
         dcmdir = os.path.join(dcmbase, d)
+        if not os.path.isdir(dcmdir):
+            continue
+
+        # get all dicom files for this scan
         dcmfiles = dicom_files(dcmdir)
 
         # attempt to read the first file's header
@@ -54,7 +57,7 @@ def dicom_headers(sp):
     return hdrs, dirs
 
 def dicom2nifti(sp, log):
-    (hdrs, dirs) = dicom_headers(sp)
+    hdrs, dirs = dicom_headers(sp)
     for series in hdrs.keys():
         # set the output directory (based on filetype)
         filetype = dicom_filetype(hdrs[series])
@@ -66,13 +69,26 @@ def dicom2nifti(sp, log):
             cmd = 'dcm2nii -d n -i n -o %s %s' % (outdir, indir)
             log.run(cmd)
 
+def save_headers(sp, hdrs):
+    hdr_file = sp.path('logs', 'dicom_headers.pkl')
+    f = open(hdr_file, 'wb')
+    pickle.dump(hdrs, f)
+    f.close()
+
+def load_headers(sp):
+    hdr_file = sp.path('logs', 'dicom_headers.pkl')
+    f = open(hdr_file, 'rb')
+    hdrs = pickle.load(f)
+    f.close()
+    return hdrs
+    
 def find_header(hdrs, nifti_file):
     name = os.path.basename(nifti_file)
     series = name.rsplit('a')[-2].rsplit('s')[-1].lstrip('0')
     return hdrs[series]
             
 def rename_bold(sp, log):
-    hdrs = dicom_headers(sp)
+    hdrs, dirs = dicom_headers(sp)
     bold_files = sp.glob('bold', '*.nii.gz')
     for f in bold_files:
         # determine run information
@@ -88,7 +104,7 @@ def rename_bold(sp, log):
         log.run('mv %s %s' % (f, output))
         
 def rename_anat(sp, log):
-    hdrs = dicom_headers(sp)
+    hdrs, dirs = dicom_headers(sp)
     anat_files = sp.glob('anatomy', '*.nii.gz')
     highres_ind = 1
     other_dir = sp.path('anatomy', 'other')
@@ -99,12 +115,14 @@ def rename_anat(sp, log):
         hdr = find_header(hdrs, f)
         if hdr.ProtocolName in ['MPRAGE','mprage','t1w','T1w']:
             # this is a highres scan
-            if name.startswith('o'):
-                # only include the reoriented, non-cropped version
+            if name.startswith('c'):
+                # only include the reoriented and cropped version
                 output = sp.path('anatomy', 
                                  'highres%03d.nii.gz' % highres_ind)
                 log.run('mv %s %s' % (f, output))
                 highres_ind += 1
+            else:
+                log.run('mv %s %s' % (f, other_dir))
         else:
             # this is some other anatomical (such as a coronal)
             log.run('mv %s %s' % (f, other_dir))
