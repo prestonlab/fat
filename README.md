@@ -19,6 +19,10 @@ of execution:
   manually.
 * `rename_nifti.py` Creates standard sub-directories and renames Nifti
   files to standard names.
+* `prep_bold.py` Does basic processing of BOLD runs, including motion
+  correction, brain extraction, and quality assurance. Assumes that
+  files have been placed in a standard directory structure where each
+  run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
 * `run_freesurfer.sh` Simple script that submits a job to run a
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
@@ -30,6 +34,8 @@ of execution:
   functional scan to an unwarped average reference scan, then does
   unwarping and co-registration of each functional series in a single
   step.
+
+See the Bender GitHub project for more specific examples.
 
 ## Setting up your environment
 
