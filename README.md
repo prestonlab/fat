@@ -1,7 +1,84 @@
-fat
+FAT
 ===
 
 Functional analysis toolbox: scripts for analysis of fMRI data
+
+# Preprocessing
+
+There are a number of simple tools for running preprocessing and
+creating standard directory structure and file names. These tools
+include most of the basic functionality of `setup_subject.py`, and are
+designed to be easier to understand and fix when problems arise.
+
+To use these scripts, you must first set up a few environment
+variables:
+
+* `STUDY` - name of the study (e.g. `bender`)
+* `STUDYDIR` - path to the main study directory, where the subject
+  directories are (e.g. `/corral-repl/utexas/prestonlab/bender`)
+* `BATCHDIR` - path to the directory where batch scripts should be
+  stored. Your work directory might be a good place for this. It may
+  also be helpful to have a directory that is specific to the study
+  you're currently working
+  on. (e.g. `/work/03206/mortonne/batch/bender`)
+* `PATH` and `PYTHONPATH` must be set to include `fat/utils` and
+  `fat/preproc`.
+
+See
+[this sample profile](https://github.com/prestonlab/bender/blob/master/bender_profile)
+for an example of how to set these environment variables correctly.
+
+Scripts in usual order of execution:
+
+
+* `download_subj.py` Gets data from the XNAT server (not tested yet).
+* `convert_dicom.py` Converts DICOM files to Nifti format. This should
+  work on either data downloaded from XNAT or files that were exported
+  manually.
+* `rename_nifti.py` Creates standard sub-directories and renames Nifti
+  files to standard names.
+* `run_freesurfer.sh` Simple script that submits a job to run a
+  standard FreeSurfer reconstruction on a subject.
+* `convert_freesurfer.py` Converts some important FreeSurfer files
+  into Nifti format and places them in the anatomy directory.
+* `unwarp_bold.py` Uses the output of `epi_reg` (included with FSL) to
+  unwarp EPI images.
+* `reg_unwarp_bold.py` Calculates alignment of each unwarped average
+  functional scan to an unwarped average reference scan, then does
+  unwarping and co-registration of each functional series in a single
+  step.
+
+## Testing and batch processing
+
+Each of the python preprocessing scripts listed above has standard
+options, which you can view by typing `[scriptname] -h`. Each of them
+supports a `--dry-run` flag, which just displays the commands that
+will be executed without running anything. This is handy for testing
+the script out before running it. Once you've confirmed that the
+commands make sense, you can easily submit a job by typing:
+
+`submit_job.sh -r [max run time] '[scriptname] [subject ID]
+[other arguments]'`
+
+For example, to test out `convert_dicom.py` on `bender_1`:
+
+`convert_dicom.py bender_1 --dry-run`
+
+To actually submit a job to run the DICOM conversion:
+
+`submit_job.sh -r 01:00:00 'convert_dicom.py bender_1'`
+
+This will automatically create a script with the command and use
+`launch` to submit it to the cluster. The job will be automatically
+given a (sequentially ordered) name, and the submitted script will be
+in `$BATCHDIR/auto/Job[job number].sh`. When the job finishes, the
+output will be placed in
+`$BATCHDIR/auto/Job[job number].o[queue job ID]`.
+
+More information about each job will be placed in the subject's `logs`
+directory. The `preproc.log` file stores summary information about the
+preprocessing steps run so far, while step-specific logs contain
+details about the commands run and their output.
 
 # Installation
 
