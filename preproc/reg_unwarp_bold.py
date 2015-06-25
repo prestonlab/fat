@@ -55,7 +55,7 @@ for i in range(len(run_dirs)):
     else:
         # calculate transform
         xfm_base = os.path.join(reg_xfm, '%s-refvol_' % run_name)
-        cmd = 'ANTS 3 -m MI[%s,%s,1,32] -o %s --rigid-affine -i 0' % (
+        cmd = 'ANTS 3 -m CC[%s,%s,1,32] -o %s --rigid-affine -i 0' % (
             refvol, avg_file, xfm_base)
         log.run(cmd)
 
