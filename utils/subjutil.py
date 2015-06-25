@@ -39,8 +39,18 @@ class SubjPath:
                                                      'antsreg', 'transforms')
         self.d['anatomy.antsreg.data'] = os.path.join(self.d['anatomy'],
                                                       'antsreg', 'data')
+
+    def make_std_dirs(self):
+        if not os.path.exists(self.d['base']):
+            os.mkdir(self.d['base'])
+        dirnames = ['anatomy', 'behav', 'bold', 'dti', 'fieldmap',
+                    'logs', 'model', 'raw']
+        for std in dirnames:
+            if not os.path.exists(self.d[std]):
+                os.mkdir(self.d[std])
+        
     def path(self, std, *args):
-        fulldir = os.path.join(self.d[std], *args)
+        fulldir = os.path.join(self.d[std.lower()], *args)
         return fulldir
 
     def proj_path(self, std, *args):
@@ -135,6 +145,10 @@ class SubjLog:
         outfile.close()
 
     def write(self, message, wrap=True):
+        if self.dry_run:
+            print message
+            return
+        
         outfile = open(self.log_file, 'a')
         if wrap:
             outfile.write('\nMESSAGE: ' + message + '\n')
