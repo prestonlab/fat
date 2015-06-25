@@ -16,7 +16,8 @@ parser.add_argument('--xnat-password',
 args = parser.parse_args()
 
 sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'download', args.clean_logs, args.dry_run)
+log = SubjLog(args.subject, 'download', 'preproc',
+              args.clean_logs, args.dry_run)
 
 # make sure standard directories exist
 sp.make_std_dirs()

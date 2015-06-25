@@ -13,7 +13,8 @@ parser.add_argument('refrun', help="reference run")
 args = parser.parse_args()
 
 sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'regunwarpbold', args.clean_logs, args.dry_run)
+log = SubjLog(args.subject, 'regunwarpbold', 'preproc',
+              args.clean_logs, args.dry_run)
 log.start()
 
 # find all files/directories in the BOLD directory

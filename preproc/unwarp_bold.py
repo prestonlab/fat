@@ -17,7 +17,9 @@ parser.add_argument('--smooth3', help="smoothing for fieldmap",
 args = parser.parse_args()
 
 sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'unwarpbold', args.clean_logs, args.dry_run)
+log = SubjLog(args.subject, 'unwarpbold', 'preproc',
+              args.clean_logs, args.dry_run)
+log.start()
 
 # find the runs to include
 run_dirs = sp.bold(args.run_pattern)
@@ -36,4 +38,4 @@ for i in range(len(run_dirs)):
         bold, fm, fm_mask, args.echo_spacing, args.pedir, args.smooth3,
         output, shift)
     log.run(cmd)
-    
+log.finish()

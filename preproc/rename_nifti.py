@@ -7,7 +7,8 @@ parser = SubjParser()
 args = parser.parse_args()
 
 sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'rename', args.clean_logs, args.dry_run)
+log = SubjLog(args.subject, 'rename', 'preproc',
+              args.clean_logs, args.dry_run)
 
 log.start()
 skyra.rename_bold(sp, log)
