@@ -80,6 +80,18 @@ directory. The `preproc.log` file stores summary information about the
 preprocessing steps run so far, while step-specific logs contain
 details about the commands run and their output.
 
+If you are processing multiple subjects at once and lose track of
+which jobs are running, you can use `running_jobs.sh` to list all the
+commands being run by jobs currently on the queue:
+
+	login6.ls4(670)$ running_jobs.sh 
+	Job50:
+	reg_unwarp_bold.py bender_2 study_1
+	Job53:
+	bender_epi_reg.py bender_3
+	Job54:
+	bender_reg_days.py bender_5
+
 # Installation
 
 ## Getting a copy of a project from GitHub
