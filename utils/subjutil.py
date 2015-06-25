@@ -77,18 +77,23 @@ class SubjPath:
 class SubjLog:
     """Class for logging subject processing."""
 
-    def __init__(self, subject, base, rm_existing=False, dry_run=False):
+    def __init__(self, subject, base, main=None, rm_existing=False,
+                 dry_run=False):
 
         self.subject = subject
         self.name = base
         self.dry_run = dry_run
+        self.main_file = None
 
         # set the log file
         study_dir = os.environ['STUDYDIR']
-        timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = base + '_' + timestamp + '.log'
         log_dir = os.path.join(study_dir, subject, 'logs')
         log_file = os.path.join(log_dir, filename)
+        if main:
+            filename = main + '.log'
+            self.main_file = os.path.join(log_dir, filename)
 
         if rm_existing:
             # clear logs that match the supplied base
@@ -97,25 +102,6 @@ class SubjLog:
                 os.remove(filepath)
         self.log_file = log_file
 
-    def start(self):
-        if self.dry_run:
-            return
-        
-        # print a header
-        logo = self.get_logo()
-        wrap = False
-        self.write(logo, wrap)
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.write('Starting %s for %s at: %s\n' % (
-            self.name, self.subject, timestamp), wrap)
-
-    def finish(self):
-        if self.dry_run:
-            return
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.write('Finished %s for %s at: %s\n' % (
-            self.name, self.subject, timestamp), False)
-        
     def get_logo(self):
         proj_dir = os.path.dirname(os.path.dirname(__file__))
         logo_file = os.path.join(proj_dir, 'resources', 'prestonlab_logo.txt')
@@ -123,6 +109,31 @@ class SubjLog:
         logo = f.read()
         f.close()
         return logo
+        
+    def timestamp(self):
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+    def start(self):
+        if self.dry_run:
+            return
+        
+        # print a header
+        self.write(self.get_logo(), wrap=False)
+        msg = 'Starting %s for %s at: %s\n' % (
+            self.name, self.subject, self.timestamp())
+        self.write(msg, wrap=False)
+        if self.main_file:
+            self.write(msg, wrap=False, main_log=True)
+
+    def finish(self):
+        if self.dry_run:
+            return
+
+        msg = 'Finished %s for %s at: %s\n' % (
+            self.name, self.subject, self.timestamp())
+        self.write(msg, wrap=False)
+        if self.main_file:
+            self.write(msg, wrap=False, main_log=True)
         
     def run(self, cmd):
 
@@ -144,12 +155,15 @@ class SubjLog:
             print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
-    def write(self, message, wrap=True):
+    def write(self, message, wrap=True, main_log=False):
         if self.dry_run:
             print message
             return
-        
-        outfile = open(self.log_file, 'a')
+
+        if main_log:
+            outfile = open(self.main_file, 'a')
+        else:
+            outfile = open(self.log_file, 'a')
         if wrap:
             outfile.write('\nMESSAGE: ' + message + '\n')
         else:
