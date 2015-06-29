@@ -7,6 +7,12 @@ from datetime import datetime
 from glob import glob
 from argparse import ArgumentParser
 
+def imname(filepath):
+    return os.path.basename(filepath.split('.nii.gz')[0])
+
+def impath(parent, name):
+    return os.path.join(parent, name + '.nii.gz')
+
 class SubjParser(ArgumentParser):
     def __init__(self):
         ArgumentParser.__init__(self)
@@ -22,32 +28,28 @@ class SubjParser(ArgumentParser):
 class SubjPath:
     """Information about subject directory structure."""
 
-    def __init__(self, subject):
+    def __init__(self, subject, study_dir=None):
 
         self.subject = subject
-        self.study_dir = os.environ['STUDYDIR']
+        if study_dir:
+            self.study_dir = study_dir
+        else:
+            self.study_dir = os.environ['STUDYDIR']
         self.subj_dir = os.path.join(self.study_dir, self.subject)
+        self.dirnames = ['anatomy', 'behav', 'BOLD', 'DTI', 
+                         'fieldmap', 'logs', 'model', 'raw']
         self.d = dict()
-        
         self.d['base'] = self.subj_dir
-        dirnames = ['anatomy', 'behav', 'BOLD', 'DTI', 'fieldmap', 'logs',
-                    'model', 'raw']
-        for dirname in dirnames:
+        for dirname in self.dirnames:
             self.d[dirname.lower()] = os.path.join(self.subj_dir, dirname)
-    
-        self.d['anatomy.antsreg.xfm'] = os.path.join(self.d['anatomy'],
-                                                     'antsreg', 'transforms')
-        self.d['anatomy.antsreg.data'] = os.path.join(self.d['anatomy'],
-                                                      'antsreg', 'data')
 
     def make_std_dirs(self):
         if not os.path.exists(self.d['base']):
             os.mkdir(self.d['base'])
-        dirnames = ['anatomy', 'behav', 'bold', 'dti', 'fieldmap',
-                    'logs', 'model', 'raw']
-        for std in dirnames:
-            if not os.path.exists(self.d[std]):
-                os.mkdir(self.d[std])
+        for std in self.dirnames:
+            name = std.lower()
+            if not os.path.exists(self.d[name]):
+                os.mkdir(self.d[name])
         
     def path(self, std, *args):
         fulldir = os.path.join(self.d[std.lower()], *args)
@@ -59,10 +61,10 @@ class SubjPath:
         return fulldir
 
     def glob(self, std, *args):
-        paths = glob(os.path.join(self.d[std], *args))
+        paths = glob(os.path.join(self.d[std.lower()], *args))
         return paths
 
-    def bold(self, run_pattern='^\D+_\d+$'):
+    def bold_dirs(self, run_pattern='^\D+_\d+$'):
         bold_dir = self.path('bold')
         d = os.listdir(bold_dir)
         test = re.compile(run_pattern)
@@ -73,6 +75,43 @@ class SubjPath:
                 run_dirs.append(full)
         run_dirs.sort()
         return run_dirs
+        
+    def bold_files(self, sepdirs=True, dir_pattern='^\D+_\d+$',
+                   file_pattern='^\D+_\d+', file_ext='.nii.gz$',
+                   filename='bold.nii.gz', subdir=None, suffix=None):
+        if sepdirs:
+            # find directories with standard names
+            run_dirs = self.bold_dirs(dir_pattern)
+            files = []
+            for d in run_dirs:
+                # create each full path
+                full = os.path.join(d, filename)
+                if os.path.isfile(full):
+                    files.append(full)
+        else:
+            # look in one directory for all run files
+            bold_dir = self.path('bold')
+            if subdir:
+                bold_dir = os.path.join(bold_dir, subdir)
+            if suffix:
+                pat = file_pattern + suffix + file_ext
+            else:
+                pat = file_pattern + file_ext
+
+            # find files matching the specified pattern
+            test = re.compile(pat)
+            all_files = os.listdir(bold_dir)
+            files = []
+            for f in all_files:
+                full = os.path.join(bold_dir, f)
+                if test.match(f) and os.path.isfile(full):
+                    files.append(full)
+            files.sort()
+        return files
+    
+    def bold(self, run_pattern='^\D+_\d+$'):
+        # backwards compatibility
+        return self.bold_dirs(run_pattern)
 
 class SubjLog:
     """Class for logging subject processing."""
