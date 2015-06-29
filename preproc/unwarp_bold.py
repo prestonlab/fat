@@ -32,6 +32,8 @@ for i in range(len(run_dirs)):
                            'epireg_fieldmaprads2epi_mask.nii.gz')
     log.run('fslmaths %s -abs -bin %s' % (fm, fm_mask))
 
+    # calculate the voxel shift and unwarp the average run image for
+    # registraion purposes
     output = os.path.join(run_dirs[i], 'bold_mcf_brain_avg_unwarp.nii.gz')
     shift = os.path.join(fm_dir, 'epireg_fieldmaprads2epi_sm_shift.nii.gz')
     cmd = 'fugue -i %s --loadfmap=%s --mask=%s --dwell=%.6f --unwarpdir=%s --smooth3=%.6f -u %s --saveshift=%s --unmaskshift' % (

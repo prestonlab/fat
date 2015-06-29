@@ -7,7 +7,8 @@ parser = SubjParser()
 args = parser.parse_args()
 
 sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'postfs', args.clean_logs, args.dry_run)
+log = SubjLog(args.subject, 'postfs', 'preproc',
+              args.clean_logs, args.dry_run)
 
 src = sp.path('anatomy', args.subject, 'mri')
 dest = sp.path('anatomy')
@@ -15,6 +16,7 @@ dest = sp.path('anatomy')
 if not os.path.exists(src):
     raise IOError('FreeSurfer directory does not exist: %s' % src)
 
+log.start()
 src_names = ['orig', 'brainmask', 'aparc+aseg', 'wm']
 dest_names = ['orig', 'orig_brain', 'aparc+aseg', 'wm']
 for i in range(len(src_names)):
@@ -30,3 +32,4 @@ for i in range(len(src_names)):
 
     # fix orientation
     log.run('fslreorient2std %s %s' % (dest_file, dest_file))
+log.finish()
