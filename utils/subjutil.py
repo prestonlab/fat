@@ -10,8 +10,11 @@ from argparse import ArgumentParser
 def imname(filepath):
     return os.path.basename(filepath.split('.nii.gz')[0])
 
-def impath(parent, name):
-    return os.path.join(parent, name + '.nii.gz')
+def impath(*args):
+    p = os.path.join(*args)
+    if not p.endswith('.nii.gz'):
+        p += '.nii.gz'
+    return p
 
 class SubjParser(ArgumentParser):
     def __init__(self):
@@ -55,6 +58,9 @@ class SubjPath:
         fulldir = os.path.join(self.d[std.lower()], *args)
         return fulldir
 
+    def image_path(self, std, *args):
+        return impath(self.path(std, *args))
+    
     def proj_path(self, std, *args):
         proj_dir = os.path.dirname(os.path.dirname(__file__))
         fulldir = os.path.join(proj_dir, *args)
