@@ -7,7 +7,7 @@ parser = SubjParser()
 parser.add_argument('tr', help='repetition time', type=float)
 args = parser.parse_args()
 
-sp = SubjPath(args.subject)
+sp = SubjPath(args.subject, args.study_dir)
 log = SubjLog(args.subject, 'prepbold', 'preproc',
               args.clean_logs, args.dry_run)
 
@@ -34,5 +34,3 @@ for d in bold_dirs:
     log.run('fmriqa.py %s %f' % (mcf[d], args.tr))
     
 log.finish()
-
-
