@@ -26,6 +26,7 @@ time_res = 0.1
 ntrials_total = ntrials
 good_evs = range(0,ntrials)
 
+print "Loading design..."
 design = read_fsl_design(fsffile)
 desmat = FslGLMDesign(matfile)
 
@@ -33,9 +34,15 @@ nevs = desmat.mat.shape[1]
 ntp = desmat.mat.shape[0]
 
 # load data
-data = fmri_dataset(design['feat_files']+'.nii.gz')
+print "Loading data..."
+bold = design['feat_files']
+if not bold.endswith('.nii.gz'):
+    bold += '.nii.gz'
+data = fmri_dataset(bold)
 nvox = data.nfeatures
 
+# design matrix
+print "Creating design matrices..."
 dm_nuisance = N.loadtxt(design['confoundev_files'])
 dm_extra = desmat.mat[:,ntrials:]
 trial_ctr = 0
@@ -61,6 +68,7 @@ for e in range(len(good_evs)):
     beta_maker[trial_ctr,:]=beta_maker_loop[0,:]
     trial_ctr+=1
 
+print "Estimating model..."
 # this uses Jeanette's trick of extracting the beta-forming vector for each
 # trial and putting them together, which allows estimation for all trials
 # at once
