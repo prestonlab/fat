@@ -66,5 +66,6 @@ chmod +x $jobfile
 cd `dirname $jobfile`
 file=`basename $jobfile`
 name=`echo $file | cut -d . -f 1`
-launch -s $file -r $runtime -e $parenv -n $name -j $projname -q $queue
+launch -s $file -j $projname -q $queue -c $compiler -n $name \
+       -e $parenv -r $runtime
 
