@@ -43,11 +43,11 @@ cd ${outdir}
 # tria  pars triangularis
 # orbi  pars orbitalis
 # mofc  medial orbitofrontal cortex
-# fropo frontopolar?
+# fropo frontal pole
 # sfg   superior frontal gyrus
 # rmfg  rostral middle frontal gyrus
 # cmfg  caudal middle frontal gyrus
-# vidc  ?
+# vidc  ventral diencephalon
 
 fslmaths parcels.nii.gz -thr 1006 -uthr 1006 -bin l_erc.nii.gz
 fslmaths parcels.nii.gz -thr 2006 -uthr 2006 -bin r_erc.nii.gz
@@ -91,6 +91,8 @@ fslmaths parcels.nii.gz -thr 2000 -uthr 2035 -bin r_ctx.nii.gz
 fslmaths parcels.nii.gz -thr 9 -uthr 13 -bin l_subco.nii.gz
 fslmaths parcels.nii.gz -thr 18 -uthr 18 -add l_subco -add l_hip -bin l_subco.nii.gz
 fslmaths parcels.nii.gz -thr 48 -uthr 54 -bin r_subco.nii.gz
+
+# bilateral ROIs
 
 fslmaths l_lofc.nii.gz -add r_lofc.nii.gz b_lofc.nii.gz
 fslmaths l_mofc.nii.gz -add r_mofc.nii.gz b_mofc.nii.gz
