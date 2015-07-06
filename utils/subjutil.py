@@ -191,10 +191,12 @@ class SubjLog:
         # open log file and print command to run
         outfile = open(self.log_file, 'a')
         outfile.write('\nRUNNING: ' + cmd + '\n')
+        outfile.close()
 
         # actually running the command
         p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
         output, errors = p.communicate()
+        outfile = open(self.log_file, 'a')
         if output:
             outfile.write('OUTPUT:  ' + output)
         if errors:
