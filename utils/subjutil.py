@@ -17,18 +17,19 @@ def impath(*args):
     return p
 
 class SubjParser(ArgumentParser):
-    def __init__(self):
+    def __init__(self, include_log=True):
         ArgumentParser.__init__(self)
         self.add_argument('subject', type=str,
                           help="full subject identifier string")
         self.add_argument('--study-dir', type=str,
                           default=None, help="path to main study directory")
-        self.add_argument('--dry-run',
-                          help="display commands without executing",
-                          default=False, action="store_true")
-        self.add_argument('--clean-logs',
-                          help="remove existing similar logs",
-                          default=False, action="store_true")
+        if include_log:
+            self.add_argument('--dry-run',
+                              help="display commands without executing",
+                              default=False, action="store_true")
+            self.add_argument('--clean-logs',
+                              help="remove existing similar logs",
+                              default=False, action="store_true")
     
 class SubjPath:
     """Information about subject directory structure."""
