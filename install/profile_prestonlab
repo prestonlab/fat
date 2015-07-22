@@ -37,9 +37,9 @@ export MINC_LIB_DIR="${FREESURFER_HOME}/mni/lib"
 
 # set up ANTS
 if [ -z $ANTSHOME ]; then
-    export ANTSHOME=${SWDIR}/ANTS
+    export ANTSHOME=${SWDIR}/ANTS-1.9
 fi
-export ANTSPATH=${ANTSHOME}/bin
+export ANTSPATH=${ANTSHOME}/bin/
 export PATH=$PATH:$ANTSPATH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${ANTSHOME}/lib
 
