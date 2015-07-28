@@ -64,7 +64,7 @@ class SubjPath:
     def image_path(self, std, *args):
         return impath(self.path(std, *args))
     
-    def proj_path(self, std, *args):
+    def proj_path(self, *args):
         proj_dir = os.path.dirname(os.path.dirname(__file__))
         fulldir = os.path.join(proj_dir, *args)
         return fulldir
@@ -73,18 +73,23 @@ class SubjPath:
         paths = glob(os.path.join(self.d[std.lower()], *args))
         return paths
 
+    def match_dirs(self, main_dir, dir_pattern):
+        dirs = os.listdir(main_dir)
+        test = re.compile(dir_pattern)
+        match = []
+        for d in dirs:
+            full = os.path.join(main_dir, d)
+            if test.match(d) and os.path.isdir(full):
+                match.append(full)
+        match.sort()
+        return match
+    
     def bold_dirs(self, run_pattern='^\D+_\d+$'):
-        bold_dir = self.path('bold')
-        d = os.listdir(bold_dir)
-        test = re.compile(run_pattern)
-        run_dirs = []
-        for i in range(len(d)):
-            full = os.path.join(bold_dir, d[i])
-            if test.match(d[i]) and os.path.isdir(full):
-                run_dirs.append(full)
-        run_dirs.sort()
-        return run_dirs
-        
+        return self.match_dirs(self.path('bold'), run_pattern)
+
+    def feat_dirs(self, model, feat_pattern='^\D+_\d+\.feat$'):
+        return self.match_dirs(self.path('model', model), feat_pattern)
+    
     def bold_files(self, sepdirs=True, dir_pattern='^\D+_\d+$',
                    file_pattern='^\D+_\d+', file_ext='.nii.gz$',
                    filename='bold.nii.gz', subdir=None, suffix=None):
