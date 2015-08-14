@@ -12,7 +12,7 @@ parser.add_argument('--run-pattern', '-r',
 parser.add_argument('refrun', help="reference run")
 args = parser.parse_args()
 
-sp = SubjPath(args.subject)
+sp = SubjPath(args.subject, args.study_dir)
 log = SubjLog(args.subject, 'regunwarpbold', 'preproc',
               args.clean_logs, args.dry_run)
 log.start()
