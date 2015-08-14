@@ -39,8 +39,7 @@ See the Bender GitHub project for more specific examples.
 
 ## Setting up your environment
 
-To use these scripts, you must first set up a few environment
-variables:
+Some scripts in the toolbox use environment variables so you don't have to specify the same options every time (they can usually be specified on the commandline also):
 
 * `STUDY` - name of the study (e.g. `bender`)
 * `STUDYDIR` - path to the main study directory, where the subject
