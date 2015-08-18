@@ -4,9 +4,10 @@ projname=ANTS
 queue=normal
 compiler=gcc
 parenv=1way
+ncores=12
 
 OPTIND=1
-while getopts ":j:q:c:r:" opt; do
+while getopts ":j:q:c:r:e:p:" opt; do
     case "$opt" in
 	j)  projname=$OPTARG
 	    ;;
@@ -15,6 +16,10 @@ while getopts ":j:q:c:r:" opt; do
 	c)  compiler=$OPTARG
 	    ;;
 	r)  runtime=$OPTARG
+	    ;;
+	e)  parenv=$OPTARG
+	    ;;
+	p)  ncores=$OPTARG
 	    ;;
     esac
 done
@@ -34,4 +39,4 @@ cd `dirname $jobfile`
 file=`basename $jobfile`
 name=`echo $file | cut -d . -f 1`
 launch -s $file -j $projname -q $queue -c $compiler -n $name \
-       -e $parenv -r $runtime
+       -e $parenv -r $runtime -p $ncores
