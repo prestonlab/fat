@@ -16,5 +16,5 @@ submit_opt="$@"
 
 for subj in $SUBJIDS; do
     command="run_level1.sh $model $subj {}"
-    submit_run_job.sh $submit_opt "$run_ids" "$command"
+    submit_run_job.sh $submit_opt "$command" "$run_ids"
 done
