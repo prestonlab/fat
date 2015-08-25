@@ -1,9 +1,8 @@
 #!/bin/bash
 
-autodir=$BATCHDIR/auto
-mkdir -p $autodir
+mkdir -p $BATCHDIR
 
-cd $autodir
+cd $BATCHDIR
 
 if [ ! -e Job1.sh ]; then
     file=Job1.sh
@@ -17,5 +16,5 @@ else
     done
     file=Job$(( max + 1 )).sh
 fi
-echo ${autodir}/${file}
+echo ${BATCHDIR}/${file}
 
