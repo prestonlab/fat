@@ -1,0 +1,53 @@
+
+export SWDIR=/work/01812/mm63378/software
+
+module swap intel gcc
+
+# PYTHON
+module load python
+export PYTHONPATH=${PYTHONPATH}:${SWDIR}/poldrack/local/lib/python
+export PYTHONPATH=${PYTHONPATH}:${SWDIR}/poldrack/python/lib/python2.7/site-packages
+export PYTHONPATH=${SWDIR}/python/lib/python2.7/site-packages:${PYTHONPATH}
+export PYTHONPATH=${SWDIR}/PyMVPA:$PYTHONPATH
+export PATH=${SWDIR}/python/bin:$PATH
+
+# FSL
+export FSLDIR=$SWDIR/fsl
+. $FSLDIR/etc/fslconf/fsl.sh
+export PATH=${PATH}:${FSLDIR}/bin
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${FSLDIR}/lib
+export MNI=$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz
+export MNI1=$FSLDIR/data/standard/MNI152_T1_1mm_brain.nii.gz
+
+# ANTS
+export ANTSHOME=${SWDIR}/poldrack/ANTS
+export ANTSBIN=${SWDIR}/poldrack/ANTS/bin
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${SWDIR}/poldrack/ANTS/lib
+export PATH=${PATH}:${ANTSBIN}
+
+# AFNI
+export PATH=${PATH}:${SWDIR}/poldrack/afni/linux_xorg7_64
+export DYLD_FALLBACK_LIBRARY_PATH=${SWDIR}/poldrack/afni/linux_xorg7_64
+
+# other software
+export PATH=${PATH}:${SWDIR}:${SWDIR}/local/bin
+export PATH=${PATH}:${SWDIR}/fcma2_debug/src
+export PATH=${SWDIR}/dtk:${PATH}
+export PATH=${SWDIR}/trackvis:${PATH}
+#export PATH=${PATH}:${SWDIR}/poldrack/bin:${SWDIR}/poldrack/local/bin
+export PATH=${PATH}:${SWDIR}/poldrack/local/bin
+export TRACTOR_HOME=${SWDIR}/tractor
+export PATH=${TRACTOR_HOME}/bin:${PATH}
+export MANPATH=${TRACTOR_HOME}/man:${MANPATH}
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${SWDIR}/local/lib
+
+# FREESURFER
+module load freesurfer
+
+# module version doesn't include setup script for some reason, so
+# adding the main directory of the software directory's copy so we'll
+# have access to that script. Should still use the module for
+# everything else
+export PATH=${PATH}:${SWDIR}/freesurfer
+
