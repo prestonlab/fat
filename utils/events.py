@@ -66,7 +66,12 @@ class Events(MutableSequence):
         
     def array(self, key, **kwargs):
         """Return a feature from each event as an array."""
-        a = np.array(self.list(key))
+
+        try:
+            a = np.array(self.list(key))
+        except ValueError:
+            raise ValueError('Problem converting field to array.')
+
         if kwargs is not None:
             inc = self.match(**kwargs)
             a = a[inc]
