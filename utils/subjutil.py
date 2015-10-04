@@ -21,8 +21,13 @@ class SubjParser(ArgumentParser):
         ArgumentParser.__init__(self)
         self.add_argument('subject', type=str,
                           help="full subject identifier string")
-        self.add_argument('--study-dir', type=str,
-                          default=None, help="path to main study directory")
+        if "STUDYDIR" in os.environ:
+            study_dir = os.environ['STUDYDIR']
+        else:
+            study_dir = None
+            
+        self.add_argument('--study-dir', type=str, default=study_dir,
+                          help="path to main study directory")
         if include_log:
             self.add_argument('--dry-run',
                               help="display commands without executing",
