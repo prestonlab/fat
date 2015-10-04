@@ -14,7 +14,7 @@ if [ -d $fsdir ]; then
     rm -rf $fsdir
 fi
 
-cmd="source FreeSurferEnv.sh; recon-all -s ${subject} -sd ${subjdir}/anatomy/ -i ${subjdir}/anatomy/highres.nii.gz -all"
+cmd="source SetUpFreeSurfer.sh; recon-all -s ${subject} -sd ${subjdir}/anatomy/ -i ${subjdir}/anatomy/highres.nii.gz -all"
 
 name=fs_$subject
 file=${name}.sh
