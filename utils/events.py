@@ -148,25 +148,42 @@ class Events(MutableSequence):
                 lsub.append(self._dlist[i])
         return Events(lsub)
 
-    def table(self, include=None, exclude=None):
+    def col_size(self, key):
+        """Determine column size needed to print a field."""
 
+        a = self.list(key)
+        length = [len(v.__repr__()) for v in a]
+        length.append(len(key))
+        return np.max(length)
+    
+    def table(self, include=None, exclude=None):
+        """Return a table showing all events."""
+        
         if include is not None:
             fields = include
         else:
             fields = self.keys()
         if exclude is not None:
             fields = [f for f in fields if f not in exclude]
-        
+
+        header_fmt = {}
+        fmt = {}
+        for key in fields:
+            csize = self.col_size(key)
+            header_fmt[key] = '%%-%ds  ' % csize
+            fmt[key] = '%%%ds  ' % csize
+            
         # print header
         s = ''
         for key in fields:
-            s += '%s\t' % key
+            s += header_fmt[key] % key
 
         # print data
         s += '\n'
         for event in self._dlist:
             for key in fields:
-                s += event[key].__repr__() + '\t'
+                val = event[key].__repr__()
+                s += fmt[key] % val
             s += '\n'
         return s
     
