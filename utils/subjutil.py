@@ -35,7 +35,106 @@ class SubjParser(ArgumentParser):
             self.add_argument('--clean-logs',
                               help="remove existing similar logs",
                               default=False, action="store_true")
-    
+
+class SubjLog:
+    """Class for logging subject processing."""
+
+    def __init__(self, subject, base, main=None, rm_existing=False,
+                 dry_run=False, study_dir=None):
+
+        self.subject = subject
+        self.name = base
+        self.dry_run = dry_run
+        self.main_file = None
+
+        # set the log file
+        if study_dir is None:
+            study_dir = os.environ['STUDYDIR']
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = base + '_' + timestamp + '.log'
+        log_dir = os.path.join(study_dir, subject, 'logs')
+        log_file = os.path.join(log_dir, filename)
+        if main is not None:
+            filename = main + '.log'
+            self.main_file = os.path.join(log_dir, filename)
+
+        if rm_existing:
+            # clear logs that match the supplied base
+            existing = glob(os.path.join(log_dir, '%s_*.log' % base))
+            for filepath in existing:
+                os.remove(filepath)
+        self.log_file = log_file
+
+    def get_logo(self):
+        proj_dir = os.path.dirname(os.path.dirname(__file__))
+        logo_file = os.path.join(proj_dir, 'resources', 'prestonlab_logo.txt')
+        f = open(logo_file, 'r')
+        logo = f.read()
+        f.close()
+        return logo
+        
+    def timestamp(self):
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+    def start(self):
+        if self.dry_run:
+            return
+        
+        # print a header
+        self.write(self.get_logo(), wrap=False)
+        msg = 'Starting %s for %s at: %s\n' % (
+            self.name, self.subject, self.timestamp())
+        self.write(msg, wrap=False)
+        if self.main_file:
+            self.write(msg, wrap=False, main_log=True)
+
+    def finish(self):
+        if self.dry_run:
+            return
+
+        msg = 'Finished %s for %s at: %s\n' % (
+            self.name, self.subject, self.timestamp())
+        self.write(msg, wrap=False)
+        if self.main_file:
+            self.write(msg, wrap=False, main_log=True)
+        
+    def run(self, cmd):
+
+        if self.dry_run:
+            print cmd
+            return
+        
+        # open log file and print command to run
+        outfile = open(self.log_file, 'a')
+        outfile.write('\nRUNNING: ' + cmd + '\n')
+        outfile.close()
+
+        # actually running the command
+        p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
+        output, errors = p.communicate()
+        outfile = open(self.log_file, 'a')
+        if output:
+            outfile.write('OUTPUT:  ' + output)
+        if errors:
+            outfile.write('ERROR:   ' + errors)
+            print '%s: ERROR: ' % self.subject + errors
+        outfile.close()
+
+    def write(self, message, wrap=True, main_log=False):
+        if self.dry_run:
+            print message
+            return
+
+        if main_log:
+            outfile = open(self.main_file, 'a')
+        else:
+            outfile = open(self.log_file, 'a')
+        if wrap:
+            outfile.write('\nMESSAGE: ' + message + '\n')
+        else:
+            outfile.write(message)
+        outfile.close()
+            
 class SubjPath:
     """Information about subject directory structure."""
 
@@ -132,100 +231,8 @@ class SubjPath:
         # backwards compatibility
         return self.bold_dirs(run_pattern)
 
-class SubjLog:
-    """Class for logging subject processing."""
+    def init_log(self, base, main, args):
 
-    def __init__(self, subject, base, main=None, rm_existing=False,
-                 dry_run=False):
-
-        self.subject = subject
-        self.name = base
-        self.dry_run = dry_run
-        self.main_file = None
-
-        # set the log file
-        study_dir = os.environ['STUDYDIR']
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        filename = base + '_' + timestamp + '.log'
-        log_dir = os.path.join(study_dir, subject, 'logs')
-        log_file = os.path.join(log_dir, filename)
-        if main:
-            filename = main + '.log'
-            self.main_file = os.path.join(log_dir, filename)
-
-        if rm_existing:
-            # clear logs that match the supplied base
-            existing = glob(os.path.join(log_dir, '%s_*.log' % base))
-            for filepath in existing:
-                os.remove(filepath)
-        self.log_file = log_file
-
-    def get_logo(self):
-        proj_dir = os.path.dirname(os.path.dirname(__file__))
-        logo_file = os.path.join(proj_dir, 'resources', 'prestonlab_logo.txt')
-        f = open(logo_file, 'r')
-        logo = f.read()
-        f.close()
-        return logo
-        
-    def timestamp(self):
-        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-    def start(self):
-        if self.dry_run:
-            return
-        
-        # print a header
-        self.write(self.get_logo(), wrap=False)
-        msg = 'Starting %s for %s at: %s\n' % (
-            self.name, self.subject, self.timestamp())
-        self.write(msg, wrap=False)
-        if self.main_file:
-            self.write(msg, wrap=False, main_log=True)
-
-    def finish(self):
-        if self.dry_run:
-            return
-
-        msg = 'Finished %s for %s at: %s\n' % (
-            self.name, self.subject, self.timestamp())
-        self.write(msg, wrap=False)
-        if self.main_file:
-            self.write(msg, wrap=False, main_log=True)
-        
-    def run(self, cmd):
-
-        if self.dry_run:
-            print cmd
-            return
-        
-        # open log file and print command to run
-        outfile = open(self.log_file, 'a')
-        outfile.write('\nRUNNING: ' + cmd + '\n')
-        outfile.close()
-
-        # actually running the command
-        p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
-        output, errors = p.communicate()
-        outfile = open(self.log_file, 'a')
-        if output:
-            outfile.write('OUTPUT:  ' + output)
-        if errors:
-            outfile.write('ERROR:   ' + errors)
-            print '%s: ERROR: ' % self.subject + errors
-        outfile.close()
-
-    def write(self, message, wrap=True, main_log=False):
-        if self.dry_run:
-            print message
-            return
-
-        if main_log:
-            outfile = open(self.main_file, 'a')
-        else:
-            outfile = open(self.log_file, 'a')
-        if wrap:
-            outfile.write('\nMESSAGE: ' + message + '\n')
-        else:
-            outfile.write(message)
-        outfile.close()
+        log = SubjLog(self.subject, base, main, rm_existing=args.clean_logs,
+                      dry_run=args.dry_run, study_dir=args.study_dir)
+        return log
