@@ -103,7 +103,41 @@ class Events(MutableSequence):
                 cond_match = carray == val
             inc = np.logical_and(inc, cond_match)
         return inc
-                
+
+    def sort(self, key):
+        """Sort events by a field."""
+
+        sort_vals = self.array(key)
+        ind = np.argsort(sort_vals)
+        ev = []
+        for i in ind:
+            ev.append(self._dlist[i])
+        return Events(ev)
+    
+    def merge(self):
+        """Merge all events into one dict."""
+
+        ev_merge = OrderedDict()
+        for key in self.keys():
+            # get all values for this field across all repeats
+            vals = self.array(key)
+            if len(np.unique(vals)) == 1:
+                # if unique, get just that value
+                ev_merge[key] = vals[0]
+            else:
+                ev_merge[key] = vals
+        return ev_merge
+
+    def reduce(self, key):
+        """Merge all events that have the same value for some field."""
+        ev_red = Events()
+        vals = self.array(key)
+        uvals = np.unique(vals)
+        for val in uvals:
+            ev_filt = self.filter(**{key: val})
+            ev_red.append(ev_filt.merge())
+        return ev_red
+    
     def filter(self, **kwargs):
         """Return a subset of events."""
         
