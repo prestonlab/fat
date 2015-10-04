@@ -141,7 +141,7 @@ class SubjPath:
     def __init__(self, subject, study_dir=None):
 
         self.subject = subject
-        if study_dir:
+        if study_dir is not None:
             self.study_dir = study_dir
         else:
             self.study_dir = os.environ['STUDYDIR']
