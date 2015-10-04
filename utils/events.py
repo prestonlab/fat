@@ -79,7 +79,8 @@ class Events(MutableSequence):
 
     def setfield(self, key, vals):
         """Set the value of a field for all events."""
-        if len(vals) not in (1, self.__len__()):
+
+        if hasattr(vals, '__len__') and len(vals) != self.__len__():
             raise ValueError('Input vector must be a scalar or the same length as events.')
         for i in range(self.__len__()):
             if isinstance(vals, numbers.Number):
