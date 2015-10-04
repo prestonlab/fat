@@ -9,7 +9,7 @@ parser.add_argument('model', help="name of model", type=str)
 parser.add_argument('n', help="number of trials to estimate", type=int)
 args = parser.parse_args()
 
-sp = SubjPath(args.subject)
+sp = SubjPath(args.subject, args.study_dir)
 log = SubjLog(args.subject, args.model, 'model',
               args.clean_logs, args.dry_run)
 
@@ -47,6 +47,7 @@ for f in fsf_files:
 
     # remove temp files
     log.run('rm %s' % ' '.join(ev_files))
+    log.run('rm %s*.{con,png,ppm,frf,mat,min,trg}' % base)
 
 # merge all runs into one file
 out_file = os.path.join(model_dir, 'beta',
