@@ -43,11 +43,6 @@ export MANPATH=${TRACTOR_HOME}/man:${MANPATH}
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${SWDIR}/local/lib
 
 # FREESURFER
-module load freesurfer
-
-# module version doesn't include setup script for some reason, so
-# adding the main directory of the software directory's copy so we'll
-# have access to that script. Should still use the module for
-# everything else
-export PATH=${PATH}:${SWDIR}/freesurfer
+export PATH=${PATH}:${SWDIR}/freesurfer:${SWDIR}/freesurfer/bin
+export FREESURFER_HOME=${SWDIR}/freesurfer
 
