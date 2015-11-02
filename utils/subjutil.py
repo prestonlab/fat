@@ -8,15 +8,19 @@ from glob import glob
 from argparse import ArgumentParser
 
 def imname(filepath):
+    """Get the name of an .nii.gz file."""
     return os.path.basename(filepath.split('.nii.gz')[0])
 
 def impath(*args):
+    """Construct the path to an .nii.gz file."""
     p = os.path.join(*args)
     if not p.endswith('.nii.gz'):
         p += '.nii.gz'
     return p
 
 class SubjParser(ArgumentParser):
+    """Class for parsing standard arguments."""
+    
     def __init__(self, include_log=True):
         ArgumentParser.__init__(self)
         self.add_argument('subject', type=str,
@@ -66,6 +70,8 @@ class SubjLog:
         self.log_file = log_file
 
     def get_logo(self):
+        """Get the text logo for the Preston lab."""
+        
         proj_dir = os.path.dirname(os.path.dirname(__file__))
         logo_file = os.path.join(proj_dir, 'resources', 'prestonlab_logo.txt')
         f = open(logo_file, 'r')
@@ -74,9 +80,12 @@ class SubjLog:
         return logo
         
     def timestamp(self):
+        """Get a timestamp with standard formatting for a log."""
         return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
     def start(self):
+        """Start logging."""
+
         if self.dry_run:
             return
         
@@ -89,16 +98,19 @@ class SubjLog:
             self.write(msg, wrap=False, main_log=True)
 
     def finish(self):
+        """Finish and close the log."""
+        
         if self.dry_run:
             return
 
-        msg = 'Finished %s for %s at: %s\n' % (
+        msg = '\nFinished %s for %s at: %s\n' % (
             self.name, self.subject, self.timestamp())
         self.write(msg, wrap=False)
         if self.main_file:
             self.write(msg, wrap=False, main_log=True)
         
     def run(self, cmd):
+        """Run a command with input and output logging."""
 
         if self.dry_run:
             print cmd
@@ -121,6 +133,8 @@ class SubjLog:
         outfile.close()
 
     def write(self, message, wrap=True, main_log=False):
+        """Write a message to the log."""
+        
         if self.dry_run:
             print message
             return
@@ -154,6 +168,8 @@ class SubjPath:
             self.d[dirname.lower()] = os.path.join(self.subj_dir, dirname)
 
     def make_std_dirs(self):
+        """Make the set of standard subject directories."""
+        
         if not os.path.exists(self.d['base']):
             os.mkdir(self.d['base'])
         for std in self.dirnames:
@@ -162,22 +178,27 @@ class SubjPath:
                 os.mkdir(self.d[name])
         
     def path(self, std, *args):
+        """Get the path to file or directory within a standard directory."""
         fulldir = os.path.join(self.d[std.lower()], *args)
         return fulldir
 
     def image_path(self, std, *args):
+        """Get the path to an image file for a subject."""
         return impath(self.path(std, *args))
     
     def proj_path(self, *args):
+        """Path to a file within the code project."""
         proj_dir = os.path.dirname(os.path.dirname(__file__))
         fulldir = os.path.join(proj_dir, *args)
         return fulldir
 
     def glob(self, std, *args):
+        """Get all files or directories matching a pattern with *."""
         paths = glob(os.path.join(self.d[std.lower()], *args))
         return paths
 
     def match_dirs(self, main_dir, dir_pattern):
+        """Get directories matching a regular expression."""
         dirs = os.listdir(main_dir)
         test = re.compile(dir_pattern)
         match = []
@@ -189,14 +210,18 @@ class SubjPath:
         return match
     
     def bold_dirs(self, run_pattern='^\D+_\d+$'):
+        """Get all BOLD subdirectories with standard names."""
         return self.match_dirs(self.path('bold'), run_pattern)
 
     def feat_dirs(self, model, feat_pattern='^\D+_\d+\.feat$'):
+        """Get all FEAT directories with standard names."""
         return self.match_dirs(self.path('model', model), feat_pattern)
     
     def bold_files(self, sepdirs=True, dir_pattern='^\D+_\d+$',
                    file_pattern='^\D+_\d+', file_ext='.nii.gz$',
                    filename='bold.nii.gz', subdir=None, suffix=None):
+        """Get paths to a set of BOLD files."""
+        
         if sepdirs:
             # find directories with standard names
             run_dirs = self.bold_dirs(dir_pattern)
@@ -228,11 +253,12 @@ class SubjPath:
         return files
     
     def bold(self, run_pattern='^\D+_\d+$'):
+        """Get paths to bold directories (DEPRECATED)."""
         # backwards compatibility
         return self.bold_dirs(run_pattern)
 
     def init_log(self, base, main, args):
-
+        """Initialize a log for processing this subject."""
         log = SubjLog(self.subject, base, main, rm_existing=args.clean_logs,
                       dry_run=args.dry_run, study_dir=args.study_dir)
         return log
