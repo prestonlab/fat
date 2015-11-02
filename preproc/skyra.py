@@ -4,6 +4,7 @@ import dicom
 import os,re,pickle
 
 def dicom_filetype(hdr):
+    """Determine the type of image from a DICOM header."""
     scan_protocols = {
         'anatomy': ['MPRAGE','FSE','T1w','T2w','PDT','PD-T2','tse2d','mprage','t1w','t2w','t2spc','t2_spc'],
         'BOLD':['epfid'],
@@ -25,6 +26,7 @@ def dicom_filetype(hdr):
     return file_type
 
 def dicom_files(dcmdir):
+    """Get all DICOM files in a directory."""
     files = []
     dcmext = ['.dcm','.ima']
     for f in os.listdir(dcmdir):
@@ -34,6 +36,8 @@ def dicom_files(dcmdir):
     return files
 
 def dicom_headers(sp):
+    """Read a DICOM header for all series."""
+    
     dcmbase = sp.path('raw', sp.subject)
     dcmdirs = os.listdir(dcmbase)
     hdrs = {}
@@ -57,6 +61,7 @@ def dicom_headers(sp):
     return hdrs, dirs
 
 def dicom2nifti(sp, log):
+    """Convert all DICOM files to NIfTI format."""
     hdrs, dirs = dicom_headers(sp)
     for series in hdrs.keys():
         # set the output directory (based on filetype)
@@ -70,12 +75,14 @@ def dicom2nifti(sp, log):
             log.run(cmd)
 
 def save_headers(sp, hdrs):
+    """Save a set of headers to disk."""
     hdr_file = sp.path('logs', 'dicom_headers.pkl')
     f = open(hdr_file, 'wb')
     pickle.dump(hdrs, f)
     f.close()
 
 def load_headers(sp):
+    """Load a set of headers."""
     hdr_file = sp.path('logs', 'dicom_headers.pkl')
     f = open(hdr_file, 'rb')
     hdrs = pickle.load(f)
@@ -83,11 +90,13 @@ def load_headers(sp):
     return hdrs
     
 def find_header(hdrs, nifti_file):
+    """Find the header corresponding to a NIfTI file."""
     name = os.path.basename(nifti_file)
     series = name.rsplit('a')[-2].rsplit('s')[-1].lstrip('0')
     return hdrs[series]
             
 def rename_bold(sp, log):
+    """Rename BOLD files and move to separate directories."""
     hdrs, dirs = dicom_headers(sp)
     bold_files = sp.glob('bold', '*.nii.gz')
     for f in bold_files:
@@ -104,6 +113,7 @@ def rename_bold(sp, log):
         log.run('mv %s %s' % (f, output))
         
 def rename_anat(sp, log):
+    """Give anatomical scans standard names and backup intermediate files."""
     hdrs, dirs = dicom_headers(sp)
     anat_files = sp.glob('anatomy', '*.nii.gz')
     highres_ind = 1
