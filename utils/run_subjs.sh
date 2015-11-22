@@ -29,6 +29,7 @@ fi
 for no in $nos; do
     subject=${STUDY}_`printf "%02d" $no`
     subj_command=`echo $command | sed s/{}/$subject/g`
+    echo "$subj_command"
     eval $subj_command
 done
 
