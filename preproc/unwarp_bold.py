@@ -17,8 +17,7 @@ parser.add_argument('--smooth3', help="smoothing for fieldmap",
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
-log = SubjLog(args.subject, 'unwarpbold', 'preproc',
-              args.clean_logs, args.dry_run)
+log = sp.init_log('unwarpbold', 'preproc', args)
 log.start()
 
 # find the runs to include
@@ -32,7 +31,7 @@ for i in range(len(run_dirs)):
     log.run('fslmaths %s -abs -bin %s' % (fm, fm_mask))
 
     # calculate the voxel shift and unwarp the average run image for
-    # registraion purposes
+    # registration purposes
     output = impath(run_dirs[i], 'bold_mcf_brain_avg_unwarp')
     shift = impath(fm_dir, 'epireg_fieldmaprads2epi_sm_shift')
     cmd = 'fugue -i %s --loadfmap=%s --mask=%s --dwell=%.6f --unwarpdir=%s --smooth3=%.6f -u %s --saveshift=%s --unmaskshift' % (

@@ -7,8 +7,7 @@ parser = SubjParser()
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
-log = SubjLog(args.subject, 'postfs', 'preproc',
-              args.clean_logs, args.dry_run)
+log = sp.init_log('postfs', 'preproc', args)
 
 src = sp.path('anatomy', args.subject, 'mri')
 dest = sp.path('anatomy')

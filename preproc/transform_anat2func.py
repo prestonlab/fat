@@ -17,9 +17,8 @@ args = parser.parse_args()
 images = args.images.split()
 labels = args.labels.split()
 
-sp = SubjPath(args.subject)
-log = SubjLog(args.subject, 'anat2func', 'preproc',
-              args.clean_logs, args.dry_run)
+sp = SubjPath(args.subject, args.study_dir)
+log = sp.init_log('anat2func', 'preproc', args)
 log.start()
 
 # prepare transformation directories

@@ -10,8 +10,7 @@ parser.add_argument('n', help="number of trials to estimate", type=int)
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
-log = SubjLog(args.subject, args.model, 'model',
-              args.clean_logs, args.dry_run)
+log = sp.init_log(args.model, 'model', args)
 
 # find FSF files for this subject
 data_dir = os.path.dirname(sp.path('base'))
