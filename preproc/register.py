@@ -6,6 +6,10 @@ def merge(img_dir, xfm_dir, name1, name2, outname, log, bet=False):
 
     img1 = os.path.join(img_dir, name1 + '.nii.gz')
     img2 = os.path.join(img_dir, name2 + '.nii.gz')
+
+    if not (os.path.exists(img1) and os.path.exists(img2)):
+        log.write('Register: one or more images does not exist.')
+        return
     
     # extract the brain
     if bet:
