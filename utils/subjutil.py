@@ -103,9 +103,9 @@ class SubjLog:
         if self.dry_run:
             return
 
-        msg = '\nFinished %s for %s at: %s\n' % (
+        msg = 'Finished %s for %s at: %s\n' % (
             self.name, self.subject, self.timestamp())
-        self.write(msg, wrap=False)
+        self.write('\n' + msg, wrap=False)
         if self.main_file:
             self.write(msg, wrap=False, main_log=True)
         
