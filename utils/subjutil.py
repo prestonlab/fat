@@ -6,6 +6,7 @@ import subprocess as sub
 from datetime import datetime
 from glob import glob
 from argparse import ArgumentParser
+import numpy as np
 
 def imname(filepath):
     """Get the name of an .nii.gz file."""
@@ -251,6 +252,31 @@ class SubjPath:
                     files.append(full)
             files.sort()
         return files
+
+    def rm_partial_bold(self, task, log):
+        """Remove incomplete functional scans."""
+
+        pattern = 'functional_%s_\d+' % task
+        files = self.bold_files(dir_pattern=pattern)
+
+        # get the number of volumes for each scan in this task
+        n_vols = []
+        for f in files:
+            cmd = 'fslinfo %s | grep "^dim4" | tr -s " " | cut -d " " -f 2' % f
+            p = sub.Popen(cmd, stdout=sub.PIPE, stderr=sub.PIPE, shell=True)
+            output, errors = p.communicate()
+            n_vols.append(int(output))
+
+        # delete short runs
+        isshort = n_vols < np.max(n_vols)
+        if np.any(isshort):
+            ind = np.nonzero(isshort)[0]
+            for i in ind:
+                log.run('rm %s' % files[i])
+                parent = os.path.dirname(files[i])
+                log.run('rmdir %s' % parent)
+        else:
+            log.write('%s: no short runs found.' % task)
     
     def bold(self, run_pattern='^\D+_\d+$'):
         """Get paths to bold directories (DEPRECATED)."""
