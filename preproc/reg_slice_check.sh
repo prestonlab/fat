@@ -3,7 +3,8 @@
 # reg_slice_check.sh
 #
 # Create an image with slices to check the quality of registration of
-# two images.
+# two images. The first image will be shown with an outline of the
+# second image.
 #
 # usage: reg_slice_check.sh image1 image2 pngdir pngout
 # e.g.:  reg_slice_check.sh anatomy/antsreg/data/funcspace/orig.nii.gz BOLD/pre_1/bold_mcf_brain_vol1.nii.gz anatomy/antsreg/checks orig2func1.png
