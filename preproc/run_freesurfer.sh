@@ -8,6 +8,11 @@ fi
 subject=$1
 subjdir=$STUDYDIR/$subject
 
+if [ ! -f ${subjdir}/anatomy/highres.nii.gz ]; then
+    echo "ERROR: Highres file not found."
+    exit 1
+fi
+
 # delete existing freesurfer results
 fsdir=${subjdir}/anatomy/${subject}
 if [ -d $fsdir ]; then
