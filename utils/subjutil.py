@@ -168,6 +168,10 @@ class SubjPath:
         for dirname in self.dirnames:
             self.d[dirname.lower()] = os.path.join(self.subj_dir, dirname)
 
+    def __str__(self):
+
+        return 'Subject %s (%s)' % (self.subject, self.subj_dir)
+            
     def make_std_dirs(self):
         """Make the set of standard subject directories."""
         
