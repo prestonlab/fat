@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+# launch script for lonestar
+# deals with both command files for parametric launcher
+# and with single commands
+
+import argparse
+import sys,os
+import subprocess
+from tempfile import *
+from launch_slurm import launch_slurm as launch_slurm
+import socket
+
+# set up argument parser
+parser = argparse.ArgumentParser(description='process SLURM job.')
+parser.add_argument('-N', '--nodes', help='minimum number of nodes',
+                    dest='nodes', default=None)
+parser.add_argument('-n', '--ntasks', help='number of tasks to run',
+                    dest='ntasks', default=None)
+parser.add_argument('-s', '--script', help='name of parallel script to run',
+                    dest='script_name')
+parser.add_argument('-r', '--runtime', help='maximum runtime for job',
+                    default='01:00:00',dest='runtime')
+parser.add_argument('-J', '--jobname', help='job name',
+                    default='launch', dest='jobname')
+parser.add_argument('-p','-q','--queue', help='name of queue',
+                    default='normal', dest='queue')
+parser.add_argument('-A', '--projname', help='name of project',
+                    dest='projname', default=None)
+parser.add_argument('-m', '--email', help='email address for notification',
+                    dest='email')
+parser.add_argument('-D', '--cwd', help='name of working directory',
+                    dest='directory')
+parser.add_argument('-f', '--qsubfile', help='name of qsub file',
+                    dest='qsubfile')
+parser.add_argument('-w', '--waitproc', help='process to wait for',
+                    dest='waitproc')
+parser.add_argument('-k', '--keepqsubfile', help='keep qsub file',
+                    dest='keepqsubfile', action="store_true", default=False)
+parser.add_argument('-t', '--test', help='do not actually launch job',
+                    dest='test', action="store_true", default=False)
+parser.add_argument('-c', '--compiler', help='compiler (default=intel)',
+                    dest='compiler', default='intel')
+parser.add_argument('-d', '-i', '--hold_jid',
+                    help='wait for this job id to complete before running',
+                    dest='hold', default=None)
+
+(args, command) = parser.parse_known_args(sys.argv[1:])
+
+if len(command) > 0:
+    cmd=' '.join(command)
+else:
+    cmd=''
+
+launch_slurm(serialcmd=cmd, script_name=args.script_name,
+             runtime=args.runtime, jobname=args.jobname,
+             projname=args.projname, queue=args.queue,
+             email=args.email, qsubfile=args.qsubfile,
+             keepqsubfile=args.keepqsubfile, test=args.test,
+             compiler=args.compiler, hold=args.hold, cwd=args.directory,
+             nnodes=args.nodes, ntasks=args.ntasks)
+sys.exit(0)
