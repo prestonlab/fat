@@ -18,6 +18,13 @@ then
     exit 1
 fi
 
+if [ -u $ARCHIVER ]; then
+    ARCHIVER=ranch.tacc.utexas.edu
+fi
+if [ -u $ARCHIVE ]; then
+    ARCHIVE=$HOME
+fi
+
 raw_dir=$1
 study=$2
 subject=$3
@@ -51,7 +58,7 @@ ssh ${ARCHIVER} "mkdir -p ${ARCHIVE}/${study}/raw"
 echo "Sending raw files to archive..."
 scp ${src} ${ARCHIVER}:${dest}
 
-# if scp successful, remove tar file and raw files
+# if scp successful, remove tar file
 if [ $? -eq 0 ]; then
     echo "Deleting local tar file..."
     rm ${src}
