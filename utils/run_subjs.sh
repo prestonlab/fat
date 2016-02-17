@@ -26,6 +26,7 @@ if [ -z "$nos" ]; then
     exit 1
 fi
 
+nos=`echo $nos | sed "s/:/ /g"`
 for no in $nos; do
     subject=${STUDY}_`printf "%02d" $no`
     subj_command=`echo $command | sed s/{}/$subject/g`
