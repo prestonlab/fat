@@ -17,6 +17,8 @@ parser.add_argument('-N', '--nodes', help='minimum number of nodes',
                     dest='nodes', default=None)
 parser.add_argument('-n', '--ntasks', help='number of tasks to run',
                     dest='ntasks', default=None)
+parser.add_argument('-e', '--tasks-per-node', help='number of tasks per node',
+                    dest='tpn', default=None)
 parser.add_argument('-s', '--script', help='name of parallel script to run',
                     dest='script_name')
 parser.add_argument('-r', '--runtime', help='maximum runtime for job',
@@ -58,5 +60,5 @@ launch_slurm(serialcmd=cmd, script_name=args.script_name,
              email=args.email, qsubfile=args.qsubfile,
              keepqsubfile=args.keepqsubfile, test=args.test,
              compiler=args.compiler, hold=args.hold, cwd=args.directory,
-             nnodes=args.nodes, ntasks=args.ntasks)
+             nnodes=args.nodes, ntasks=args.ntasks, tpn=args.tpn)
 sys.exit(0)

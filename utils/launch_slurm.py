@@ -20,7 +20,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
                  jobname='launch', projname=None, queue='normal',
                  email=None, qsubfile=None, keepqsubfile=False,
                  test=False, compiler='intel', hold=None, cwd=None,
-                 nnodes=None, ntasks=None):
+                 nnodes=None, ntasks=None, tpn=None):
 
     cmd = serialcmd
     
@@ -62,17 +62,31 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     qsubfile.write('# SLURM control file automatically created by launch\n#\n')
     if parametric:
         # fill in the blanks
-        if nnodes is None and ntasks is not None:
+        if tpn is not None:
+            # user specified the number of tasks per node; get the
+            # number of nodes given that
+            ntasks = ncmds
+            nnodes = int(math.ceil(float(ntasks)/float(tpn)))
+        elif nnodes is None and ntasks is None:
+            # nothing is explicitly specified; use one task per core
+            # based on the queue, with the minimum number of nodes
+            # given that
+            ntasks = ncmds
+            nnodes = int(math.ceil(float(ntasks)/float(CORES[queue])))
+            print "Estimated %d nodes and %d tasks" % (nnodes, ntasks)
+        elif nnodes is None and ntasks is not None:
+            # number of total tasks is specified, but not nodes or
+            # tpn; cannot calculate tpn, so just minimize the number
+            # of nodes
             ntasks = int(ntasks)
             nnodes = int(math.ceil(float(ntasks)/float(CORES[queue])))
             print "Number of nodes not specified; estimated as %d" % nnodes
         elif ntasks is None and nnodes is not None:
+            # tasks and tpn not specified; set tasks to the number of
+            # commands
             nnodes = int(nnodes)
-            ntasks = nnodes * CORES[queue]
+            ntasks = ncmds
             print "Number of tasks not specified; estimated as %d" % ntasks
-        elif nnodes is None and ntasks is None:
-            print 'Must specify either N or n!'
-            sys.exit()
         else:
             nnodes = int(nnodes)
             ntasks = int(ntasks)
