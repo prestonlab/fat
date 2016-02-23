@@ -22,10 +22,18 @@ class Events(MutableSequence):
                         d[f] = data[f][i]
                     l.append(d)
                 self._dlist = l
+                self._fields = fields
             else:
+                # assume some iterable of dicts
                 self._dlist = list(data)
+                if len(self._dlist) > 0 and isinstance(self._dlist[0], dict):
+                    self._fields = self._dlist[0].keys()
+                else:
+                    self._fields = list()
         else:
+            # create blank events
             self._dlist = list()
+            self._fields = list()
 
     def __len__(self):
         return len(self._dlist)
@@ -44,25 +52,39 @@ class Events(MutableSequence):
         return self.table()
 
     def __repr__(self):
-        return "<MyList %s>" % self._dlist
+        return "<Events %s>" % self._dlist
         
     def insert(self, ind, val):
+        # add new fields if necessary
+        new = [v for v in val.keys() if v not in self.keys()]
+        self._fields.extend(new)
+
+        # add the new event
         self._dlist.insert(ind, val)
 
     def append(self, val):
-        self.insert(len(self._dlist), val)
+        self.insert(len(self._dlist), OrderedDict(val))
 
     def keys(self):
         """Return a list of keys for each event."""
-        # making brittle assumption that keys will be consistent
-        # between events. Could get an exhaustive list instead, but
-        # that would add execution time. Instead will trust the user
-        # to check that their events are constructed properly
-        return self._dlist[0].keys()
+        return self._fields
 
+    def rmfield(self, field):
+        """Remove a field from all events."""
+        for e in self:
+            if field in e:
+                del e[field]
+        self._fields.remove(field)
+    
     def list(self, key):
         """Return a feature from each event as a list."""
-        return [e[key] for e in self._dlist]
+        l = []
+        for e in self:
+            if key in e:
+                l.append(e[key])
+            else:
+                l.append(None)
+        return l
         
     def array(self, key, **kwargs):
         """Return a feature from each event as an array."""
@@ -118,24 +140,33 @@ class Events(MutableSequence):
         """Merge all events into one dict."""
 
         ev_merge = OrderedDict()
+        varying = set()
         for key in self.keys():
             # get all values for this field across all repeats
-            vals = self.array(key)
-            if len(np.unique(vals)) == 1:
+            vals = self.list(key)
+            if len(set(vals)) == 1:
                 # if unique, get just that value
                 ev_merge[key] = vals[0]
             else:
                 ev_merge[key] = vals
-        return ev_merge
+                varying.add(key)
 
-    def reduce(self, key):
+        return ev_merge, varying
+
+    def reduce(self, key, rm_varying=False):
         """Merge all events that have the same value for some field."""
         ev_red = Events()
         vals = self.array(key)
         uvals = np.unique(vals)
+        varying = set()
         for val in uvals:
             ev_filt = self.filter(**{key: val})
-            ev_red.append(ev_filt.merge())
+            val_ev, val_varying = ev_filt.merge()
+            varying.update(val_varying)
+            ev_red.append(val_ev)
+        if rm_varying:
+            for field in varying:
+                ev_red.rmfield(field)
         return ev_red
     
     def filter(self, **kwargs):
@@ -182,7 +213,10 @@ class Events(MutableSequence):
         s += '\n'
         for event in self._dlist:
             for key in fields:
-                val = event[key].__repr__()
+                if key in event:
+                    val = event[key].__repr__()
+                else:
+                    val = 'None'
                 s += fmt[key] % val
             s += '\n'
         return s
