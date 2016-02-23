@@ -1,35 +1,9 @@
 #!/bin/bash
 
-projname=ANTS
-queue=normal
-compiler=gcc
-parenv=12way
-ncores=12
-
-OPTIND=1
-while getopts ":j:q:c:r:e:p:" opt; do
-    case "$opt" in
-	j)  projname=$OPTARG
-	    ;;
-	q)  queue=$OPTARG
-	    ;;
-	c)  compiler=$OPTARG
-	    ;;
-	r)  runtime=$OPTARG
-	    ;;
-	e)  parenv=$OPTARG
-	    ;;
-	p)  ncores=$OPTARG
-	    ;;
-    esac
-done
-
-shift $((OPTIND-1))
-
 if [ $# -lt 1 ]; then
     echo "submit_run_job.sh   Submits a job to process multiple runs."
     echo
-    echo "Usage: submit_run_job.sh [-jqcrep] commands runids"
+    echo "Usage: submit_run_job.sh commands runids [options]"
     echo "See launch for explanation of options."
     echo
     echo "In the commands string, any '{}' will be replaced with"
@@ -42,12 +16,11 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-#echo "project=$projname queue=$queue compiler=$compiler parenv=$parenv runtime=$runtime ncores=$ncores"
-
+command="$1"
 runids="$2"
+shift 2
 
 jobfile=`get_auto_jobfile.sh`
-command="$1"
 
 echo "Creating file: $jobfile"
 for runid in $runids; do

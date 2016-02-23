@@ -32,6 +32,7 @@ if [ -z "$nos" ]; then
     exit 1
 fi
 
+nos=`echo $nos | sed "s/:/ /g"`
 for no in $nos; do
     if [ $ids == 0 ]; then
 	subject=$no
