@@ -15,8 +15,14 @@ fi
 
 command="$1"
 
+ids=1
 if [ $# -lt 2 ]; then
-    nos="$SUBJNOS"
+    if [ ! -z ${SUBJIDS+x} ]; then
+	ids=0
+	nos="$SUBJIDS"
+    else
+	nos="$SUBJNOS"
+    fi
 else
     nos="$2"
 fi
@@ -27,7 +33,11 @@ if [ -z "$nos" ]; then
 fi
 
 for no in $nos; do
-    subject=${STUDY}_`printf "%02d" $no`
+    if [ $ids == 0 ]; then
+	subject=$no
+    else
+	subject=${STUDY}_`printf "%02d" $no`
+    fi
     subj_command=`echo $command | sed s/{}/$subject/g`
     echo "$subj_command"
     eval $subj_command
