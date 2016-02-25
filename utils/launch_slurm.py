@@ -64,15 +64,16 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         # fill in the blanks
         if tpn is not None:
             # user specified the number of tasks per node; get the
-            # number of nodes given that
-            ntasks = ncmds
-            nnodes = int(math.ceil(float(ntasks)/float(tpn)))
+            # number of nodes given that, evenly splitting tasks by
+            # node
+            nnodes = int(math.ceil(float(ncmds)/float(tpn)))
+            ntasks = nnodes * int(tpn)
         elif nnodes is None and ntasks is None:
             # nothing is explicitly specified; use one task per core
             # based on the queue, with the minimum number of nodes
             # given that
-            ntasks = ncmds
-            nnodes = int(math.ceil(float(ntasks)/float(CORES[queue])))
+            nnodes = int(math.ceil(float(ncmds)/float(CORES[queue])))
+            ntasks = nnodes * float(CORES[queue])
             print "Estimated %d nodes and %d tasks" % (nnodes, ntasks)
         elif nnodes is None and ntasks is not None:
             # number of total tasks is specified, but not nodes or
@@ -85,7 +86,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
             # tasks and tpn not specified; set tasks to the number of
             # commands
             nnodes = int(nnodes)
-            ntasks = ncmds
+            ntasks = nnodes * float(CORES[queue])
             print "Number of tasks not specified; estimated as %d" % ntasks
         else:
             nnodes = int(nnodes)
