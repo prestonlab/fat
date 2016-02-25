@@ -13,6 +13,16 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+verbose=1
+while getopts ":q" opt; do
+    case $opt in
+	q)
+	    verbose=0
+	    ;;
+    esac
+done
+shift $((OPTIND-1))    
+
 command="$1"
 
 ids=1
@@ -40,7 +50,9 @@ for no in $nos; do
 	subject=${STUDY}_`printf "%02d" $no`
     fi
     subj_command=`echo $command | sed s/{}/$subject/g`
-    echo "$subj_command"
+    if [ $verbose -eq 1 ]; then
+	echo "$subj_command"
+    fi
     eval $subj_command
 done
 
