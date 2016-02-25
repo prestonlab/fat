@@ -5,6 +5,11 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+if [ -u $STUDYDIR ]; then
+    echo "STUDYDIR unset; quitting."
+    exit 1
+fi
+
 subject=$1
 subjdir=$STUDYDIR/$subject
 
@@ -19,11 +24,6 @@ if [ -d $fsdir ]; then
     rm -rf $fsdir
 fi
 
-cmd="source SetUpFreeSurfer.sh; recon-all -s ${subject} -sd ${subjdir}/anatomy/ -i ${subjdir}/anatomy/highres.nii.gz -all"
-
-name=fs_$subject
-file=${name}.sh
-prep_job.sh "$cmd" $file
-
-cd $BATCHDIR
-launch -s $file -r 20:00:00 -c gcc -n $name -e 1way -j ANTS -q normal
+source $FREESURFER_HOME/SetUpFreeSurfer.sh
+recon-all -s ${subject} -sd ${subjdir}/anatomy/ \
+	  -i ${subjdir}/anatomy/highres.nii.gz -all
