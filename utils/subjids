@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -u $STUDY ]; then
+    echo "STUDY is unset; quitting."
+    exit 1
+fi
+
+sep=":"
+while getopts ":s:" opt; do
+    case $opt in
+	s)
+	    sep="$OPTARG"
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+nos=`echo "$@" | sed "s/:/ /g"`
+subjids=""
+for no in $nos; do
+    subject=`printf "%s_%02d" $STUDY $no`
+    if [ -z "$subjids" ]; then
+	subjids="$subject"
+    else
+	subjids="${subjids}${sep}${subject}"
+    fi
+done
+echo "$subjids"
