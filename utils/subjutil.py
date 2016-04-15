@@ -6,7 +6,6 @@ import subprocess as sub
 from datetime import datetime
 from glob import glob
 from argparse import ArgumentParser
-import numpy as np
 
 def imname(filepath):
     """Get the name of an .nii.gz file."""
@@ -58,6 +57,8 @@ class SubjLog:
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = base + '_' + timestamp + '.log'
         log_dir = os.path.join(study_dir, subject, 'logs')
+        if not os.path.exists(log_dir):
+            os.mkdir(log_dir)
         log_file = os.path.join(log_dir, filename)
         if main is not None:
             filename = main + '.log'
@@ -260,6 +261,8 @@ class SubjPath:
     def rm_partial_bold(self, task, log):
         """Remove incomplete functional scans."""
 
+        import numpy as np
+        
         pattern = 'functional_%s_\d+' % task
         files = self.bold_files(dir_pattern=pattern)
 
