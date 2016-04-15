@@ -14,27 +14,30 @@ if [ $# -lt 1 ]; then
 fi
 
 verbose=1
-while getopts ":q" opt; do
+ids=0
+while getopts ":qi" opt; do
     case $opt in
 	q)
 	    verbose=0
+	    ;;
+	i)
+	    ids=1
 	    ;;
     esac
 done
 shift $((OPTIND-1))    
 
 command="$1"
+shift 1
 
-ids=1
 if [ $# -lt 2 ]; then
-    if [ ! -z ${SUBJIDS+x} ]; then
-	ids=0
+    if [ $ids == 1 ]; then
 	nos="$SUBJIDS"
     else
 	nos="$SUBJNOS"
     fi
 else
-    nos="$2"
+    nos="$@"
 fi
 
 if [ -z "$nos" ]; then
@@ -43,8 +46,9 @@ if [ -z "$nos" ]; then
 fi
 
 nos=`echo $nos | sed "s/:/ /g"`
+echo "Running commands..."
 for no in $nos; do
-    if [ $ids == 0 ]; then
+    if [ $ids == 1 ]; then
 	subject=$no
     else
 	subject=${STUDY}_`printf "%02d" $no`
@@ -55,4 +59,3 @@ for no in $nos; do
     fi
     eval $subj_command
 done
-
