@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo "ls-scans: show scan directories in order of acquisition."
+    echo "Usage: ls-scans raw_scan_directory"
+    exit 1
+fi
+
+d="$1"
+nos=`/bin/ls -1d $d/* | grep -o '....$' | sort`
+for n in $nos; do
+    /bin/ls -1d $d/*_$n
+done
