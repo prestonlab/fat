@@ -48,6 +48,7 @@ cd ${outdir}
 # rmfg  rostral middle frontal gyrus
 # cmfg  caudal middle frontal gyrus
 # vidc  ventral diencephalon
+# tpo   temporal pole
 
 fslmaths parcels.nii.gz -thr 1006 -uthr 1006 -bin l_erc.nii.gz
 fslmaths parcels.nii.gz -thr 2006 -uthr 2006 -bin r_erc.nii.gz
@@ -55,6 +56,8 @@ fslmaths parcels.nii.gz -thr 1007 -uthr 1007 -bin l_fus.nii.gz
 fslmaths parcels.nii.gz -thr 2007 -uthr 2007 -bin r_fus.nii.gz
 fslmaths parcels.nii.gz -thr 1009 -uthr 1009 -bin l_it.nii.gz
 fslmaths parcels.nii.gz -thr 2009 -uthr 2009 -bin r_it.nii.gz
+fslmaths parcels.nii.gz -thr 1033 -uthr 1033 -bin l_tpo.nii.gz
+fslmaths parcels.nii.gz -thr 2033 -uthr 2033 -bin r_tpo.nii.gz
 fslmaths parcels.nii.gz -thr 1016 -uthr 1016 -bin l_phc.nii.gz
 fslmaths parcels.nii.gz -thr 2016 -uthr 2016 -bin r_phc.nii.gz
 fslmaths parcels.nii.gz -thr 17 -uthr 17 -bin l_hip.nii.gz
