@@ -38,8 +38,10 @@ mkdir -p ${fsfdir}
 fsftemplate=${modeldir}/${model}_level1.fsf
 cp ${template} ${fsftemplate}
 
-for subjid in ${SUBJIDS}; do
-    for runid in ${runids}; do
+sids="`echo $SUBJIDS | sed "s/:/ /g"`"
+rids="`echo $runids | sed "s/:/ /g"`"
+for subjid in $sids; do
+    for runid in $rids; do
 	# path to customized FSF file
 	customfsf=${fsfdir}/${model}_${subjid}_${runid}.fsf
 

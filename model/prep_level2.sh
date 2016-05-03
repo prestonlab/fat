@@ -5,21 +5,45 @@ then
     echo "Prepare level 2 analysis from an FSL template"
     echo
     echo "Usage:"
-    echo "`basename $0` [template] [model]"
+    echo "`basename $0` [-ds] [template] [model]"
     echo
-    echo "Inputs:"
+    echo "Optional inputs:"
+    echo "-d"
+    echo "      path to base study directory. If not specified,"
+    echo "      STUDYDIR environment variable will be used."
+    echo
+    echo "-s"
+    echo "      list of subject ids, separated by ':'. If not"
+    echo "      specified, SUBJIDS environment variable will be used."
+    echo
+    echo "Required inputs:"
     echo "template   path to FSF template"
     echo "model      name of statistical model"
     echo
-    echo "Level 2 Template variables:"
+    echo "These strings will be replaced in the FSF template:"
     echo "STUDYDIR   path to directory with study data"
     echo "SUBJID     full subject identifier, e.g. prex_01"
     echo
-    echo "Environment variables used:"
-    echo "STUDYDIR   path to directory with subject directories"
-    echo "SUBJIDS    list of subject identifiers"
-    echo
     exit 1
+fi
+
+while getopts ":d:s:" opt; do
+    case $opt in
+	d)
+	    STUDYDIR=$OPTARG
+	    ;;
+	s)
+	    SUBJIDS=$OPTARG
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z $STUDYDIR ]; then
+    echo "Error: Study directory undefined."
+fi
+if [ -z $SUBJIDS ]; then
+    echo "Error: Subject identifiers undefined."
 fi
 
 template=$1
@@ -33,7 +57,8 @@ mkdir -p ${fsfdir}
 fsftemplate=${modeldir}/${model}_level2.fsf
 cp ${template} ${fsftemplate}
 
-for subjid in ${SUBJIDS}; do
+sids="`echo $SUBJIDS | sed "s/:/ /g"`"
+for subjid in ${sids}; do
     customfsf=${fsfdir}/${model}_${subjid}.fsf
 
     # create the customized file
