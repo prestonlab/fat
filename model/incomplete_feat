@@ -1,0 +1,17 @@
+#!/bin/bash
+
+model=$1
+subjects=$2
+runs=$3
+n_cope=$4
+
+for subjid in ${subjects//:/' '}; do
+    for runid in ${runs//:/' '}; do
+	for cope in $(seq 1 $n_cope); do
+	    file=${STUDYDIR}/${subjid}/model/${model}/${runid}.feat/stats/cope${cope}.nii.gz
+	    if [ ! -e $file ]; then
+	    	echo $file
+	    fi
+	done
+    done
+done
