@@ -20,11 +20,9 @@ if [ $# -lt 2 ]; then
     echo "Example 2:"
     echo 'submit_subj_job.sh "echo {};echo{}-2" "1 2 3 4" -r 01:00:00'
     echo "Can separate different commands to be run in parallel for a given"
-    echo "subject with ';'. Here, will run e.g. 'echo bender_01' and"
+    echo "subject with ':'. Here, will run e.g. 'echo bender_01' and"
     echo "'echo bender_01-2' in parallel. This can be used to batch"
-    echo "multiple commands per subject in a single job. To run commands"
-    echo "in serial instead, write a script that runs multiple commands"
-    echo "and call that."
+    echo "multiple commands per subject in a single job."
     exit 1
 fi
 
@@ -40,7 +38,7 @@ for no in $nos; do
     subject=${STUDY}_`printf "%02d" $no`
 
     # fill in subject ID and split commands
-    subj_command=`echo $command | sed s/{}/$subject/g | tr ';' '\n'`
+    subj_command=`echo $command | sed s/{}/$subject/g | tr ':' '\n'`
     echo -e "$subj_command" >> $jobfile
     echo "$subj_command"
 done
