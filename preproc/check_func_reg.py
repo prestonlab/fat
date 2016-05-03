@@ -4,6 +4,10 @@ from subjutil import *
 import os
 
 parser = SubjParser()
+parser.add_argument('--run-pattern', '-r',
+                    help="regular expression for run directories",
+                    metavar='regexp',
+                    default='^\D+_\d+$')
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
@@ -41,5 +45,22 @@ if os.path.exists(out_file):
 log.run('pngappend %s %s' % (' - '.join(png_files), out_file))
 log.run('rm %s' % ' '.join(png_files))
 log.run('rm %s' % ' '.join(bold1_files))
+
+# create the same image for pre-alignment
+run_dirs = sp.bold(args.run_pattern)
+png_files = []
+for run_dir in run_dirs:
+    bold_avg = impath(run_dir, 'bold_mcf_brain_avg')
+    output = '%s-refvol.png' % os.path.basename(run_dir)
+    cmd = 'reg_slice_check.sh %s %s %s %s' % (
+        bold_avg, refvol, checks_dir, output)
+    log.run(cmd)
+    png_files.append(os.path.join(checks_dir, output))
+    log.run(cmd)
+out_file = os.path.join(checks_dir, 'orig.png')
+if os.path.exists(out_file):
+    log.run('rm %s' % out_file)
+log.run('pngappend %s %s' % (' - '.join(png_files), out_file))
+log.run('rm %s' % ' '.join(png_files))
 
 log.finish()
