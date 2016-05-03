@@ -10,6 +10,11 @@ if [ -u $STUDYDIR ]; then
     exit 1
 fi
 
+if [ ! -d $STUDYDIR ]; then
+    echo "STUDYDIR does not exist; quitting."
+    exit 1
+fi
+
 subject=$1
 subjdir=$STUDYDIR/$subject
 
@@ -19,9 +24,9 @@ if [ ! -f ${subjdir}/anatomy/highres.nii.gz ]; then
 fi
 
 # delete existing freesurfer results
-fsdir=${subjdir}/anatomy/${subject}
-if [ -d $fsdir ]; then
-    rm -rf $fsdir
+if [ -d ${subjdir}/anatomy/${subject} ]; then
+    cd ${subjdir}/anatomy
+    rm -rf ${subject}
 fi
 
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
