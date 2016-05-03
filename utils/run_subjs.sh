@@ -30,7 +30,7 @@ shift $((OPTIND-1))
 command="$1"
 shift 1
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
     if [ $ids == 1 ]; then
 	nos="$SUBJIDS"
     else
@@ -46,7 +46,6 @@ if [ -z "$nos" ]; then
 fi
 
 nos=`echo $nos | sed "s/:/ /g"`
-echo "Running commands..."
 for no in $nos; do
     if [ $ids == 1 ]; then
 	subject=$no
@@ -58,4 +57,8 @@ for no in $nos; do
 	echo "$subj_command"
     fi
     eval $subj_command
+
+    if [ $? = 130 ]; then
+	exit 1
+    fi
 done
