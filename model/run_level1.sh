@@ -26,14 +26,21 @@ onset_files=`cat $fsf | grep 'set fmri(custom[0-9]*) \".*.txt\"' | cut -d \" -f 
 for file in $onset_files; do
     if [ ! -s $file ]; then
 	echo "Onset file is empty: $file. Cannot run Feat. Exiting."
-	exit 2
+	exit 1
     fi
 done
 
 # prepare the subject's model directory
 subjmodeldir=${STUDYDIR}/${subjid}/model/${model}
 mkdir -p $subjmodeldir
-rm -rf $subjmodeldir/${runid}*.feat
+
+if [ ! -d $subjmodeldir ]; then
+    echo "Problem creating subject model dir $subjmodeldir. Exiting."
+    exit 1
+fi
+
+cd $subjmodeldir
+rm -rf ${runid}*.feat
 
 cd ${STUDYDIR}
 
@@ -42,4 +49,10 @@ cd ${STUDYDIR}
 export SGE_ROOT=""
 
 # run Feat
+featdir=${subjmodeldir}/{$runid}.feat
+if [ -d $featdir ]; then
+    echo "The FEAT directory $featdir already exists. Quitting."
+    exit 1
+fi
+
 feat ${fsf}

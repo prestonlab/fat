@@ -9,13 +9,24 @@ fi
 model=$1
 subjid=$2
 
-fsf=${STUDYDIR}/batch/glm/${model}/fsf/${model}_${subjid}.fsf
-if [ ! -e $fsf ]; then
-    echo "FSF file not found: ${fsf}. Exiting."
+if [ -z $STUDYDIR ]; then
+    echo "Error: study directory is undefined: $STUDYDIR" 1>&2
     exit 1
 fi
 
-rm -rf ${STUDYDIR}/${subjid}/model/${model}/level2*.gfeat
+fsf=${STUDYDIR}/batch/glm/${model}/fsf/${model}_${subjid}.fsf
+if [ ! -e $fsf ]; then
+    echo "FSF file not found: ${fsf}. Exiting." 1>&2
+    exit 1
+fi
+
+model_dir=${STUDYDIR}/${subjid}/model/${model}
+if cd ${model_dir}; then
+    rm -rf level2*.gfeat
+else
+    echo "Error: model directory does not exist: $model_dir" 1>&2
+    exit 1
+fi
 
 # unset the SGE_ROOT variable. This indicates to FSL that it should
 # not attempt to submit jobs
