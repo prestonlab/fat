@@ -1,0 +1,40 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+    echo "Usage  : fscroi parcfile outdir no [name]"
+    echo "Example: fscroi aparc+aseg.nii.gz . 6 erc"
+    exit 1
+fi
+
+parcfile=$1
+outdir=$2
+no=$3
+
+lval=`printf 1%03d $no`
+rval=`printf 2%03d $no`
+
+if [ $# -lt 4 ]; then
+    name=`grep "$lval[[:space:]]*ctx-lh" < $FREESURFER_HOME/FreeSurferColorLUT.txt | awk '{print $2}' | cut -d '-' -f 3`
+else
+    name=$4
+fi
+
+if [ ! -e $parcfile ]; then
+    echo "Missing parcels file: $parcfile"
+    exit 1
+fi
+
+# left, right, both
+lfile=${outdir}/l_${name}.nii.gz
+rfile=${outdir}/r_${name}.nii.gz
+bfile=${outdir}/b_${name}.nii.gz
+
+if [ ! -e $lfile ]; then
+    fslmaths $parcfile -thr $lval -uthr $lval -bin $lfile
+fi
+if [ ! -e $rfile ]; then
+    fslmaths $parcfile -thr $rval -uthr $rval -bin $rfile
+fi
+if [ ! -e $bfile ]; then
+    fslmaths $lfile -add $rfile $bfile
+fi
