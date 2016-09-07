@@ -5,16 +5,13 @@
 # files to the user's ranch archive directory. The user should then
 # delete the raw files to conserve space.
 #
-# Usage:   backup_raw.sh subject_id
-# Example: backup_raw.sh bender_01
-#
 # MLM 2/2014
 # NWM 8/2015
 
 if [ $# -eq 0 ]
 then
     echo "Usage:   backup_raw.sh raw_dir study subject"
-    echo "Example: backup_raw.sh /corral-repl/utexas/prestonlab/bender/bender_01/raw/bender_01 bender bender_01"
+    echo "Example: backup_raw.sh /corral-repl/utexas/prestonlab/bender/raw/bender_26 bender bender_26"
     exit 1
 fi
 
@@ -65,7 +62,8 @@ if [ $? -eq 0 ]; then
 
     echo "Changing file permissions to make group accessible..."
     ssh ${ARCHIVER} "chmod -R g+rwx ${ARCHIVE}/${study}/raw"
-    echo "Archive successful!"
+    echo "Archive appears to have been successful."
+    echo "Please check the transfer and delete the local copy of raw files."
 else
     echo "*** ERROR: ARCHIVE FAILED ***"
 fi
