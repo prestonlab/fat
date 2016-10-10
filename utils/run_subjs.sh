@@ -3,13 +3,37 @@
 if [ $# -lt 1 ]; then
     echo "run_subjs.sh   Run a command on multiple subjects."
     echo
-    echo "Usage: run_subjs.sh commands [subjects]"
+    echo "Usage: run_subjs.sh [OPTION] commands [SUBJNOS]"
+    echo
+    echo "Options:"
+    echo "-q"
+    echo "       do not print commands before executing"
+    echo
+    echo "-i"
+    echo "       use the SUBJIDS environment variable"
+    echo "       (a colon-separated list of full"
+    echo "       subject identifiers like mystudy_001) instead of"
+    echo "       SUBJNOS (just subject numbers like 1)"
     echo
     echo "In the commands string, any '{}' will be replaced with"
     echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
-    echo "and constructs them in the format [study]_DD, e.g. bender_01."
-    echo "If the environment variable SUBJNOS is set, that will"
-    echo "be used to set the subjects list."
+    echo "and constructs them in the format \$STUDY_DD, e.g. mystudy_01."
+    echo "If subject numbers aren't specified, but the environment"
+    echo "variable SUBJNOS is set, that will be used to set the"
+    echo "subjects list."
+    echo
+    echo "Does the same thing as a for loop over subjects, but saves"
+    echo "some typing and makes it easy to specify which subset of"
+    echo "subjects to run. Assumes that subjects have two zero-padded"
+    echo "digits in their identifier. If not, can set the SUBJIDS"
+    echo "environment variable and use the -i option."
+    echo
+    echo "Example"
+    echo "To print the ID for the first four subjects in a study"
+    echo "called mystudy:"
+    echo "export STUDY=mystudy # only have to run this once"
+    echo "run_subjs.sh 'echo {}' 1:2:3:4"
+    echo
     exit 1
 fi
 
