@@ -17,7 +17,7 @@ MAXCORES={'normal':4104, 'largemem':8208, 'hugemem': 40,
           'development':264, 'gpu':40}
 
 def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
-                 jobname='launch', projname=None, queue='normal',
+                 jobname='launch', outfile=None, projname=None, queue='normal',
                  email=None, qsubfile=None, keepqsubfile=False,
                  test=False, compiler='intel', hold=None, cwd=None,
                  nnodes=None, ntasks=None, tpn=None):
@@ -108,7 +108,10 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     if cwd is not None:
         qsubfile.write('#SBATCH -D %s\n' % cwd)
     qsubfile.write('#SBATCH -J %s\n' % jobname)
-    qsubfile.write('#SBATCH -o {0}.o%j\n'.format(jobname))
+    if outfile is not None:
+        qsubfile.write('#SBATCH -o {0}\n'.format(outfile))
+    else:
+        qsubfile.write('#SBATCH -o {0}.o%j\n'.format(jobname))
     qsubfile.write('#SBATCH -p %s\n' % queue)
     qsubfile.write('#SBATCH -t %s\n' % runtime)
 

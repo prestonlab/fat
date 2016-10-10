@@ -25,10 +25,12 @@ parser.add_argument('-r', '--runtime', help='maximum runtime for job',
                     default='01:00:00',dest='runtime')
 parser.add_argument('-J', '--jobname', help='job name',
                     default='launch', dest='jobname')
+parser.add_argument('-o', '--outfile', help='output file',
+                    default=None, dest='outfile')
 parser.add_argument('-p','-q','--queue', help='name of queue',
                     default='normal', dest='queue')
 parser.add_argument('-A', '--projname', help='name of project',
-                    dest='projname', default=None)
+                    dest='projname', default='IRC_MRI')
 parser.add_argument('-m', '--email', help='email address for notification',
                     dest='email')
 parser.add_argument('-D', '--cwd', help='name of working directory',
@@ -56,9 +58,10 @@ else:
 
 launch_slurm(serialcmd=cmd, script_name=args.script_name,
              runtime=args.runtime, jobname=args.jobname,
-             projname=args.projname, queue=args.queue,
-             email=args.email, qsubfile=args.qsubfile,
-             keepqsubfile=args.keepqsubfile, test=args.test,
-             compiler=args.compiler, hold=args.hold, cwd=args.directory,
-             nnodes=args.nodes, ntasks=args.ntasks, tpn=args.tpn)
+             outfile=args.outfile, projname=args.projname,
+             queue=args.queue, email=args.email,
+             qsubfile=args.qsubfile, keepqsubfile=args.keepqsubfile,
+             test=args.test, compiler=args.compiler, hold=args.hold,
+             cwd=args.directory, nnodes=args.nodes,
+             ntasks=args.ntasks, tpn=args.tpn)
 sys.exit(0)
