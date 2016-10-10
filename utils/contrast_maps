@@ -1,0 +1,11 @@
+#!/bin/bash
+
+img1=$1
+img2=$2
+
+name1=`echo $img1 | cut -f 1 -d .`
+name2=`echo $img2 | cut -f 1 -d .`
+
+fslmaths $name1 -sub $name2 ${name1}-${name2}
+fslmaths $name2 -sub $name1 ${name2}-${name1}
+
