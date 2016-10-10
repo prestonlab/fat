@@ -1,0 +1,13 @@
+#!/bin/bash
+
+output=$1
+shift
+
+C=""
+for image; do
+    name=$(basename $image .nii.gz)
+    coronal_slices ${name}.nii.gz ${name}.png
+    C="$C + ${name}.png"
+done
+C=`echo $C | cut -c 3-`
+pngappend $C $output

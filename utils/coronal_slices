@@ -1,0 +1,27 @@
+#!/bin/bash
+
+coronal=`basename $1 .nii.gz`
+output=$2
+mkdir -p temp_slices
+nx=$(fslinfo $coronal | grep ^dim1 | awk '{print $2}')
+ny=$(fslinfo $coronal | grep ^dim2 | awk '{print $2}')
+nz=$(fslinfo $coronal | grep ^dim3 | awk '{print $2}')
+zmin=$((nz/4))
+zsize=$((nz/3))
+fslroi $coronal temp_slices/${coronal}_crop 0 -1 0 -1 $zmin $zsize
+
+C=""
+for i in $(seq 1 $ny); do
+    file=temp_slices/${coronal}_crop_y${i}.png
+    slicer temp_slices/${coronal}_crop -y -$i $file
+
+    # slicer adds a border for some reason, perhaps when the image has
+    # very different height and width?
+    convert $file -gravity Center -crop 100x60%+0+0 $file
+    C="$C - $file"
+done
+C=`echo $C | cut -c 3-`
+pngappend $C $output
+
+rm temp_slices/${coronal}_crop*
+#rmdir temp_slices
