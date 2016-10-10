@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from string import Template
 from glob import glob
 import warnings
@@ -33,12 +34,20 @@ feat_dirs = sp.feat_dirs(args.model)
 
 # invert refvol2orig transformation
 refvol2orig = os.path.join(bbreg, 'refvol-highres.mat')
+if not os.path.exists(refvol2orig):
+    orig2refvol = os.path.join(bbreg, 'highres-refvol.mat')
+    if os.path.exists(orig2refvol):
+        log.run('convert_xfm -omat %s -inverse %s' %
+                (refvol2orig, orig2refvol))
+    else:
+        raise IOError('Functional to structural registration not found.')
 
 # convert functional to anatomy transformation to ITK format
 func2anat_affine = os.path.join(bbreg, 'refvol-orig_Affine.txt')
-cmd = 'c3d_affine_tool -ref %s -src %s %s -fsl2ras -oitk %s' % (
-    t1_brain, refvol, refvol2orig, func2anat_affine)
-log.run(cmd)
+if not os.path.exists(func2anat_affine):
+    cmd = 'c3d_affine_tool -ref %s -src %s %s -fsl2ras -oitk %s' % (
+        t1_brain, refvol, refvol2orig, func2anat_affine)
+    log.run(cmd)
 
 # orig to MNI affine and warp
 anat2mni_warp = os.path.join(antsreg, 'orig-template_Warp.nii.gz')
@@ -57,6 +66,9 @@ for feat in feat_dirs:
     # prep directories for native-space images
     native_dir = os.path.join(feat, 'native')
     native_stats_dir = os.path.join(feat, 'native', 'stats')
+    if os.path.exists(native_dir):
+        continue
+    
     if not os.path.exists(native_dir):
         log.run('mkdir -p %s' % native_dir)
     
