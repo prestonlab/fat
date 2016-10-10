@@ -15,4 +15,5 @@ prep_job.sh "$commands" $jobfile
 cd `dirname $jobfile`
 file=`basename $jobfile`
 name=`echo $file | cut -d . -f 1`
-launch -s $file -J $name -N 1 "$@"
+outfile=$BATCHDIR/${name}.o%j
+launch -s $jobfile -J $name -o $outfile -N 1 "$@"
