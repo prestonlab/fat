@@ -7,8 +7,7 @@ parser = SubjParser()
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
-log = SubjLog(args.subject, 'dcm2nii', 'preproc',
-              args.clean_logs, args.dry_run)
+log = sp.init_log('dcm2nii', 'preproc', args)
 
 # make sure standard directories exist
 sp.make_std_dirs()
