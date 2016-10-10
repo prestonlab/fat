@@ -2,7 +2,7 @@
 """betaseries: script for computing beta-series regression on fMRI data
 """
 
-from mvpa2.misc.fsl.base import *
+from mvpa2.misc.fsl.base import FslGLMDesign, read_fsl_design
 from mvpa2.datasets.mri import fmri_dataset
 
 import numpy as N
@@ -43,7 +43,12 @@ nvox = data.nfeatures
 
 # design matrix
 print "Creating design matrices..."
-dm_nuisance = N.loadtxt(design['confoundev_files'])
+if design.has_key('confoundev_files'):
+    conf_file = design['confoundev_files']
+    print "Loading confound file %s..." % conf_file
+    dm_nuisance = N.loadtxt(conf_file)
+else:
+    dm_nuisance = None
 dm_extra = desmat.mat[:,ntrials:]
 trial_ctr = 0
 all_conds = []
@@ -58,7 +63,10 @@ for e in range(len(good_evs)):
     dm_otherevs = N.sum(dm_otherevs[:,:,N.newaxis],axis=1)
 
     # Put together the design matrix
-    dm_full = N.hstack((dm_toi[:,N.newaxis],dm_otherevs,dm_nuisance,dm_extra))
+    if dm_nuisance is not None:
+        dm_full = N.hstack((dm_toi[:,N.newaxis],dm_otherevs,dm_nuisance,dm_extra))
+    else:
+        dm_full = N.hstack((dm_toi[:,N.newaxis],dm_otherevs,dm_extra))
 
     # making betas
     dm_full = dm_full - N.kron(N.ones((dm_full.shape[0],dm_full.shape[1])), \
