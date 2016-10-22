@@ -76,6 +76,6 @@ susan $funcdata $susan_int $smoothsigma 3 1 1 mean_func $susan_int\
 cd $pd
 fslmaths $sdir/prefiltered_func_data_smooth -mas $sdir/mask $output
 
-if [ $k == 0 ]; then
+if [ $keep == 0 ]; then
     rm -rf ${name}.susan
 fi
