@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+#  Based on the smoothing used in FEAT 6.0.
+
+if [ $# -lt 3 ]; then
+    echo "Usage:   smooth_susan [-vk] input fwhm output"
+    echo "Example: smooth_susan loc_1 4.0 loc_1_sm"
+    echo
+    echo "Options:"
+    echo "-v"
+    echo "       print detailed information"
+    echo
+    echo "-k"
+    echo "       keep intermediate files"
+    echo
+    exit 1
+fi
+
+verbose=0
+keep=0
+while getopts ":vk" opt; do
+    case $opt in
+	v)
+	    verbose=1
+	    ;;
+	k)
+	    keep=1
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+func=$1
+smooth=$2
+output=$3
+
+name=$(basename $func .nii.gz)
+parent=$(dirname $func)
+sdir=$parent/${name}.susan
+mkdir -p $sdir
+
+fslmaths $func $sdir/prefiltered_func_data -odt float
+pd=$(pwd)
+cd $sdir
+funcdata=prefiltered_func_data
+
+# image statistics
+int_2_98=$(fslstats $funcdata -p 2 -p 98)
+int2=$(echo $int_2_98 | awk '{print $1}')
+int98=$(echo $int_2_98 | awk '{print $2}')
+# using the default brain/background threshold in FEAT (10%)
+intensity_threshold=$(python -c "print $int2 + 0.1 * ($int98 - $int2)")
+
+# create mask
+fslmaths $funcdata -thr $intensity_threshold -Tmin -bin mask -odt char
+median_intensity=$(fslstats $funcdata -k mask -p 50)
+fslmaths mask -dilF mask
+fslmaths $funcdata -mas mask prefiltered_func_data_thresh
+funcdata=prefiltered_func_data_thresh
+
+# spatial filtering
+smoothsigma=$(python -c "print $smooth/2.355")
+susan_int=$(python -c "print ($median_intensity - $int2) * 0.75")
+if [ $verbose == 1 ]; then
+    echo "p2: $int2"
+    echo "p98: $int98"
+    echo "mask threshold: $intensity_threshold"
+    echo "median: $median_intensity"
+    echo "susan int: $susan_int"
+    echo "smooth sigma: $smoothsigma"
+fi
+fslmaths $funcdata -Tmean mean_func
+susan $funcdata $susan_int $smoothsigma 3 1 1 mean_func $susan_int\
+      prefiltered_func_data_smooth
+
+cd $pd
+fslmaths $sdir/prefiltered_func_data_smooth -mas $sdir/mask $output
+
+if [ $k == 0 ]; then
+    rm -rf ${name}.susan
+fi
