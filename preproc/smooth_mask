@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [ $# -lt 4 ]; then
+    echo "smooth_mask"
+    echo "Smooth within a mask. If the mask contains multiple nonzero"
+    echo "values, smoothing will be done separately for each submask."
+    echo
+    echo "Usage:   smooth_mask input mask fwhm output"
+    echo "Example: smooth_mask loc_1.nii.gz b_ctx.nii.gz 4.0 loc_1_sm.nii.gz"
+    echo
+    exit 1
+fi
+
+func=$1
+mask=$2
+smooth=$3
+output=$4
+
+name=$(basename $func .nii.gz)
+
+nval=$(fslstats b_merge.nii.gz -l 0 -R | wc -w)
+
+temp=${name}_asm
+while [ -f $temp ]; do
+    temp=${temp}+
+done
+
+if [ $nval -gt 1 ]; then
+    3dBlurInMask -input $func -FWHM $smooth -Mmask $mask -preserve\
+		 -prefix $temp
+else
+    3dBlurInMask -input $func -FWHM $smooth -mask $mask -preserve\
+		 -prefix $temp
+fi
+
+3dAFNItoNIFTI -prefix $(basename $output .nii.gz) ${temp}+orig
+rm ${temp}+orig.{HEAD,BRIK}
