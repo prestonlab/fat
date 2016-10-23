@@ -3,6 +3,12 @@
 import sys, os
 from subprocess import call
 
+if len(sys.argv) == 1:
+    print "pnghstack   Concatenate PNG files horizontally."
+    print
+    print "Usage: pnghstack png1 png2 ... pngN pngoutput"
+    sys.exit()
+
 good_files = []
 for file in sys.argv[1:-1]:
     if os.path.exists(file):
