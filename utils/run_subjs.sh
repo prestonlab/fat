@@ -39,13 +39,17 @@ fi
 
 verbose=1
 ids=0
-while getopts ":qi" opt; do
+noexec=0
+while getopts ":qin" opt; do
     case $opt in
 	q)
 	    verbose=0
 	    ;;
 	i)
 	    ids=1
+	    ;;
+	n)
+	    noexec=1
 	    ;;
     esac
 done
@@ -69,20 +73,18 @@ if [ -z "$nos" ]; then
     exit 1
 fi
 
-nos=`echo $nos | sed "s/:/ /g"`
+nos=$(echo $nos | sed "s/:/ /g")
 for no in $nos; do
     if [ $ids == 1 ]; then
 	subject=$no
     else
-	subject=${STUDY}_`printf "%02d" $no`
+	subject=${STUDY}_$(printf "%02d" $no)
     fi
-    subj_command=`echo $command | sed s/{}/$subject/g`
+    subj_command=$(echo $command | sed s/{}/$subject/g)
     if [ $verbose -eq 1 ]; then
 	echo "$subj_command"
     fi
-    eval $subj_command
-
-    if [ $? = 130 ]; then
-	exit 1
+    if [ $noexec -ne 1]; then
+	eval $subj_command
     fi
 done

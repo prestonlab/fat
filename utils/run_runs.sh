@@ -16,13 +16,17 @@ fi
 
 verbose=1
 ids=0
-while getopts ":qi" opt; do
+noexec=0
+while getopts ":qin" opt; do
     case $opt in
 	q)
 	    verbose=0
 	    ;;
 	i)
 	    ids=1
+	    ;;
+	n)
+	    noexec=1
 	    ;;
     esac
 done
@@ -56,6 +60,8 @@ for no in $nos; do
 	if [ $verbose -eq 1 ]; then
 	    echo "$run_command"
 	fi
-	eval $run_command
+	if [ $noexec -ne 1 ]; then
+	    eval $run_command
+	fi
     done
 done
