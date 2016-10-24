@@ -4,6 +4,8 @@ from subjutil import *
 from glob import glob
 import os
 
+from mvpa2.misc.fsl.base import read_fsl_design
+
 parser = SubjParser()
 parser.add_argument('model', help="name of model", type=str)
 parser.add_argument('n', help="number of trials to estimate", type=int)
@@ -31,6 +33,13 @@ for f in fsf_files:
     (base, ext) = os.path.splitext(f)
     name = os.path.basename(base)
     log.run('feat_model %s' % base)
+
+    design = read_fsl_design(f)
+    bold = design['feat_files']
+    if not bold.endswith('.nii.gz'):
+        bold += '.nii.gz'
+    if not os.path.exists(bold):
+        raise IOError('BOLD file not found: %s' % bold)
 
     # obtain individual trial estimates
     log.run('betaseries.py %s %s %d' % (base, out_dir, args.n))
