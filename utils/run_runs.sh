@@ -36,7 +36,7 @@ command="$1"
 shift 1
 
 if [ $# -lt 2 ]; then
-    nos=1
+    nos="$SUBJNOS"
 else
     nos="$2"
 fi
