@@ -37,6 +37,9 @@ output=$3
 name=$(basename $func .nii.gz)
 parent=$(dirname $func)
 sdir=$parent/${name}.susan
+while [ -d $sdir ]; do
+    sdir=${sdir}+
+done
 mkdir -p $sdir
 
 fslmaths $func $sdir/prefiltered_func_data -odt float
@@ -77,5 +80,6 @@ cd $pd
 fslmaths $sdir/prefiltered_func_data_smooth -mas $sdir/mask $output
 
 if [ $keep == 0 ]; then
-    rm -rf ${name}.susan
+    cd $parent && rm -rf ${name}.susan
+    cd $pd
 fi
