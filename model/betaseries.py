@@ -38,6 +38,8 @@ print "Loading data..."
 bold = design['feat_files']
 if not bold.endswith('.nii.gz'):
     bold += '.nii.gz'
+if not os.path.exists(bold):
+    raise IOError('BOLD file not found: %s' % bold)
 data = fmri_dataset(bold)
 nvox = data.nfeatures
 
@@ -48,6 +50,7 @@ if design.has_key('confoundev_files'):
     print "Loading confound file %s..." % conf_file
     dm_nuisance = N.loadtxt(conf_file)
 else:
+    print "No confound file indicated. Including no confound regressors..."
     dm_nuisance = None
 dm_extra = desmat.mat[:,ntrials:]
 trial_ctr = 0
