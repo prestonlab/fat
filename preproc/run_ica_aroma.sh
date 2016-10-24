@@ -34,20 +34,16 @@ if [ -d ${runid}_aroma ]; then
 fi
 mkdir -p $ardir
 
-# smooth with 6 mm FWHM kernel (6 / 2.35482004503 ~ 2.548)
+# smooth with 4 mm FWHM kernel, using SUSAN to avoid blurring the edge
+# of the train
 echo "smoothing input functional data at: $(date)"
 boldfile=$ardir/smoothed_func_data.nii.gz
-#fslmaths $infile -s 2.548 $boldfile
 smooth_susan $infile 4 $boldfile
 
 # use the brain mask created from freesurfer output
 echo "creating mask at: $(date)"
 maskfile=$ardir/brain_mask.nii.gz
 fslmaths $sdir/anatomy/bbreg/data/orig_brain.nii.gz -thr 1 -bin $maskfile
-
-# gray matter
-#gray=$ardir/gray.nii.gz
-#fslmaths $sdir/anatomy/bbreg/data/aparc+aseg.nii.gz -thr 1000 -bin $gray
 
 # run ICA AROMA, without regfilt
 echo "running ICA-AROMA at: $(date)"
@@ -58,15 +54,6 @@ ICA_AROMA.py -o $ardir -i $boldfile \
 	     -w $sdir/anatomy/antsreg/transforms/orig-template_Warp.nii.gz \
 	     -m $maskfile \
 	     -p ants -den no
-
-# remove temp smoothed functional data (only major contribution to
-# disk usage)
-#rm $boldfile
-
-# smooth with smaller kernel (used larger kernal for ICA-AROMA to
-# match their training data)
-#fslmaths $infile -s 1.4438 $outfile
-#smooth_susan $infile 4 $outfile
 
 # create a new regressor matrix from the ICA components and the task
 # model (task regressors put on end so IC numbers still work). Task
