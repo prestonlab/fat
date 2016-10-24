@@ -84,7 +84,7 @@ for no in $nos; do
     if [ $verbose -eq 1 ]; then
 	echo "$subj_command"
     fi
-    if [ $noexec -ne 1]; then
+    if [ $noexec -ne 1 ]; then
 	eval $subj_command
     fi
 done
