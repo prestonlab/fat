@@ -30,7 +30,7 @@ parser.add_argument('-o', '--outfile', help='output file',
 parser.add_argument('-p','-q','--queue', help='name of queue',
                     default='normal', dest='queue')
 parser.add_argument('-A', '--projname', help='name of project',
-                    dest='projname', default='IRC_MRI')
+                    dest='projname', default='ANTS')
 parser.add_argument('-m', '--email', help='email address for notification',
                     dest='email')
 parser.add_argument('-D', '--cwd', help='name of working directory',
