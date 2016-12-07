@@ -2,6 +2,7 @@
 
 import os
 import re
+import time
 import subprocess as sub
 from datetime import datetime
 from glob import glob
@@ -50,6 +51,7 @@ class SubjLog:
         self.name = base
         self.dry_run = dry_run
         self.main_file = None
+        self.start_time = None
 
         # set the log file
         if study_dir is None:
@@ -95,6 +97,7 @@ class SubjLog:
         self.write(self.get_logo(), wrap=False)
         msg = 'Starting %s for %s at: %s\n' % (
             self.name, self.subject, self.timestamp())
+        self.start_time = time.time()
         self.write(msg, wrap=False)
         if self.main_file:
             self.write(msg, wrap=False, main_log=True)
@@ -105,9 +108,11 @@ class SubjLog:
         if self.dry_run:
             return
 
+        finish = time.time() - self.start_time
         msg = 'Finished %s for %s at: %s\n' % (
             self.name, self.subject, self.timestamp())
         self.write('\n' + msg, wrap=False)
+        self.write('Took %d s.' % finish, wrap=False)
         if self.main_file:
             self.write(msg, wrap=False, main_log=True)
         
@@ -120,7 +125,7 @@ class SubjLog:
         
         # open log file and print command to run
         outfile = open(self.log_file, 'a')
-        outfile.write('\nRUNNING: ' + cmd + '\n')
+        outfile.write('\n' + cmd + '\n')
         outfile.close()
 
         # actually running the command
@@ -128,9 +133,9 @@ class SubjLog:
         output, errors = p.communicate()
         outfile = open(self.log_file, 'a')
         if output:
-            outfile.write('OUTPUT:  ' + output)
+            outfile.write(output)
         if errors:
-            outfile.write('ERROR:   ' + errors)
+            outfile.write('ERROR: ' + errors)
             print '%s: ERROR: ' % self.subject + errors
         outfile.close()
 
