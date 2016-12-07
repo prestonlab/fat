@@ -109,6 +109,8 @@ class Events(MutableSequence):
                 self._dlist[i][key] = vals
             else:
                 self._dlist[i][key] = vals[i]
+        if key not in self._fields:
+            self._fields.append(key)
     
     def match(self, **kwargs):
         """Find events that match a set of conditions."""

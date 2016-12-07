@@ -22,7 +22,7 @@ fi
 
 model_dir=${STUDYDIR}/${subjid}/model/${model}
 if cd ${model_dir}; then
-    rm -rf level2*.gfeat
+    rm -rf *.gfeat
 else
     echo "Error: model directory does not exist: $model_dir" 1>&2
     exit 1
