@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    input='.'
+else
+    input=$1
+fi
+
+if [ -d $input ]; then
+    for file in $input/*.nii.gz; do
+	printf '%-35s %s\n' "$(basename $file)" "$(fslsize $file -s)"
+    done
+else
+    printf '%-35s %s\n' "$(basename $input)" "$(fslsize $input -s)"
+fi
