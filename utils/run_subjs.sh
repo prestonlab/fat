@@ -40,7 +40,8 @@ fi
 verbose=1
 ids=0
 noexec=0
-while getopts ":qin" opt; do
+runpar=0
+while getopts ":qinp" opt; do
     case $opt in
 	q)
 	    verbose=0
@@ -50,6 +51,9 @@ while getopts ":qin" opt; do
 	    ;;
 	n)
 	    noexec=1
+	    ;;
+	p)
+	    runpar=1
 	    ;;
     esac
 done
@@ -85,6 +89,10 @@ for no in $nos; do
 	echo "$subj_command"
     fi
     if [ $noexec -ne 1 ]; then
-	eval $subj_command
+	if [ $runpar -eq 1 ]; then
+	    $subj_command &
+	else
+	    $subj_command
+	fi
     fi
 done
