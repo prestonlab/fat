@@ -21,10 +21,13 @@ if [ ! -e $fsf ]; then
 fi
 
 model_dir=${STUDYDIR}/${subjid}/model/${model}
-if cd ${model_dir}; then
-    rm -rf *.gfeat
+output_dir=$(grep outputdir $fsf | awk -F '"' '{ print $2 }')
+parent_dir=$(dirname $output_dir)
+output_name=$(basename $output_dir)
+if cd $parent_dir; then
+    rm -rf $output_name*.gfeat
 else
-    echo "Error: model directory does not exist: $model_dir" 1>&2
+    echo "Error: parent directory does not exist: $parent_dir" 1>&2
     exit 1
 fi
 
