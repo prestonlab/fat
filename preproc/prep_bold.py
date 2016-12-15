@@ -23,7 +23,7 @@ for d in bold_dirs:
 
 # motion correction
 for d in bold_dirs:
-    log.run('mcflirt -in %s -plots -sinc_final' % base[d])
+    log.run('mcflirt -in %s -plots -spline_final' % base[d])
 
 # brain extraction
 for d in bold_dirs:
