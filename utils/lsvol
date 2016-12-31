@@ -1,15 +1,47 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-    input='.'
+    inputs='.'
 else
-    input=$1
+    inputs="$@"
 fi
 
-if [ -d $input ]; then
-    for file in $input/*.nii.gz; do
-	printf '%-35s %s\n' "$(basename $file)" "$(fslsize $file -s)"
+function printdims {
+    if [ $# -lt 3 ]; then
+	prefix=""
+    else
+	prefix="$3"
+    fi
+
+    s=""
+    for i in $(seq 1 4); do
+	val=$(echo "$1" | grep "^${prefix}dim${i}" | awk '{print $2}')
+	sval=$(printf "$2" $val)
+	if [ $i == 1 ]; then
+	    s="$sval"
+	else
+	    s="${s}x${sval}"
+	fi
     done
-else
-    printf '%-35s %s\n' "$(basename $input)" "$(fslsize $input -s)"
-fi
+    echo "$s"
+}
+
+function mysize {
+    hd="$(fslhd $1)"
+    echo "$(printdims "$hd" "%03d") $(printdims "$hd" "%.2f" pix)"
+}
+
+for input in $inputs; do
+    if [ -d $input ]; then
+	count=$(ls -1 $input/*.nii.gz 2> /dev/null | wc -l)
+	if [ $count != 0 ]; then
+	    for file in $input/*.nii.gz; do
+		echo "$(mysize $file -s) $file"
+	    done
+	fi
+    else
+	if [ -f $input ]; then
+	    echo "$(mysize $input -s) $input"
+	fi
+    fi
+done
