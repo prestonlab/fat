@@ -35,7 +35,7 @@ fi
 mkdir -p $ardir
 
 # smooth with 4 mm FWHM kernel, using SUSAN to avoid blurring the edge
-# of the train
+# of the brain
 echo "smoothing input functional data at: $(date)"
 boldfile=$ardir/smoothed_func_data.nii.gz
 smooth_susan $infile 4 $boldfile
