@@ -136,7 +136,6 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         qsubfile.write('set -x\n')
         qsubfile.write(cmd + '\n')
     else:
-        qsubfile.write('module load launcher\n')
         qsubfile.write('export LAUNCHER_JOB_FILE=%s\n' % script_name)
         if cwd is not None:
             qsubfile.write('export LAUNCHER_WORKDIR=%s\n' % cwd)
