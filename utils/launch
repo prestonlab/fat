@@ -45,6 +45,8 @@ parser.add_argument('-t', '--test', help='do not actually launch job',
                     dest='test', action="store_true", default=False)
 parser.add_argument('-c', '--compiler', help='compiler (default=intel)',
                     dest='compiler', default='intel')
+parser.add_argument('-a', '--antsproc', help='number of processes for ANTS',
+                    dest='antsproc', type=int)
 parser.add_argument('-d', '-i', '--hold_jid',
                     help='wait for this job id to complete before running',
                     dest='hold', default=None)
@@ -63,5 +65,5 @@ launch_slurm(serialcmd=cmd, script_name=args.script_name,
              qsubfile=args.qsubfile, keepqsubfile=args.keepqsubfile,
              test=args.test, compiler=args.compiler, hold=args.hold,
              cwd=args.directory, nnodes=args.nodes,
-             ntasks=args.ntasks, tpn=args.tpn)
+             ntasks=args.ntasks, tpn=args.tpn, antsproc=args.antsproc)
 sys.exit(0)

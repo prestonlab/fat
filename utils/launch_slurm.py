@@ -20,7 +20,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
                  jobname='launch', outfile=None, projname=None, queue='normal',
                  email=None, qsubfile=None, keepqsubfile=False,
                  test=False, compiler='intel', hold=None, cwd=None,
-                 nnodes=None, ntasks=None, tpn=None):
+                 nnodes=None, ntasks=None, tpn=None, antsproc=None):
 
     cmd = serialcmd
     
@@ -132,6 +132,9 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     if compiler == "gcc":
         qsubfile.write('module swap intel gcc\n')
 
+    if antsproc is not None:
+        qsubfile.write('export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=%d\n' % antsproc)
+        
     if not parametric:
         qsubfile.write('set -x\n')
         qsubfile.write(cmd + '\n')
