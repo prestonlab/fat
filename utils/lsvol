@@ -31,17 +31,22 @@ function mysize {
     echo "$(printdims "$hd" "%03d") $(printdims "$hd" "%.2f" pix)"
 }
 
+function fsize {
+    sz=$(ls -lh $file | awk '{print $5}')
+    printf '%4s' $sz
+}
+
 for input in $inputs; do
     if [ -d $input ]; then
-	count=$(ls -1 $input/*.nii.gz 2> /dev/null | wc -l)
+	count=$(ls -1S $input/*.nii.gz 2> /dev/null | wc -l)
 	if [ $count != 0 ]; then
-	    for file in $input/*.nii.gz; do
-		echo "$(mysize $file -s) $file"
+	    for file in $(ls -S $input/*.nii.gz); do
+		echo "$(mysize $file -s) $(fsize $file) $file"
 	    done
 	fi
     else
 	if [ -f $input ]; then
-	    echo "$(mysize $input -s) $input"
+	    echo "$(mysize $input -s) $(fsize $input) $input"
 	fi
     fi
 done
