@@ -16,15 +16,11 @@ if [ $# -lt 3 ]; then
     exit 1
 fi
 
-nthreads=1
-bet=0
-while getopts ':bcn:' opt; do
+coronal=0
+while getopts ':c:' opt; do
     case $opt in
-	b)
-	    bet=1
-	    ;;
-	n)
-	    nthreads=$OPTARG
+	c)
+	    coronal=1
 	    ;;
     esac
 done
@@ -34,8 +30,6 @@ shift $((OPTIND-1))
 im1=$1
 im2=$2
 out=$3
-
-export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=$nthreads
 
 name1=$(basename $im1 | cut -d . -f 1)
 name2=$(basename $im2 | cut -d . -f 1)
@@ -59,13 +53,16 @@ im1=${im1}_cor
 im2=${im2}_cor
 
 # extract the brain
-if [ $bet = 1 ]; then
-    echo "Brain extraction..."
+echo "Brain extraction..."
+if [ $coronal = 1 ]; then
+    bet $im1 ${im1}_brain -f 0.01
+    bet $im2 ${im2}_brain -f 0.01
+else
     bet $im1 ${im1}_brain
     bet $im2 ${im2}_brain
-    im1=${im1}_brain
-    im2=${im2}_brain
 fi
+im1=${im1}_brain
+im2=${im2}_brain
 
 # calculate transform
 echo "Registration..."
