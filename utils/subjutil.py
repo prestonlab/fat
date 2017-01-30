@@ -25,14 +25,14 @@ class SubjParser(ArgumentParser):
     def __init__(self, include_log=True):
         ArgumentParser.__init__(self)
         self.add_argument('subject', type=str,
-                          help="full subject identifier string")
+                          help="name of subject directory in study directory")
         if "STUDYDIR" in os.environ:
             study_dir = os.environ['STUDYDIR']
         else:
             study_dir = None
             
         self.add_argument('--study-dir', type=str, default=study_dir,
-                          help="path to main study directory")
+                          help="path to main study directory; if not set, value of STUDYDIR environment variable will be used")
         if include_log:
             self.add_argument('--dry-run',
                               help="display commands without executing",
@@ -119,8 +119,8 @@ class SubjLog:
     def run(self, cmd):
         """Run a command with input and output logging."""
 
+        print cmd
         if self.dry_run:
-            print cmd
             return
         
         # open log file and print command to run
@@ -133,6 +133,7 @@ class SubjLog:
         output, errors = p.communicate()
         outfile = open(self.log_file, 'a')
         if output:
+            print output
             outfile.write(output)
         if errors:
             outfile.write('ERROR: ' + errors)
