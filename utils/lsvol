@@ -32,7 +32,7 @@ function mysize {
 }
 
 function fsize {
-    sz=$(ls -lh $file | awk '{print $5}')
+    sz=$(ls -lh $1 | awk '{print $5}')
     printf '%4s' $sz
 }
 
@@ -41,7 +41,7 @@ for input in $inputs; do
 	count=$(ls -1S $input/*.nii.gz 2> /dev/null | wc -l)
 	if [ $count != 0 ]; then
 	    for file in $(ls -S $input/*.nii.gz); do
-		echo "$(mysize $file -s) $(fsize $file) $file"
+		echo "$(mysize $file -s) $(fsize $file) $(basename $file)"
 	    done
 	fi
     else
