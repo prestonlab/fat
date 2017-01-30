@@ -60,6 +60,10 @@ bet bold_cor_mcf bold_cor_mcf_brain -f 0.01 -F
 # brain extraction. Will use this for registration and unwarping
 fslmaths bold_cor_mcf_brain -Tmean bold_cor_mcf_brain_avg
 
+if [ $keep = 0 ]; then
+    imrm bold_cor bold_cor_mcf bold_cor_mcf_brain
+fi
+
 ## time series preprocessing
 
 # motion correction applied to original volumes
@@ -83,5 +87,5 @@ fmriqa.py bold_mcf.nii.gz $tr
 # remove intermediate files. Just need motion correction parameters, a
 # good average image for registration, and the estimated bias field
 if [ $keep = 0 ]; then
-    imrm bold_cor bold_cor_mcf bold_cor_mcf_brain bold_mcf bold_mcf_brain bold_mcf_avg bold_mcf_avg_cor
+    imrm bold_mcf bold_mcf_brain bold_mcf_avg bold_mcf_avg_cor
 fi
