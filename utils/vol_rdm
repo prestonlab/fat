@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import os, sys
+
+import numpy as np
+from scipy.spatial.distance import pdist, squareform
+import matplotlib.pyplot as plt
+from mvpa2.datasets.mri import fmri_dataset
+from mvpa2.base.dataset import vstack
+
+output = sys.argv[1]
+mask = sys.argv[2]
+if not mask.endswith('.nii.gz'):
+    mask += '.nii.gz'
+images = sys.argv[3:]
+for i in range(len(images)):
+    if not images[i].endswith('.nii.gz'):
+        images[i] += '.nii.gz'
+    if not os.path.exists(images[i]):
+        raise IOError('Input image does not exist: %s' % images[i])
+if not os.path.exists(mask):
+    raise IOError('Mask does not exist: %s' % mask)
+
+dsets = []
+for image in images:
+    dsets.append(fmri_dataset(image, mask=mask))
+ds = vstack(dsets)
+distvec = pdist(ds.samples, 'correlation')
+mat = squareform(distvec)
+
+clo = np.percentile(1-distvec, 1)
+chi = np.percentile(1-distvec, 99)
+
+plt.pcolor(1 - mat, clim=(clo, chi))
+plt.axis('image')
+
+plt.savefig(output, bbox_inches='tight')
