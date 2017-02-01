@@ -11,7 +11,7 @@ parser.add_argument('-k', '--keep', help="keep intermediate files",
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
-log = sp.init_log('epireg_%s' % args.runid, 'preproc', args)
+log = sp.init_log('regunwarp_%s' % args.runid, 'preproc', args)
 log.start()
 
 reg_data = sp.path('bold', 'antsreg', 'data')
@@ -19,8 +19,8 @@ reg_xfm = sp.path('bold', 'antsreg', 'transforms')
 log.run('mkdir -p %s' % reg_data)
 log.run('mkdir -p %s' % reg_xfm)
 
-srcvol = sp.image_path('bold', args.runid, 'bold_cor_mcf_brain_avg_unwarp')
-refvol = sp.image_path('bold', args.refrun, 'bold_cor_mcf_brain_avg_unwarp')
+srcvol = sp.image_path('bold', args.runid, 'bold_cor_mcf_avg_unwarp_brain')
+refvol = sp.image_path('bold', args.refrun, 'bold_cor_mcf_avg_unwarp_brain')
 
 srcdir = sp.path('bold', args.runid)
 fmdir = os.path.join(srcdir, 'fm')
@@ -45,8 +45,8 @@ if args.refrun == args.runid:
 else:
     # register to the reference run
     xfm_base = os.path.join(reg_xfm, '%s-refvol_' % args.runid)
-    log.run('antsRegistration -d 3 -r [%s,%s,1] -t Rigid[0.1] -m MI[%s,%s,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o %s' % (
-        refvol, srcvol, refvol, srcvol, xfm_base))
+    log.run('antsRegistration -d 3 -r [{ref},{src},1] -t Rigid[0.1] -m MI[{ref},{src},1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o {xfm}'.format(
+        ref=refvol, src=srcvol, xfm=xfm_base))
 
     # convert to FSL format
     itk_file = xfm_base + '0GenericAffine.mat'
