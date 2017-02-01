@@ -51,24 +51,19 @@ fsl_tsplot -i bold_cor_mcf_abs.rms,bold_cor_mcf_rel.rms -t 'MCFLIRT estimated me
 
 pngvstack {rot,trans,disp,mcf}.png
 
-# brain extraction based on bias-corrected and motion-corrected
-# series. Making much larger than standard, because was
-# losing some of the MPFC with strong warping and dropout
-bet bold_cor_mcf bold_cor_mcf_brain -f 0.01 -F
-
-# average of bias corrected, motion corrected volumes with very loose
-# brain extraction. Will use this for registration and unwarping
-fslmaths bold_cor_mcf_brain -Tmean bold_cor_mcf_brain_avg
+# average of bias corrected, motion corrected volumes. Will use this
+# for registration and unwarping
+fslmaths bold_cor_mcf -Tmean bold_cor_mcf_avg
 
 if [ $keep = 0 ]; then
-    imrm bold_cor bold_cor_mcf bold_cor_mcf_brain
+    imrm bold_cor bold_cor_mcf
 fi
 
 ## time series preprocessing
 
 # motion correction applied to original volumes
 cat bold_cor_mcf.mat/MAT* > bold_cor_mcf.cat
-applywarp -i bold -o bold_mcf -r bold_cor_mcf_brain_avg --premat=bold_cor_mcf.cat --interp=spline --paddingsize=1
+applywarp -i bold -o bold_mcf -r bold_cor_mcf_avg --premat=bold_cor_mcf.cat --interp=spline --paddingsize=1
 
 # mean image of originals motion corrected
 fslmaths bold_mcf -Tmean bold_mcf_avg
