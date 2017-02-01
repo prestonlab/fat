@@ -2,6 +2,13 @@
 
 import os, sys
 
+if len(sys.argv) < 4:
+    msg = """Usage: vol_rdm output mask image1 [image2 image3...]"
+    Calculates an RDM for the image(s) based on correlation
+    over time within mask and writes a graphics file to output
+    (file type is based on the file extension of output)"""
+    sys.exit(msg)
+
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
