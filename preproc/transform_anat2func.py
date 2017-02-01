@@ -11,7 +11,7 @@ parser.add_argument('--images', '-i',
                     default='orig orig_brain')
 parser.add_argument('--labels', '-l',
                     help="file names of label images (e.g. masks)",
-                    default='aparc+aseg')
+                    default='aparc+aseg ctx wm brainmask')
 args = parser.parse_args()
 
 images = args.images.split()
@@ -33,7 +33,7 @@ log.run('mkdir -p %s' % reg_check)
 inv_file = sp.path('bold', args.refrun, 'fm', 'epireg_inv.mat')
 anat2func = os.path.join(reg_xfm, 'highres-refvol.mat')
 log.run('cp %s %s' % (inv_file, anat2func))
-refvol = sp.image_path('bold', args.refrun, 'bold_mcf_brain_avg_unwarp')
+refvol = sp.image_path('bold', args.refrun, 'bold_cor_mcf_avg_unwarp_brain')
 
 # apply the transformation to each structural file of interest
 for image_name in images:
