@@ -17,7 +17,7 @@ init=${template_dir}/init_template.nii.gz
 echo "running buildtemplateparallel.sh"
 pd=$(pwd -P)
 echo "pwd: $pd" 
-echo "j: $nj"
+echo "threads: $nj"
 echo "init: $init"
 echo "files: $files"
 
