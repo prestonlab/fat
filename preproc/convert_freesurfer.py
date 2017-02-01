@@ -34,21 +34,35 @@ for i in range(len(src_names)):
 
 # use the FS parcelation to get an improved brain extraction
 
+# mask for original brain extraction
+brain_auto = impath(dest, 'orig_brain_auto')
+mask_auto = impath(dest, 'brainmask_auto')
+log.run('fslmaths %s -thr 0.5 -bin %s' % (brain_auto, mask_auto))
+
 # smooth and threshold the identified tissues; fill any remaining holes
 parcel = impath(dest, 'aparc+aseg')
-mask = impath(dest, 'brainmask')
+mask_surf = impath(dest, 'brainmask_surf')
 log.run('fslmaths %s -thr 0.5 -bin -s 0.25 -bin -fillh26 %s' % (
-    parcel, mask))
+    parcel, mask_surf))
 
-# create a brain-extracted image
+# take intersection with original mask (assumed to include all cortex,
+# so don't want to extend beyond that)
+mask = impath(dest, 'brainmask')
+log.run('fslmaths %s -mul %s -bin %s' % (mask_surf, mask_auto, mask))
+
+# create a brain-extracted image based on the orig image from
+# freesurfer (later images have various normalization things done that
+# won't match the MNI template as well)
+orig = impath(dest, 'orig')
 output = impath(dest, 'orig_brain')
-fs_brain = impath(dest, 'orig_brain_auto')
-log.run('fslmaths %s -mas %s %s' % (fs_brain, mask, output))
-log.run('fslmaths %s -thr 0.5 -bin %s' % (output, mask))
+log.run('fslmaths %s -mas %s %s' % (orig, mask, output))
 
-# get white matter
-log.run('fslmaths %s -thr 2 -uthr 2 %s' % (parcel, impath(dest, 'l_wm')))
-log.run('fslmaths %s -thr 41 -uthr 41 %s' % (parcel, impath(dest, 'r_wm')))
+# cortex
+log.run('fslmaths %s -thr 1000 -bin %s' % (parcel, impath(dest, 'ctx')))
+
+# cerebral white matter
+log.run('fslmaths %s -thr 2 -uthr 2 -bin %s' % (parcel, impath(dest, 'l_wm')))
+log.run('fslmaths %s -thr 41 -uthr 41 -bin %s' % (parcel, impath(dest, 'r_wm')))
 log.run('fslmaths %s -add %s -bin %s' % (
     impath(dest, 'l_wm'), impath(dest, 'r_wm'), impath(dest, 'wm')))
 
