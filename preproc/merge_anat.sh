@@ -31,19 +31,19 @@ done
 
 shift $((OPTIND-1))
 
-im1=$1
-im2=$2
+mov=$1
+ref=$2
 out=$3
 
-mdir=$(dirname $im1)
+mdir=$(dirname $mov)
 
-name1=$(basename $im1 | cut -d . -f 1)
-name2=$(basename $im2 | cut -d . -f 1)
-dname=$mdir/${name1}_${name2}
+mov_name=$(basename $mov | cut -d . -f 1)
+fix_name=$(basename $fix | cut -d . -f 1)
+dname=$mdir/${mov_name}_${rev_name}
 
 mkdir -p $dname
-imcp $im1 $dname/im1
-imcp $im2 $dname/im2
+imcp $mov $dname/mov
+imcp $fix $dname/fix
 
 pd=$(pwd)
 cd $dname
@@ -51,49 +51,46 @@ cd $dname
 if [ $register = 1 ]; then
     # correct image intensity
     echo "Intensity normalization..."
-    N4BiasFieldCorrection -i im1.nii.gz -o im1_cor.nii.gz
-    N4BiasFieldCorrection -i im2.nii.gz -o im2_cor.nii.gz
+    N4BiasFieldCorrection -i mov.nii.gz -o mov_cor.nii.gz
+    N4BiasFieldCorrection -i fix.nii.gz -o fix_cor.nii.gz
 
-    # extract the brain
-    echo "Brain extraction..."
     if [ $coronal = 1 ]; then
-	bet im1_cor im1_cor_brain -f 0.01
-	bet im2_cor im2_cor_brain -f 0.01
+	# coronal
+	echo "Rigid registration using brain only..."
+	bet mov_cor mov_cor_brain -f 0.01
+	bet fix_cor fix_cor_brain -f 0.01
+	antsRegistrationSyN.sh -d 3 -m mov_cor_brain.nii.gz -f fix_cor_brain.nii.gz -o mov-fix_ -n $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS -t r
+	antsApplyTransforms -i fix_cor.nii.gz -o fix_cor_reg.nii.gz -r mov_cor.nii.gz -t fix-mov_0GenericAffine.mat -n BSpline
     else
-	bet im1_cor im1_cor_brain
-	bet im2_cor im2_cor_brain
+	# mprage (took place between days; may be deformed)
+	echo "Deformable registration using whole head..."
+	antsRegistrationSyN.sh -d 3 -m mov_cor.nii.gz -f fix_cor.nii.gz -o mov-fix_ -n $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS -t s
+	antsApplyTransforms -i fix_cor.nii.gz -o fix_cor_reg.nii.gz -r mov_cor.nii.gz -t fix-mov_1Warp.nii.gz -t fix-mov_0GenericAffine.mat -n BSpline
     fi
-
-    # calculate transform
-    echo "Registration..."
-    antsRegistration -d 3 -r [im1_cor_brain.nii.gz,im2_cor_brain.nii.gz,1] -t Rigid[0.1] -m MI[im1_cor_brain.nii.gz,im2_cor_brain.nii.gz,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o im2-im1_
-
-    # apply transform to corrected, non-skull-stripped image
-    echo "Applying transformation..."
-    antsApplyTransforms -i im2_cor.nii.gz -o im2_cor_reg.nii.gz -r im1_cor.nii.gz -t im2-im1_0GenericAffine.mat -n BSpline
+    rm mov-fix_Warped.nii.gz
 else
-    imcp im1 im1_cor
-    imcp im2 im2_cor_reg
+    imcp mov mov_cor
+    imcp fix fix_cor_reg
 fi
 
 # calculate mask
-for file in im1_cor im2_cor_reg; do
+for file in mov_cor fix_cor_reg; do
     int_2_98=$(fslstats $file -p 2 -p 98)
     int2=$(echo $int_2_98 | awk '{print $1}')
     int98=$(echo $int_2_98 | awk '{print $2}')
     thresh=$(python -c "print $int2 + 0.1 * ($int98 - $int2)")
     fslmaths $file -thr $thresh -bin ${file}_mask
 done
-fslmaths im1_cor_mask -mul im2_cor_reg_mask mask
+fslmaths mov_cor_mask -mul fix_cor_reg_mask mask
 
 # normalize global intensity between images so they are equally weighted
-for file in im1_cor im2_cor_reg; do
+for file in mov_cor fix_cor_reg; do
     fslmaths $file -mas mask ${file}_thresh
     fslmaths ${file}_thresh -inm 1000 ${file}_norm
 done
 
 # average
-fslmaths im1_cor_norm -add im2_cor_reg_norm -div 2 im_merge
+fslmaths mov_cor_norm -add fix_cor_reg_norm -div 2 im_merge
 
 # move merged image
 cd $pd
