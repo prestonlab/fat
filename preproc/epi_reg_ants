@@ -365,7 +365,16 @@ else
     # run bbr with fieldmap
     echo "Running BBR with fieldmap"
     if [ $use_weighting = yes ] ; then wopt="-refweight $refweight"; else wopt=""; fi
-    $FSLDIR/bin/flirt -ref ${vrefhead} -in ${vepi} -dof 6 -cost bbr -wmseg ${vout}_fast_wmseg -init ${vout}_init.mat -omat ${vout}.mat -out ${vout}_1vol -schedule ${FSLDIR}/etc/flirtsch/bbr.sch -echospacing ${dwell} -pedir ${pe_dir} -fieldmap ${vout}_fieldmaprads2str $wopt
+    $FSLDIR/bin/flirt -ref ${vrefhead} -in ${vepi} -dof 6 -cost bbr -wmseg ${vout}_fast_wmseg -init ${vout}_init.mat -omat ${vout}_bbr.mat -out ${vout}_1vol -schedule ${FSLDIR}/etc/flirtsch/bbr.sch -echospacing ${dwell} -pedir ${pe_dir} -fieldmap ${vout}_fieldmaprads2str -interp spline $wopt
+
+    # use ants to refine the fit
+    echo "Using ANTS to refine fit of unwarped EPI"
+    antsRegistration -d 3 -r [${vrefhead}.nii.gz,${vout}_1vol.nii.gz,1] -t Rigid[0.1] -m MI[${vrefhead}.nii.gz,${vout}_1vol.nii.gz,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o ${vout}_ants_
+    ConvertTransformFile 3 ${vout}_ants_0GenericAffine.mat ${vout}_ants_0GenericAffine.txt
+    c3d_affine_tool -itk ${vout}_ants_0GenericAffine.txt -ref ${vrefhead}.nii.gz -src ${vout}_1vol.nii.gz -ras2fsl -o ${vout}_ants.mat
+
+    # bbr and ants
+    convert_xfm -omat ${vout}.mat -concat ${vout}_ants.mat ${vout}_bbr.mat
 
     # make equivalent warp fields
     echo "Making warp fields and applying registration to EPI series"
