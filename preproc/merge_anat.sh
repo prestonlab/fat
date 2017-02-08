@@ -32,14 +32,14 @@ done
 shift $((OPTIND-1))
 
 mov=$1
-ref=$2
+fix=$2
 out=$3
 
 mdir=$(dirname $mov)
 
 mov_name=$(basename $mov | cut -d . -f 1)
 fix_name=$(basename $fix | cut -d . -f 1)
-dname=$mdir/${mov_name}_${rev_name}
+dname=$mdir/${mov_name}_${fix_name}
 
 mkdir -p $dname
 imcp $mov $dname/mov
@@ -60,37 +60,37 @@ if [ $register = 1 ]; then
 	bet mov_cor mov_cor_brain -f 0.01
 	bet fix_cor fix_cor_brain -f 0.01
 	antsRegistrationSyN.sh -d 3 -m mov_cor_brain.nii.gz -f fix_cor_brain.nii.gz -o mov-fix_ -n $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS -t r
-	antsApplyTransforms -i fix_cor.nii.gz -o fix_cor_reg.nii.gz -r mov_cor.nii.gz -t fix-mov_0GenericAffine.mat -n BSpline
+	antsApplyTransforms -i mov_cor.nii.gz -o mov_cor_reg.nii.gz -r fix_cor.nii.gz -t mov-fix_0GenericAffine.mat -n BSpline
     else
 	# mprage (took place between days; may be deformed)
 	echo "Deformable registration using whole head..."
 	antsRegistrationSyN.sh -d 3 -m mov_cor.nii.gz -f fix_cor.nii.gz -o mov-fix_ -n $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS -t s
-	antsApplyTransforms -i fix_cor.nii.gz -o fix_cor_reg.nii.gz -r mov_cor.nii.gz -t fix-mov_1Warp.nii.gz -t fix-mov_0GenericAffine.mat -n BSpline
+	antsApplyTransforms -i mov_cor.nii.gz -o mov_cor_reg.nii.gz -r fix_cor.nii.gz -t mov-fix_1Warp.nii.gz -t mov-fix_0GenericAffine.mat -n BSpline
     fi
     rm mov-fix_Warped.nii.gz
 else
-    imcp mov mov_cor
-    imcp fix fix_cor_reg
+    imcp mov mov_cor_reg
+    imcp fix fix_cor
 fi
 
 # calculate mask
-for file in mov_cor fix_cor_reg; do
+for file in fix_cor mov_cor_reg; do
     int_2_98=$(fslstats $file -p 2 -p 98)
     int2=$(echo $int_2_98 | awk '{print $1}')
     int98=$(echo $int_2_98 | awk '{print $2}')
     thresh=$(python -c "print $int2 + 0.1 * ($int98 - $int2)")
     fslmaths $file -thr $thresh -bin ${file}_mask
 done
-fslmaths mov_cor_mask -mul fix_cor_reg_mask mask
+fslmaths fix_cor_mask -mul mov_cor_reg_mask mask
 
 # normalize global intensity between images so they are equally weighted
-for file in mov_cor fix_cor_reg; do
+for file in fix_cor mov_cor_reg; do
     fslmaths $file -mas mask ${file}_thresh
     fslmaths ${file}_thresh -inm 1000 ${file}_norm
 done
 
 # average
-fslmaths mov_cor_norm -add fix_cor_reg_norm -div 2 im_merge
+fslmaths fix_cor_norm -add mov_cor_reg_norm -div 2 im_merge
 
 # move merged image
 cd $pd
