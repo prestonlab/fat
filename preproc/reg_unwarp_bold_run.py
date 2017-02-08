@@ -30,11 +30,18 @@ mcf_file = os.path.join(srcdir, 'bold_cor_mcf.cat')
 warp_file = impath(fmdir, 'epireg_epi_warp')
 
 bold = sp.image_path('bold', args.runid, 'bold')
+bold_init = sp.image_path('bold', args.runid, 'bold_reg_init')
 bold_reg = sp.image_path('bold', args.runid, 'bold_reg')
 
 output = impath(reg_data, args.runid)
 
 mask = sp.image_path('bold', args.refrun, 'fm', 'brainmask')
+
+nitk_var = 'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS'
+if nitk_var in os.environ:
+    nitk = int(os.environ[nitk_var])
+else:
+    nitk = 1
 
 if args.refrun == args.runid:
     # just motion correct and unwarp
@@ -43,12 +50,12 @@ if args.refrun == args.runid:
     log.run('cp %s %s' % (refvol, impath(reg_data, 'refvol')))
     log.run('cp %s %s' % (mask, impath(reg_data, 'mask')))
 else:
-    # register to the reference run
+    # nonlinear registration to the reference run
     xfm_base = os.path.join(reg_xfm, '%s-refvol_' % args.runid)
-    log.run('antsRegistration -d 3 -r [{ref},{src},1] -t Rigid[0.1] -m MI[{ref},{src},1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o {xfm}'.format(
-        ref=refvol, src=srcvol, xfm=xfm_base))
-
-    # convert to FSL format
+    log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t s'.format(
+        mov=srcvol, fix=refvol, out=xfm_base, nitk=nitk))
+    
+    # convert the affine part to FSL format
     itk_file = xfm_base + '0GenericAffine.mat'
     txt_file = xfm_base + '0GenericAffine.txt'
     reg_file = os.path.join(reg_xfm, '%s-refvol.mat' % args.runid)
@@ -56,10 +63,22 @@ else:
     log.run('c3d_affine_tool -itk %s -ref %s -src %s -ras2fsl -o %s' % (
         txt_file, refvol, srcvol, reg_file))
 
-    # apply motion correction, unwarping, and co-registration to bold
+    # apply motion correction, unwarping, and affine co-registration
     log.run('applywarp -i %s -r %s -o %s --premat=%s -w %s --postmat=%s --interp=spline --rel --paddingsize=1' %
-        (bold, refvol, bold_reg, mcf_file, warp_file, reg_file))
+        (bold, refvol, bold_init, mcf_file, warp_file, reg_file))
 
+    # apply co-registration warp. Tried to figure out how to do this
+    # with FSL so that all transformations would be in one step, but
+    # as of 2017-02-06 there doesn't seem to be a tool for converting
+    # ITK/ANTS warps to FSL format. So will settle for two
+    # interpolations to take the raw bold to motion-corrected,
+    # unwarped common functional space
+    warp = xfm_base + '1Warp.nii.gz'
+    log.run('antsApplyTransforms -d 4 -i {} -o {} -r {} -t {} -n BSpline'.format(
+        bold_init, bold_reg, bold_init, warp))
+
+# estimate bias field based on the average over time (so the shape of
+# each voxel timeseries does not change)
 bold_reg_avg = sp.image_path('bold', args.runid, 'bold_reg_avg')
 log.run('fslmaths %s -Tmean %s' % (bold_reg, bold_reg_avg))
 
@@ -75,3 +94,5 @@ log.run('fslmaths %s -div %s -mas %s %s' % (
 # remove intermediate files
 if not args.keep:
     log.run('rm -f %s/bold_reg*' % srcdir)
+
+log.finish()
