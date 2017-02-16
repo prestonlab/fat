@@ -10,17 +10,24 @@ if [ $# -lt 1 ]; then
     echo "       do not print commands before executing"
     echo
     echo "-i"
-    echo "       use the SUBJIDS environment variable"
-    echo "       (a colon-separated list of full"
-    echo "       subject identifiers like mystudy_001) instead of"
-    echo "       SUBJNOS (just subject numbers like 1)"
+    echo "       subject inputs are IDs (e.g. bender_01) instead of"
+    echo "       numbers (e.g. 1). If subjects not specified, the"
+    echo "       SUBJIDS environment variable will be used instead"
+    echo "       of SUBJNOS."
+    echo
+    echo "-n"
+    echo "       do not execute commands"
+    echo
+    echo "-p"
+    echo "       run commands in parallel (run as background processes)"
     echo
     echo "In the commands string, any '{}' will be replaced with"
     echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
     echo "and constructs them in the format \$STUDY_DD, e.g. mystudy_01."
     echo "If subject numbers aren't specified, but the environment"
     echo "variable SUBJNOS is set, that will be used to set the"
-    echo "subjects list."
+    echo "subjects list. Subject numbers in SUBJNOS should be colon-"
+    echo "separated, e.g. 1:2:3."
     echo
     echo "Does the same thing as a for loop over subjects, but saves"
     echo "some typing and makes it easy to specify which subset of"
@@ -33,6 +40,10 @@ if [ $# -lt 1 ]; then
     echo "called mystudy:"
     echo "export STUDY=mystudy # only have to run this once"
     echo "run_subjs.sh 'echo {}' 1:2:3:4"
+    echo
+    echo "Using the SUBJIDS environment variable:"
+    echo "export SUBJIDS=No_003:No_004:No_005"
+    echo "run_subjs.sh -i 'echo {}'"
     echo
     exit 1
 fi
