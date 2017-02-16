@@ -14,28 +14,29 @@ sp = SubjPath(args.subject, args.study_dir)
 log = sp.init_log('regunwarp_%s' % args.runid, 'preproc', args)
 log.start()
 
+# directories
+srcdir = sp.path('bold', args.runid)
+refdir = sp.path('bold', args.refrun)
 reg_data = sp.path('bold', 'antsreg', 'data')
 reg_xfm = sp.path('bold', 'antsreg', 'transforms')
 log.run('mkdir -p %s' % reg_data)
 log.run('mkdir -p %s' % reg_xfm)
 
-srcvol = sp.image_path('bold', args.runid, 'bold_cor_mcf_avg_unwarp_brain')
-refvol = sp.image_path('bold', args.refrun, 'bold_cor_mcf_avg_unwarp_brain')
-
-srcdir = sp.path('bold', args.runid)
-fmdir = os.path.join(srcdir, 'fm')
-
-# motion correction and distortion correction files
+# input files
+srcvol = impath(srcdir, 'bold_cor_mcf_avg_unwarp_brain')
+refvol = impath(refdir, 'bold_cor_mcf_avg_unwarp_brain')
+bold = impath(srcdir, 'bold')
 mcf_file = os.path.join(srcdir, 'bold_cor_mcf.cat')
-warp_file = impath(fmdir, 'epireg_epi_warp')
+warp_file = impath(srcdir, 'fm', 'epireg_epi_warp')
+mask = impath(refdir, 'fm', 'brainmask')
 
-bold = sp.image_path('bold', args.runid, 'bold')
-bold_init = sp.image_path('bold', args.runid, 'bold_reg_init')
-bold_reg = sp.image_path('bold', args.runid, 'bold_reg')
-
+# output files
+bold_reg = impath(srcdir, 'bold_reg')
+bold_reg_avg = impath(srcdir, 'bold_reg_avg')
+bold_reg_avg_cor = impath(srcdir, 'bold_reg_avg_cor')
+bias = impath(srcdir, 'bold_reg_avg_bias')
 output = impath(reg_data, args.runid)
-
-mask = sp.image_path('bold', args.refrun, 'fm', 'brainmask')
+bold_reg_cor_brain_avg = impath(srcdir, 'bold_reg_cor_brain_avg')
 
 nitk_var = 'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS'
 if nitk_var in os.environ:
@@ -50,6 +51,9 @@ if args.refrun == args.runid:
     log.run('cp %s %s' % (refvol, impath(reg_data, 'refvol')))
     log.run('cp %s %s' % (mask, impath(reg_data, 'mask')))
 else:
+    bold_init = impath(srcdir, 'bold_reg_init')
+    bold_init_avg = impath(srcdir, 'bold_reg_init_avg')
+    
     # nonlinear registration to the reference run
     xfm_base = os.path.join(reg_xfm, '%s-refvol_' % args.runid)
     log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t s'.format(
@@ -66,7 +70,8 @@ else:
     # apply motion correction, unwarping, and affine co-registration
     log.run('applywarp -i %s -r %s -o %s --premat=%s -w %s --postmat=%s --interp=spline --rel --paddingsize=1' %
         (bold, refvol, bold_init, mcf_file, warp_file, reg_file))
-
+    log.run('fslmaths %s -Tmean %s' % (bold_init, bold_init_avg))
+    
     # apply co-registration warp. Tried to figure out how to do this
     # with FSL so that all transformations would be in one step, but
     # as of 2017-02-06 there doesn't seem to be a tool for converting
@@ -74,25 +79,23 @@ else:
     # interpolations to take the raw bold to motion-corrected,
     # unwarped common functional space
     warp = xfm_base + '1Warp.nii.gz'
-    log.run('antsApplyTransforms -d 4 -i {} -o {} -r {} -t {} -n BSpline'.format(
-        bold_init, bold_reg, bold_init, warp))
+    log.run('antsApplyTransforms -d 3 -e 3 -i {} -o {} -r {} -t {} -n BSpline'.format(
+        bold_init, bold_reg, refvol, warp))
+
+    if not args.keep:
+        log.run('rm -f %s' % bold_init)
 
 # estimate bias field based on the average over time (so the shape of
 # each voxel timeseries does not change)
-bold_reg_avg = sp.image_path('bold', args.runid, 'bold_reg_avg')
 log.run('fslmaths %s -Tmean %s' % (bold_reg, bold_reg_avg))
-
-bold_reg_avg_cor = sp.image_path('bold', args.runid, 'bold_reg_avg_cor')
-bias = sp.image_path('bold', args.runid, 'bold_reg_avg_bias')
 log.run('N4BiasFieldCorrection -d 3 -i %s -o [%s,%s]' % (
     bold_reg_avg, bold_reg_avg_cor, bias))
 
 # correct for the bias field and mask with anatomical mask
 log.run('fslmaths %s -div %s -mas %s %s' % (
     bold_reg, bias, mask, output))
-
-# remove intermediate files
 if not args.keep:
-    log.run('rm -f %s/bold_reg*' % srcdir)
-
+    log.run('rm -f %s %s' % (bold_reg, bold_reg_avg_cor))
+log.run('fslmaths %s -Tmean %s' % (output, bold_reg_cor_brain_avg))
+    
 log.finish()
