@@ -8,6 +8,7 @@ import sys,os
 from tempfile import *
 import subprocess
 import math
+from datetime import datetime
 
 CORES={'normal':24, 'largemem':32, 'hugemem': 20,
        'development':24, 'gpu':10}
@@ -31,8 +32,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         nnodes = 1
         ntasks = 1
     elif script_name is not None:
-        parametric = True
-        print 'Submitting parametric job file: ' + script_name
+        # read commands file
         try:
             f = open(script_name, 'r')
         except:
@@ -40,26 +40,41 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
             sys.exit(0)
         script_cmds = f.readlines()
         f.close()
-        ncmds = len(script_cmds)
-        print 'found %d commands' % ncmds
-        # need to check for empty lines
+
+        # check for empty lines
         for s in script_cmds:
             if s.strip() == '':
                 print 'command file contains empty lines - please remove them first'
                 sys.exit()
+                
+        # determine whether to use launcher
+        ncmds = len(script_cmds)
+        print 'found %d commands' % ncmds
+        if ncmds == 1:
+            # if only one, do not use launcher, which fails sometimes
+            parametric = False
+            cmd = script_cmds[0]
+            print 'Running serial command: ' + cmd
+        else:
+            parametric = True
+            print 'Submitting parametric job file: ' + script_name
+        
     else:
         print 'ERROR: you must either specify a script name (using -s) or a command to run\n\n'
         sys.exit()
-    
+
     if qsubfile is None:
         qsubfile, qsubfilepath = mkstemp(prefix=jobname + "_",
                                          dir='.', suffix='.slurm', text=True)
         os.close(qsubfile)
+    else:
+        qsubfilepath = qsubfile
 
     print 'Outputting SLURM commands to %s' % qsubfilepath
     qsubfile = open(qsubfilepath, 'w')
     qsubfile.write('#!/bin/bash\n#\n')
     qsubfile.write('# SLURM control file automatically created by launch\n#\n')
+    qsubfile.write('# Created on: {}\n'.format(datetime.now()))
     if parametric:
         # fill in the blanks
         if tpn is not None:
@@ -103,7 +118,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     else:
         qsubfile.write('# Launching single command: %s\n#\n' % cmd)
         qsubfile.write('#SBATCH -N 1\n')
-        qsubfile.write('#SBATCH -n %d\n' % CORES[queue])
+        qsubfile.write('#SBATCH -n 1\n')
 
     if cwd is not None:
         qsubfile.write('#SBATCH -D %s\n' % cwd)
@@ -128,7 +143,9 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         qsubfile.write('#SBATCH --mail-user=%s\n' % email)
                        
     qsubfile.write('\numask 2\n\n')
-    
+
+    qsubfile.write('echo " Starting at $(date)"\n')
+    qsubfile.write('start=$(date +%s)\n')
     if compiler == "gcc":
         qsubfile.write('module swap intel gcc\n')
 
@@ -144,9 +161,11 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
             qsubfile.write('export LAUNCHER_WORKDIR=%s\n' % cwd)
         else:
             qsubfile.write('export LAUNCHER_WORKDIR=$(pwd)\n')
-        qsubfile.write('echo "WORKING DIR: $LAUNCHER_WORKDIR/"\n')
+        qsubfile.write('echo " WORKING DIR: $LAUNCHER_WORKDIR/"\n')
         qsubfile.write('$LAUNCHER_DIR/paramrun\n')
-        qsubfile.write('echo " "\necho " Parameteric Job Complete"\necho " "\n')
+    qsubfile.write('echo " "\necho " Job complete at $(date)"\necho " "\n')
+    qsubfile.write('finish=$(date +%s)\n')
+    qsubfile.write('echo " Took $((finish-start)) seconds."\n')
         
     qsubfile.close()
     
