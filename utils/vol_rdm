@@ -30,8 +30,11 @@ if not os.path.exists(mask):
 
 dsets = []
 for image in images:
+    print "Loading %s with %s mask..." % (image, mask)
     dsets.append(fmri_dataset(image, mask=mask))
 ds = vstack(dsets)
+
+print "Calculating RDM..."
 distvec = pdist(ds.samples, 'correlation')
 mat = squareform(distvec)
 
