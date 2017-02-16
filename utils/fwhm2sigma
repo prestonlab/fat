@@ -1,0 +1,6 @@
+#!/bin/bash
+
+fwhm=$1
+#sigma=$(python -c "print $fwhm / 2.35482004503")
+sigma=$(python -c "print $fwhm / 2.355") # the conversion factor used by FEAT
+echo $sigma
