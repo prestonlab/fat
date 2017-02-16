@@ -323,7 +323,8 @@ fi
 
 # do a standard flirt pre-alignment
 echo "FLIRT pre-alignment"
-$FSLDIR/bin/flirt -ref ${vrefbrain} -in ${vepi} -dof 6 -omat ${vout}_init.mat
+$FSLDIR/bin/bet ${vepi} ${vepi}_brain
+$FSLDIR/bin/flirt -ref ${vrefbrain} -in ${vepi}_brain -dof 6 -omat ${vout}_init.mat
 
 ####################
 
@@ -368,24 +369,44 @@ else
     $FSLDIR/bin/flirt -ref ${vrefhead} -in ${vepi} -dof 6 -cost bbr -wmseg ${vout}_fast_wmseg -init ${vout}_init.mat -omat ${vout}_bbr.mat -out ${vout}_1vol -schedule ${FSLDIR}/etc/flirtsch/bbr.sch -echospacing ${dwell} -pedir ${pe_dir} -fieldmap ${vout}_fieldmaprads2str -interp spline $wopt
 
     # use ants to refine the fit
-    echo "Using ANTS to refine fit of unwarped EPI"
-    antsRegistration -d 3 -r [${vrefhead}.nii.gz,${vout}_1vol.nii.gz,1] -t Rigid[0.1] -m MI[${vrefhead}.nii.gz,${vout}_1vol.nii.gz,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o ${vout}_ants_
-    ConvertTransformFile 3 ${vout}_ants_0GenericAffine.mat ${vout}_ants_0GenericAffine.txt
-    c3d_affine_tool -itk ${vout}_ants_0GenericAffine.txt -ref ${vrefhead}.nii.gz -src ${vout}_1vol.nii.gz -ras2fsl -o ${vout}_ants.mat
+    echo "Using ANTS to refine registration"
+    # create brain mask
+    int_2_98=$($FSLDIR/bin/fslstats ${vrefbrain} -p 2 -p 98)
+    int2=$(echo $int_2_98 | awk '{print $1}')
+    int98=$(echo $int_2_98 | awk '{print $2}')
+    thresh=$(python -c "print $int2 + 0.1 * ($int98 - $int2)")
+    $FSLDIR/bin/fslmaths ${vrefbrain} -thr $thresh -bin ${vout}_brainmask_str
 
-    # bbr and ants
-    convert_xfm -omat ${vout}.mat -concat ${vout}_ants.mat ${vout}_bbr.mat
+    n_iter=20
+    xfm=${vout}_bbr.mat
+    moving=${vout}_1vol
+    for i in $(seq $n_iter); do
+	echo "Iteration $i"
+	$FSLDIR/bin/fslmaths ${moving} -mas ${vout}_brainmask_str ${moving}_brain
+	# rigid registration of unwarped brain-extracted epi to
+	# structural brain
+	antsRegistration -d 3 -r [${vrefbrain}.nii.gz,${moving}_brain.nii.gz,1] -t Rigid[0.1] -m MI[${vrefbrain}.nii.gz,${moving}_brain.nii.gz,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o ${vout}_ants_
+	ConvertTransformFile 3 ${vout}_ants_0GenericAffine.mat ${vout}_ants_0GenericAffine.txt
+	c3d_affine_tool -itk ${vout}_ants_0GenericAffine.txt -ref ${vrefhead}.nii.gz -src ${moving}_brain.nii.gz -ras2fsl -o ${vout}_ants.mat
 
-    # make equivalent warp fields
-    echo "Making warp fields and applying registration to EPI series"
-    $FSLDIR/bin/convert_xfm -omat ${vout}_inv.mat -inverse ${vout}.mat
-    $FSLDIR/bin/convert_xfm -omat ${vout}_fieldmaprads2epi.mat -concat ${vout}_inv.mat ${vout}_fieldmap2str.mat
-    $FSLDIR/bin/applywarp -i ${vout}_fieldmaprads_unmasked -r ${vepi} --premat=${vout}_fieldmaprads2epi.mat -o ${vout}_fieldmaprads2epi
-    $FSLDIR/bin/fslmaths ${vout}_fieldmaprads2epi -abs -bin ${vout}_fieldmaprads2epi_mask
-    $FSLDIR/bin/fugue --loadfmap=${vout}_fieldmaprads2epi --mask=${vout}_fieldmaprads2epi_mask --saveshift=${vout}_fieldmaprads2epi_shift --unmaskshift --dwell=${dwell} --unwarpdir=${fdir}
-    $FSLDIR/bin/convertwarp -r ${vrefhead} -s ${vout}_fieldmaprads2epi_shift --postmat=${vout}.mat -o ${vout}_warp --shiftdir=${fdir} --relout
-    $FSLDIR/bin/applywarp -i ${vepi} -r ${vrefhead} -o ${vout} -w ${vout}_warp --interp=spline --rel
-
+	# bbr and ants
+	convert_xfm -omat ${vout}_iter${i}.mat -concat ${vout}_ants.mat ${xfm}
+	xfm=${vout}_iter${i}.mat
+	cp ${vout}_iter${i}.mat ${vout}.mat
+	cat ${vout}.mat
+	
+	# make equivalent warp fields
+	$FSLDIR/bin/convert_xfm -omat ${vout}_inv.mat -inverse ${vout}.mat
+	$FSLDIR/bin/convert_xfm -omat ${vout}_fieldmaprads2epi.mat -concat ${vout}_inv.mat ${vout}_fieldmap2str.mat
+	$FSLDIR/bin/applywarp -i ${vout}_fieldmaprads_unmasked -r ${vepi} --premat=${vout}_fieldmaprads2epi.mat -o ${vout}_fieldmaprads2epi
+	$FSLDIR/bin/fslmaths ${vout}_fieldmaprads2epi -abs -bin ${vout}_fieldmaprads2epi_mask
+	$FSLDIR/bin/fugue --loadfmap=${vout}_fieldmaprads2epi --mask=${vout}_fieldmaprads2epi_mask --saveshift=${vout}_fieldmaprads2epi_shift --unmaskshift --dwell=${dwell} --unwarpdir=${fdir}
+	$FSLDIR/bin/convertwarp -r ${vrefhead} -s ${vout}_fieldmaprads2epi_shift --postmat=${vout}.mat -o ${vout}_warp --shiftdir=${fdir} --relout
+	$FSLDIR/bin/applywarp -i ${vepi} -r ${vrefhead} -o ${vout} -w ${vout}_warp --interp=spline --rel
+	
+	# use unwarped, registered epi to refine registration on next step
+	moving=${vout}
+    done
 fi
 
 ####################
