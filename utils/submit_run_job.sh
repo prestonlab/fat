@@ -20,24 +20,38 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+subjids=""
+ids=0
+while getopts ":x:y:" opt; do
+    case $opt in
+	x)
+	    subjids=$(subjids $OPTARG)
+	    ;;
+	y)
+	    subjids=$opt
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
 command="$1"
 runids="$2"
 shift 2
 
-runs=$(echo $runids | sed "s/:/ /g")
 jobfile=$(get_auto_jobfile.sh)
+if [ -z "$subjids" ]; then
+    run_runs.sh -ni "$command" "$runids" > $jobfile
+else
+    run_runs.sh -ni "$command" "$runids" "$subjids" > $jobfile
+fi
 
-echo "Creating file: $jobfile"
-for runid in $runs; do
-    run_command=$(echo $command | sed s/{}/$runid/g | tr ':' '\n')
-    echo $run_command >> $jobfile
-    echo "$run_command"
-done
-
+cat $jobfile
 chmod +x $jobfile
 
-cd $(dirname $jobfile)
 file=$(basename $jobfile)
 name=$(echo $file | cut -d . -f 1)
 
-launch -s $jobfile -J $name "$@"
+outfile=$BATCHDIR/${name}.o%j
+batchfile=$BATCHDIR/${name}.slurm
+
+launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
