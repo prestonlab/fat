@@ -30,12 +30,12 @@ command="$1"
 nos="$2"
 shift 2
 
-nos=`echo $nos | sed "s/:/ /g"`
-jobfile=`get_auto_jobfile.sh`
+nos=$(echo $nos | sed "s/:/ /g")
+jobfile=$(get_auto_jobfile.sh)
 n=0
 for no in $nos; do
     n=$((n + 1))
-    subject=${STUDY}_`printf "%02d" $no`
+    subject=${STUDY}_$(printf "%02d" $no)
 
     # fill in subject ID and split commands
     subj_command=`echo $command | sed s/{}/$subject/g | tr ':' '\n'`
@@ -45,8 +45,10 @@ done
 
 chmod +x $jobfile
 
-cd `dirname $jobfile`
-file=`basename $jobfile`
-name=`echo $file | cut -d . -f 1`
+cd $(dirname $jobfile)
+file=$(basename $jobfile)
+name=$(echo $file | cut -d . -f 1)
 
-launch -s $jobfile -J $name "$@"
+outfile=$BATCHDIR/${name}.o%j
+batchfile=$BATCHDIR/${name}.slurm
+launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
