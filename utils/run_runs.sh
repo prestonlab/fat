@@ -3,21 +3,35 @@
 if [ $# -lt 1 ]; then
     echo "run_runs.sh   Run a command on multiple subjects and runs."
     echo
-    echo "Usage: run_runs.sh commands runs [subjects]"
+    echo "Usage: run_runs.sh [OPTION] commands runs [subjects]"
     echo
-    echo "In the commands string, any '{s}' will be replaced with"
-    echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
-    echo "and constructs them in the format [study]_DD, e.g. bender_01."
-    echo "If the environment variable SUBJNOS is set, that will"
-    echo "be used to set the subjects list. Any '{r}' will be replaced"
-    echo "with run identifier."
+    echo "Options:"
+    echo "-q"
+    echo "       do not print commands before executing"
+    echo
+    echo "-i"
+    echo "       subject inputs are IDs (e.g. bender_01) instead of"
+    echo "       numbers (e.g. 1). If subjects not specified, the"
+    echo "       SUBJIDS environment variable will be used instead"
+    echo "       of SUBJNOS."
+    echo
+    echo "'-n'"
+    echo "       do not execute commands"
+    echo
+    echo "-p"
+    echo "       run commands in parallel (run as background processes)"
+    echo
+    echo "Like run_subjs.sh, but any '{r}' will be replaced"
+    echo "with run identifier. If subjects are specified (optional),"
+    echo "{s} will be replaced with the subject ID."
     exit 1
 fi
 
 verbose=1
 ids=0
 noexec=0
-while getopts ":qin" opt; do
+runpar=0
+while getopts ":qinp" opt; do
     case $opt in
 	q)
 	    verbose=0
@@ -27,6 +41,9 @@ while getopts ":qin" opt; do
 	    ;;
 	n)
 	    noexec=1
+	    ;;
+	p)
+	    runpar=1
 	    ;;
     esac
 done
@@ -45,18 +62,22 @@ fi
 
 if [ -z "$nos" ]; then
     for run in $runs; do
-	run_command=`echo $command | sed s/{r}/$run/g`
+	run_command=`echo $command | sed s/{r}/$run/g | sed s/{}/$run/g`
 	if [ $verbose -eq 1 ]; then
 	    echo "$run_command"
 	fi
 	if [ $noexec -ne 1 ]; then
-	    eval $run_command
+	    if [ $runpar -eq 1 ]; then
+		$run_command &
+	    else
+		$run_command
+	    fi
 	fi
     done
 else
     nos=`echo $nos | sed "s/:/ /g"`
     for no in $nos; do
-	if [ $ids == 1 ]; then
+	if [ $ids -eq 1 ]; then
 	    subject=$no
 	else
 	    subject=${STUDY}_`printf "%02d" $no`
@@ -68,7 +89,11 @@ else
 		echo "$run_command"
 	    fi
 	    if [ $noexec -ne 1 ]; then
-		eval $run_command
+		if [ $runpar -eq 1 ]; then
+		    $run_command &
+		else
+		    $run_command
+		fi
 	    fi
 	done
     done
