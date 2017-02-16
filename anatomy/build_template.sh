@@ -12,6 +12,9 @@ cd $template_dir
 files=$(ls ${image_prefix}*.nii.gz | tr '\n' ' ')
 
 nj=$(echo $files | wc -w)
+if [ $nj -gt 24 ]; then
+    nj=24
+fi
 init=${template_dir}/init_template.nii.gz
 
 echo "running buildtemplateparallel.sh"
@@ -27,4 +30,4 @@ if [ ! -f $init ]; then
 fi
 
 # use full deformable registration
-buildtemplateparallel.sh -d 3 -o gp_ -c 2 -i 5 -j $nj -z $init $files
+buildtemplateparallel.sh -d 3 -o gp_ -c 2 -i 10 -j $nj -z $init $files
