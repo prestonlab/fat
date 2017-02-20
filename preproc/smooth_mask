@@ -16,22 +16,27 @@ mask=$2
 smooth=$3
 output=$4
 
-name=$(basename $func .nii.gz)
+inname=$(basename $func .nii.gz)
+indir=$(dirname $func)
+maskname=$(basename $mask .nii.gz)
+maskdir=$(dirname $mask)
+outname=$(basename $output .nii.gz)
+outdir=$(dirname $output)
 
-nval=$(fslstats b_merge.nii.gz -l 0 -R | wc -w)
-
-temp=${name}_asm
-while [ -f $temp ]; do
-    temp=${temp}+
+temp=$outdir/${inname}_asm
+while [ -f $outdir/$temp ]; do
+    temp=$outdir/${temp}+
 done
 
-if [ $nval -gt 1 ]; then
-    3dBlurInMask -input $func -FWHM $smooth -Mmask $mask -preserve\
-		 -prefix $temp
-else
-    3dBlurInMask -input $func -FWHM $smooth -mask $mask -preserve\
-		 -prefix $temp
+3dBlurInMask -input ${indir}/${inname}.nii.gz -FWHM $smooth -mask ${maskdir}/${maskname}.nii.gz -prefix $temp
+
+if [ -f ${outdir}/${outname}.nii ]; then
+    rm ${outdir}/${outname}.nii
+fi
+if [ -f ${outdir}/${outname}.nii.gz ]; then
+    rm ${outdir}/${outname}.nii.gz
 fi
 
-3dAFNItoNIFTI -prefix $(basename $output .nii.gz) ${temp}+orig
-rm ${temp}+orig.{HEAD,BRIK}
+3dAFNItoNIFTI -prefix ${outdir}/${outname} ${temp}+orig
+fslmaths ${outdir}/${outname}.nii ${outdir}/${outname}.nii.gz
+rm ${temp}+orig.{HEAD,BRIK} ${outdir}/${outname}.nii
