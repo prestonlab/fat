@@ -45,10 +45,9 @@ done
 
 chmod +x $jobfile
 
-cd $(dirname $jobfile)
 file=$(basename $jobfile)
 name=$(echo $file | cut -d . -f 1)
 
-outfile=$BATCHDIR/${name}.o%j
+outfile=$BATCHDIR/${name}.out
 batchfile=$BATCHDIR/${name}.slurm
 launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
