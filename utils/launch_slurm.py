@@ -146,12 +146,19 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
 
     qsubfile.write('echo " Starting at $(date)"\n')
     qsubfile.write('start=$(date +%s)\n')
+    qsubfile.write('echo " WORKING DIR: $(pwd)/"\n')
+    qsubfile.write('echo " JOB ID:      $SLURM_JOB_ID"\n')
+    qsubfile.write('echo " JOB NAME:    $SLURM_JOB_NAME"\n')
+    qsubfile.write('echo " NODES:       $SLURM_NODELIST"\n')
+    qsubfile.write('echo " N NODES:     $SLURM_NNODES"\n')
+    qsubfile.write('echo " N TASKS:     $SLURM_NTASKS"\n')
+
     if compiler == "gcc":
         qsubfile.write('module swap intel gcc\n')
 
     if antsproc is not None:
         qsubfile.write('export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=%d\n' % antsproc)
-        
+
     if not parametric:
         qsubfile.write('set -x\n')
         qsubfile.write(cmd + '\n')
@@ -161,7 +168,6 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
             qsubfile.write('export LAUNCHER_WORKDIR=%s\n' % cwd)
         else:
             qsubfile.write('export LAUNCHER_WORKDIR=$(pwd)\n')
-        qsubfile.write('echo " WORKING DIR: $LAUNCHER_WORKDIR/"\n')
         qsubfile.write('$LAUNCHER_DIR/paramrun\n')
     qsubfile.write('echo " "\necho " Job complete at $(date)"\necho " "\n')
     qsubfile.write('finish=$(date +%s)\n')
