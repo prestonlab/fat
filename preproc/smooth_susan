@@ -3,10 +3,13 @@
 #  Based on the smoothing used in FEAT 6.0.
 
 if [ $# -lt 3 ]; then
-    echo "Usage:   smooth_susan [-vk] input fwhm output"
-    echo "Example: smooth_susan loc_1 4.0 loc_1_sm"
+    echo "Usage:   smooth_susan [-f hpf_sigma] [-vk] input fwhm output"
+    echo "Example: smooth_susan -f 32 loc_1 4.0 loc_1_sm"
     echo
     echo "Options:"
+    echo "-f"
+    echo "       highpass filter (sigma in volumes)"
+    echo
     echo "-v"
     echo "       print detailed information"
     echo
@@ -18,7 +21,8 @@ fi
 
 verbose=0
 keep=0
-while getopts ":vk" opt; do
+highpass=""
+while getopts ":vkf:" opt; do
     case $opt in
 	v)
 	    verbose=1
@@ -26,6 +30,8 @@ while getopts ":vk" opt; do
 	k)
 	    keep=1
 	    ;;
+	f)
+	    highpass=$OPTARG
     esac
 done
 shift $((OPTIND-1))
@@ -77,10 +83,17 @@ fslmaths $funcdata -Tmean mean_func
 susan $funcdata $susan_int $smoothsigma 3 1 1 mean_func $susan_int\
       prefiltered_func_data_smooth
 
-cd $pd
-fslmaths $sdir/prefiltered_func_data_smooth -mas $sdir/mask $output
+if [ ! -z "$highpass" ]; then
+    fslmaths prefiltered_func_data_smooth -Tmean tempMean
+    fslmaths prefiltered_func_data_smooth -bptf $highpass -1 -add tempMean prefiltered_func_data_tempfilt
+    cd $pd
+    fslmaths $sdir/prefiltered_func_data_tempfilt -mas $sdir/mask $output
+else
+    cd $pd
+    fslmaths $sdir/prefiltered_func_data_smooth -mas $sdir/mask $output
+fi
 
 if [ $keep == 0 ]; then
-    cd $parent && rm -rf ${dirname}.susan
+    cd $parent && rm -rf ${dirname}
     cd $pd
 fi
