@@ -49,7 +49,7 @@ mtds_face = mtds[mtds.sa['condition'][:]=='face']
 mtds_place = mtds[mtds.sa['condition'][:]=='scene']
 mtds2use = mtds_face[:] if args.items=='faces' else mtds_place[:]
 print "Reading in model..." 
-model_path = os.path.join('/home1/02837/elz226/analysis/searchlight/models/', args.model+ '.mat')
+model_path = os.path.join('/work/02837/elz226/lonestar/models/', args.model+ '.mat')
 model_contents = sio.loadmat(model_path)
 model_rdm = model_contents[args.model]
 
@@ -57,7 +57,7 @@ model_face = model_rdm[0:60, 0:60]
 model_place = model_rdm[60:120, 60:120]
 model2use_pre = model_face[:] if args.items=='faces' else model_place[:]
 
-rand_ind_path = ('/home1/02837/elz226/analysis/searchlight/models/rand_ind.mat')
+rand_ind_path = ('/work/02837/elz226/lonestar/models/rand_ind.mat')
 rand_ind_contents = sio.loadmat(rand_ind_path)
 rand_ind_all = rand_ind_contents['rand_ind']
 
