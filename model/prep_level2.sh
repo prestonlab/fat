@@ -5,7 +5,7 @@ then
     echo "Prepare level 2 analysis from an FSL template"
     echo
     echo "Usage:"
-    echo "`basename $0` [-ds] [template] [model]"
+    echo "`basename $0` [-ds] template model"
     echo
     echo "Optional inputs:"
     echo "-d"
