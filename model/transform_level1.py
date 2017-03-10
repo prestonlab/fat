@@ -24,7 +24,7 @@ bbreg = sp.path('anatomy', 'bbreg', 'transforms')
 antsreg = sp.path('anatomy', 'antsreg', 'transforms')
 
 t1_brain = sp.image_path('anatomy', 'orig_brain')
-t1_warped = sp.image_path('anatomy', 'antsreg', 'data', 'orig')
+t1_warped = sp.image_path('anatomy', 'antsreg', 'data', 'orig_brain')
 refvol = sp.image_path('bold', 'antsreg', 'data', 'refvol')
 
 log.start()
@@ -53,11 +53,10 @@ if not os.path.exists(func2anat_affine):
 anat2mni_warp = os.path.join(antsreg, 'orig-template_Warp.nii.gz')
 anat2mni_affine = os.path.join(antsreg, 'orig-template_Affine.txt')
 
-transform = Template('WarpImageMultiTransform 3 $native $mni -R %s %s %s %s' % (
+transform = Template('antsApplyTransforms -d 3 -i $native -o $mni -n BSpline -r %s -t %s -t %s -t %s' % (
     args.template, anat2mni_warp, anat2mni_affine, func2anat_affine))
-base_label = 'WarpImageMultiTransform 3 $native $mni -R %s %s %s %s --use-NN' % (
-    args.template, anat2mni_warp, anat2mni_affine, func2anat_affine)
-transform_label = Template(base_label)
+transform_label = Template('antsApplyTransforms -d 3 -i $native -o $mni -n NearestNeighbor -r %s -t %s -t %s -t %s' % (
+    args.template, anat2mni_warp, anat2mni_affine, func2anat_affine))
 
 identity_affine = sp.proj_path('resources', 'identity.mat')
 images = ['example_func','mean_func','mask']
