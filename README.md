@@ -13,13 +13,12 @@ designed to be easier to understand and fix when problems arise.
 Here is a list of available preprocessing scripts in the usual order
 of execution:
 
-* `download_subj.py` Gets data from the XNAT server (not tested yet).
 * `convert_dicom.py` Converts DICOM files to Nifti format. This should
   work on either data downloaded from XNAT or files that were exported
   manually.
 * `rename_nifti.py` Creates standard sub-directories and renames Nifti
   files to standard names.
-* `prep_bold.py` Does basic processing of BOLD runs, including motion
+* `prep_bold_run.sh` Does basic processing of BOLD runs, including motion
   correction, brain extraction, and quality assurance. Assumes that
   files have been placed in a standard directory structure where each
   run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
@@ -27,10 +26,7 @@ of execution:
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
-* `unwarp_bold.py` Uses the output of `epi_reg` (included with FSL) to
-  unwarp EPI images.
-* `reg_unwarp_bold.py` Uses the output of `epi_reg` and
-  `unwarp_bold.py`. Calculates alignment of each unwarped average
+* `reg_unwarp_bold_run.py` Uses the output of `epi_reg`. Calculates alignment of each unwarped average
   functional scan to an unwarped average reference scan, then does
   unwarping and co-registration of each functional series in a single
   step.
@@ -65,8 +61,7 @@ will be executed without running anything. This is handy for testing
 the script out before running it. Once you've confirmed that the
 commands make sense, you can easily submit a job by typing:
 
-`submit_job.sh -r [max run time] '[scriptname] [subject ID]
-[other arguments]'`
+`submit_job.sh '[scriptname] [subject ID] [other arguments]' [options for launch]`
 
 For example, to test out `convert_dicom.py` on `bender_1`:
 
@@ -74,14 +69,14 @@ For example, to test out `convert_dicom.py` on `bender_1`:
 
 To actually submit a job to run the DICOM conversion:
 
-`submit_job.sh -r 01:00:00 'convert_dicom.py bender_1'`
+`submit_job.sh 'convert_dicom.py bender_01' -r 00:30:00 -N 1 -n 1`
 
 This will automatically create a script with the command and use
 `launch` to submit it to the cluster. The job will be automatically
 given a (sequentially ordered) name, and the submitted script will be
-in `$BATCHDIR/auto/Job[job number].sh`. When the job finishes, the
+in `$BATCHDIR/Job[job number].sh`. When the job finishes, the
 output will be placed in
-`$BATCHDIR/auto/Job[job number].o[queue job ID]`.
+`$BATCHDIR/auto/Job[job number].out`.
 
 More information about each job will be placed in the subject's `logs`
 directory. The `preproc.log` file stores summary information about the
@@ -105,8 +100,7 @@ commands being run by jobs currently on the queue:
 ## Getting a copy of a project from GitHub
 
 * Get an account on GitHub
-* Send an owner (currently Neal, Mike, Bernie or Evan) your username so they
-can add you to the prestonlab group
+* Send Neal your username so you can be added to the prestonlab group
 * To install using the GitHub app (does not work on TACC or on older
 Macs):
   * Install the app from the GitHub website
@@ -152,4 +146,3 @@ settings icon in the upper right. Click on the "SSH keys" tab, then
 * Copy the public key into the box; give the key a title so you will
 know what computer it corresponds to. You will need to generate and
 add a different key for each computer you use.
-
