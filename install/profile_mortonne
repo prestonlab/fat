@@ -1,0 +1,166 @@
+# -*- shell-script -*-
+# TACC startup script: ~/.bashrc version 2.1 -- 10.02.2015
+
+# This file is NOT automatically sourced for login shells.
+# Your ~/.profile can and should "source" this file.
+
+# Note neither ~/.profile nor ~/.bashrc are sourced automatically by
+# bash scripts. However, a script inherits the environment variables
+# from its parent shell.  Both of these facts are standard bash
+# behavior.
+#
+# In a parallel mpi job, this file (~/.bashrc) is sourced on every 
+# node so it is important that actions here not tax the file system.
+# Each nodes' environment during an MPI job has ENVIRONMENT set to
+# "BATCH" and the prompt variable PS1 empty.
+
+#################################################################
+# Optional Startup Script tracking. Normally DBG_ECHO does nothing
+if [ -n "$SHELL_STARTUP_DEBUG" ]; then
+  DBG_ECHO "${DBG_INDENT}~/.bashrc{"
+fi
+
+############
+# SECTION 1
+#
+# There are three independent and safe ways to modify the standard
+# module setup. Below are three ways from the simplest to hardest.
+#   a) Use "module save"  (see "module help" for details).
+#   b) Place module commands in ~/.modules
+#   c) Place module commands in this file inside the if block below.
+#
+# Note that you should only do one of the above.  You do not want
+# to override the inherited module environment by having module
+# commands outside of the if block[3].
+
+if [ -z "$__BASHRC_SOURCED__" -a "$ENVIRONMENT" != BATCH ]; then
+  export __BASHRC_SOURCED__=1
+
+  ##################################################################
+  # **** PLACE MODULE COMMANDS HERE and ONLY HERE.              ****
+  ##################################################################
+
+  module use /work/IRC/ls5/opt/modules # official IRC software
+  module use /work/IRC/ls5/opt/local/modules # user-supported software
+  module load launcher # TACC program for running many tasks in one job
+  module load python
+  #module load swr # needed to run freesurfer graphical interfaces
+  #module load matlab # needed for some freesurfer tools
+  #module load freesurfer/6.0.0
+  module load fsl
+  module load fslview
+  module load ircpy # sets up packages like pymvpa
+  module load ants
+  module load hdf5 # used by pymvpa
+  #module load afni
+
+  # disabling this version of dcm2nii because it throws errors that
+  # other versions do not (including the most recent version of
+  # dcm2niix) and runs much slower
+  #module load mricron # includes dcm2nii
+fi
+
+############
+# SECTION 2
+#
+# Please set or modify any environment variables inside the if block
+# below.  For example, modifying PATH or other path like variables
+# (e.g LD_LIBRARY_PATH), the guard variable (__PERSONAL_PATH___) 
+# prevents your PATH from having duplicate directories on sub-shells.
+
+if [ -z "$__PERSONAL_PATH__" ]; then
+  export __PERSONAL_PATH__=1
+
+  ###################################################################
+  # **** PLACE Environment Variables including PATH here.        ****
+  ###################################################################
+
+  # experiment-specific settings
+  source $HOME/analysis/bender/bender_profile
+  #source $HOME/analysis/perc/perc_profile
+
+  # local scripts
+  export PATH=$PATH:$HOME/bin
+  export PATH=$PATH:$HOME/analysis/tacc
+
+  # URLs to access SVN projects
+  export SVNROOT=svn+ssh://morton@memory.psy.vanderbilt.edu/home/svn
+  export RSVNROOT=svn+ssh://mortonne@rhino.psych.upenn.edu/home/svn
+
+  # directory for temporary Matlab batch scripts and job output
+  export MBATCH=$WORK/runs
+
+  # fmriqa
+  export PATH=$PATH:$HOME/analysis/fmriqa
+  export PYTHONPATH=$PYTHONPATH:$HOME/analysis/fmriqa
+  export PYTHONPATH=$HOME/.local/lib/python2.7/site-packages:$PYTHONPATH
+  
+  # additional scripts for simulations
+  export PATH=$PATH:$HOME/analysis/tcmpa
+
+  # dcm2nii (2011-08-12 version that works best--no errors and
+  # relatively fast--and gives same output images as dcm2niix, but
+  # with correct naming; tested on BOLD, fieldmap, and mprage images)
+  export PATH=$PATH:/work/IRC/ls5/opt/local/apps/mricron
+  
+  # used for some ANTs scripts
+  export ANTSPATH=/work/IRC/ls5/opt/apps/ants/bin
+
+  # ASHS
+  #export ASHS_ROOT=$HOME/analysis/ashs
+  #export PATH=$PATH:$ASHS_ROOT/ext/Linux/bin
+
+  # XGBoost
+  #export PYTHONPATH=$PYTHONPATH:$HOME/analysis/xgboost/python-package
+fi
+
+#alias bls='/bin/ls'   # handy alias for listing a large directory.
+alias ls=/bin/ls
+
+# queue (status of my jobs)
+alias q='squeue -u $USER -o "%.8i %.11P %.30j %.8u %.2t %.10M %.6D %R" -S i'
+
+# queue info (overview of cluster)
+alias qi='sinfo -l -p normal,development'
+
+# queue pending (list of pending jobs; qp: normal, qpdev: development)
+alias qp='squeue -p normal -t PENDING -o "%.8i %.8Q %30j %8u %8g %.6D %16R %19V %.10l"'
+alias qpdev='squeue -p development -t PENDING -o "%.8i %.8Q %30j %8u %8g %.6D %16R %19V %.10l"'
+
+# queue full (full list of jobs on queue; qf: all partitions, qfdev: development)
+alias qf='squeue -o "%.8i %.8Q %.11P %.30j %.8u %.2t %.10M %.10L %.6D %R"'
+alias qfdev='squeue -o "%.8i %.8Q %.11P %.30j %.8u %.2t %.10M %.10L %.6D %R" -p development'
+
+# queue done (list of recently completed jobs and durations)
+alias qd='sacct -o "JobID,JobName,Partition,Account,AllocCPUS,State,ExitCode,Timelimit,Elapsed"'
+
+function ppath {
+    echo $PATH | tr ':' '\n'
+}
+function pypath {
+    echo $PYTHONPATH | tr ':' '\n'
+}
+postpath () { rmpath $1; export PATH="$PATH:$1"; }
+prepath () { rmpath $1; export PATH="$1:$PATH"; }
+rmpath () { export PATH=`echo -n $PATH | awk -v RS=: -v ORS=: '$0 != "'$1'"' | sed 's/:$//'`; }
+function setitk {
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=$1
+}
+
+##########
+# Umask
+#
+# If you are in a group that wishes to share files you can use 
+# "umask". to make your files be group readable.  Placing umask here 
+# is the only reliable place for bash and will insure that it is set 
+# in all types of bash shells.
+
+umask 002
+
+###################################
+# Optional Startup Script tracking 
+
+if [ -n "$SHELL_STARTUP_DEBUG" ]; then
+  DBG_ECHO "${DBG_INDENT}}"
+fi
+
