@@ -191,7 +191,10 @@ class SubjPath:
         
     def path(self, std, *args):
         """Get the path to file or directory within a standard directory."""
-        fulldir = os.path.join(self.d[std.lower()], *args)
+        if self.d.has_key(std):
+            fulldir = os.path.join(self.d[std.lower()], *args)
+        else:
+            fulldir = os.path.join(self.subj_dir, std, *args)
         return fulldir
 
     def image_path(self, std, *args):
