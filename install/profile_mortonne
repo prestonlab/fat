@@ -87,17 +87,13 @@ if [ -z "$__PERSONAL_PATH__" ]; then
   export SVNROOT=svn+ssh://morton@memory.psy.vanderbilt.edu/home/svn
   export RSVNROOT=svn+ssh://mortonne@rhino.psych.upenn.edu/home/svn
 
-  # directory for temporary Matlab batch scripts and job output
-  export MBATCH=$WORK/runs
-
   # fmriqa
   export PATH=$PATH:$HOME/analysis/fmriqa
   export PYTHONPATH=$PYTHONPATH:$HOME/analysis/fmriqa
+
+  # locally installed python packages
   export PYTHONPATH=$HOME/.local/lib/python2.7/site-packages:$PYTHONPATH
   
-  # additional scripts for simulations
-  export PATH=$PATH:$HOME/analysis/tcmpa
-
   # dcm2nii (2011-08-12 version that works best--no errors and
   # relatively fast--and gives same output images as dcm2niix, but
   # with correct naming; tested on BOLD, fieldmap, and mprage images)
