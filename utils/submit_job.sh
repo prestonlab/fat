@@ -15,8 +15,9 @@ if [ $# -lt 1 ]; then
     echo "all jobs."
     echo
     echo "To look up how you ran a job to run some command before,"
-    echo "run grep -l [command] $BATCHDIR/*.sh to find the job number."
-    echo "Then look at ${job}.out for duration, number of nodes, etc."
+    echo 'run grep -l [command] $BATCHDIR/*.sh to find the job number.'
+    echo 'Then look at ${job}.out for duration, number of nodes, etc.'
+    echo
     exit 1
 fi
 
