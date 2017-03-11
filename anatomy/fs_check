@@ -1,0 +1,10 @@
+#!/bin/bash
+
+subject=$1
+cd $STUDYDIR/$subject/anatomy/$subject
+
+freeview -v mri/orig.mgz \
+	 -f surf/lh.pial:edgecolor=red \
+	 surf/rh.pial:edgecolor=red \
+	 surf/lh.white:edgecolor=blue \
+	 surf/rh.white:edgecolor=blue &
