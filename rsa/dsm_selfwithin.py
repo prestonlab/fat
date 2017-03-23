@@ -1,6 +1,7 @@
 """Dissimilarity for occurrences of an item compared to other items of that category"""
 
 import numpy as np
+import scipy.stats as stats
 from scipy.spatial.distance import cdist
 from mvpa2.measures.base import Measure
 from mvpa2.measures import rsa
@@ -68,6 +69,7 @@ class DSMSelfWithin(Measure):
         boot_full = [[] for i in ucat]
         boot_m = [[] for i in ucat]
         p = [[] for i in ucat]
+        z = [[] for i in ucat]
         for i in range(n_cat):
             # Fisher transform
             cat_self[i] = np.arctanh(np.array(cat_self[i]))
@@ -86,11 +88,16 @@ class DSMSelfWithin(Measure):
                 boot_self = all_copy[:n_self]
                 boot_within = all_copy[n_self:]
                 boot.append(np.mean(boot_self) - np.mean(boot_within))
+            # add actual value to the perm distribution
+            boot.append(obs[i])
             boot_full[i] = boot
             boot_m[i] = np.mean(boot)
-
+            
             # null probability
-            p[i] = np.mean(boot > obs[i])
+            p[i] = np.mean(boot >= obs[i])
+
+            # convert to z with larger values -> more reliable
+            z[i] = stats.norm.ppf(1 - p[i])
 
         if self.stats == 'full':
             res = {}
@@ -102,4 +109,4 @@ class DSMSelfWithin(Measure):
             res['p'] = p
             return res
         else:
-            return tuple(p)
+            return tuple(z)
