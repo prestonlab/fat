@@ -1,0 +1,46 @@
+#!/bin/bash
+
+input=$1
+output=$2
+shift 2
+
+ntotal=$#
+ninput=$(grep 'fmri(multiple)' $input | awk '{ print $3 }')
+cp $input $output
+
+# put in new cope paths for feat files
+n=0
+for featdir; do
+    echo $featdir
+    n=$((n+1))
+    sed -e "s|feat_files($n) \".*\"|feat_files($n) \"$featdir\"|" -i $output
+done
+
+# update totals
+sed -e "s|fmri(npts) $ninput|fmri(npts) $ntotal|" \
+    -e "s|fmri(multiple) $ninput|fmri(multiple) $ntotal|" -i $output
+
+# remove lines for missing inputs
+firstind=$((ntotal+1))
+lastind=$ninput
+
+tempin=$output
+tempout=temp.fsf
+firstline=$(grep -n "feat_files($firstind)" $tempin | cut -f 1 -d :)
+lastline=$(grep -n "feat_files($lastind)" $tempin | cut -f 1 -d :)
+sed -n "$((firstline-2)),$lastline!p" $tempin > $tempout
+
+tempin=$tempout
+tempout=temp2.fsf
+firstline=$(grep -n "fmri(evg${firstind}.1)" $tempin | cut -f 1 -d :)
+lastline=$(grep -n "fmri(evg${lastind}.1)" $tempin | cut -f 1 -d :)
+sed -n "$((firstline-2)),$lastline!p" $tempin > $tempout
+
+tempin=$tempout
+tempout=temp3.fsf
+firstline=$(grep -n "fmri(groupmem.${firstind})" $tempin | cut -f 1 -d :)
+lastline=$(grep -n "fmri(groupmem.${lastind})" $tempin | cut -f 1 -d :)
+sed -n "$((firstline-2)),$lastline!p" $tempin > $tempout
+
+cp $tempout $output
+rm temp{,2,3}.fsf
