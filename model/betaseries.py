@@ -40,7 +40,17 @@ if not bold.endswith('.nii.gz'):
     bold += '.nii.gz'
 if not os.path.exists(bold):
     raise IOError('BOLD file not found: %s' % bold)
-data = fmri_dataset(bold)
+if len(sys.argv) > 4:
+    # user specified a mask
+    mask = sys.argv[4]
+    if not mask.endswith('.nii.gz'):
+        mask += '.nii.gz'
+    if not os.path.exists(mask):
+        raise IOError('Mask file not found: %s' % mask)
+    data = fmri_dataset(bold, mask=mask)
+else:
+    # load all voxels
+    data = fmri_dataset(bold)
 nvox = data.nfeatures
 
 # design matrix
