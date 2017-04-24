@@ -9,6 +9,7 @@ from mvpa2.misc.fsl.base import read_fsl_design
 parser = SubjParser()
 parser.add_argument('model', help="name of model", type=str)
 parser.add_argument('n', help="number of trials to estimate", type=int)
+parser.add_argument('-m', '--mask', help="mask file", type=str, default=None)
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
@@ -42,7 +43,10 @@ for f in fsf_files:
         raise IOError('BOLD file not found: %s' % bold)
 
     # obtain individual trial estimates
-    log.run('betaseries.py %s %s %d' % (base, out_dir, args.n))
+    if args.mask is not None:
+        log.run('betaseries.py %s %s %d %s' % (base, out_dir, args.n, args.mask))
+    else:
+        log.run('betaseries.py %s %s %d' % (base, out_dir, args.n))
 
     # get one file with estimates for each trial/stimulus
     beta_file = os.path.join(out_dir, name + '.nii.gz')
