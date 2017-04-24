@@ -31,43 +31,45 @@ log.run('mkdir -p %s' % reg_data)
 log.run('mkdir -p %s' % reg_xfm)
 
 # copy the reference
-avg_ref = sp.path('bold', args.refrun, 'bold_mcf_brain_avg_unwarp.nii.gz')
+avg_ref = sp.path('bold', args.refrun, 'bold_mcf_brain_avg_cor_unwarp.nii.gz')
 refvol = os.path.join(reg_data, 'refvol.nii.gz')
 log.run('cp %s %s' % (avg_ref, refvol))
 
 # calculate and apply the tranformation for every non-reference run
-for i in range(len(run_dirs)):
-    run_name = os.path.basename(run_dirs[i])
-    fm_dir = os.path.join(run_dirs[i], 'fm')
-    bold_file = os.path.join(run_dirs[i], 'bold_mcf_brain.nii.gz')
-    avg_file = os.path.join(run_dirs[i], 'bold_mcf_brain_avg_unwarp.nii.gz')
-    new_file = os.path.join(reg_data, run_name + '.nii.gz')
+for run_dir in run_dirs:
+    run_name = os.path.basename(run_dir)
+    fm_dir = os.path.join(run_dir, 'fm')
+    bold_file = impath(run_dir, 'bold')
+    avg_file = impath(run_dir, 'bold_mcf_brain_avg_cor_unwarp')
+    new_file = impath(reg_data, run_name)
 
     # preprare registration and unwarping
-    shift_file = os.path.join(fm_dir,
-                              'epireg_fieldmaprads2epi_sm_shift.nii.gz')
-    warp_file = os.path.join(fm_dir, 'epireg_reg_warp.nii.gz')
+    mcf_file = os.path.join(run_dir, 'bold_cor_mcf.cat')
+    warp_file = impath(fm_dir, 'epireg_epi_warp')
+    reg_warp_file = impath(fm_dir, 'epireg_reg_warp')
     if run_name == args.refrun:
         # no registration needed; just prep unwarping
-        cmd = 'convertwarp -r %s -s %s -o %s --shiftdir=y- --relout' % (
-            refvol, shift_file, warp_file)
+        cmd = 'convertwarp -r %s --premat=%s -w %s -o %s --rel' % (
+            refvol, mcf_file, warp_file reg_warp_file)
         log.run(cmd)
     else:
         # calculate transform
         xfm_base = os.path.join(reg_xfm, '%s-refvol_' % run_name)
-        cmd = 'ANTS 3 -m CC[%s,%s,1,32] -o %s --rigid-affine -i 0' % (
-            refvol, avg_file, xfm_base)
-        log.run(cmd)
+        log.run('antsRegistration -d 3 -r [%s,%s,1] -t Rigid[0.1] -m MI[%s,%s,1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o %s' % (
+            refvol, avg_file, refvol, avg_file, xfm_base))
+
+        # convert to text format
+        itk_file = xfm_base + '0GenericAffine.mat'
+        txt_file = xfm_base + '0GenericAffine.txt'
+        mat_file = os.path.join(reg_xfm, '%s-refvol.mat')
+        log.run('ConvertTransformFile 3 %s %s' % (itk_file, txt_file))
 
         # convert to FSL format
-        xfm_file = xfm_base + 'Affine.txt'
-        mat_file = xfm_base + 'Affine.mat'
-        cmd = 'c3d_affine_tool -itk %s -ref %s -src %s -ras2fsl -o %s' % (
-            xfm_file, refvol, avg_file, mat_file)
-        log.run(cmd)
+        log.run('c3d_affine_tool -itk %s -ref %s -src %s -ras2fsl -o %s' % (
+            txt_file, refvol, avg_file, mat_file)
 
-        # set to unwarp, then transform
-        cmd = 'convertwarp -r %s -s %s --postmat=%s -o %s --shiftdir=y- --relout' % (
+        # set to motion correct, unwarp, and register
+        cmd = 'convertwarp -r %s -s %s --postmat=%s -o %s --rel' % (
             refvol, shift_file, mat_file, warp_file)
         log.run(cmd)
 
