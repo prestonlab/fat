@@ -14,10 +14,17 @@ def loadmask(srcfile, maskfile):
 
 def loadcat(srcfiles, maskfile):
 
-    ds = fmri_dataset(srcfiles[0], mask=maskfile)
-    for file in srcfiles[1:]:
-        newds = fmri_dataset(file, mask=maskfile)
-        ds = vstack((ds, newds))
+    for i, file in enumerate(srcfiles):
+        print "Loading %s" % file
+        if i == 0:
+            ds = fmri_dataset(file, mask=maskfile)
+            ds.sa['chunks'] = [i]
+            a = ds.a
+        else:
+            newds = fmri_dataset(file, mask=maskfile)
+            newds.sa['chunks'] = [i]
+            ds = vstack((ds, newds))
 
+    ds.a = a
     return ds
     
