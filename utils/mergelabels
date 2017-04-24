@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+    echo "Usage: mergelabels output input label1 [label2, label3, ...]"
+    exit 1
+fi
+
+output=$1
+input=$2
+count=0
+command=""
+files=""
+parent_dir=$(dirname $output)
+for label; do
+    count=$((count+1))
+    temp=$parent_dir/temp${count}.nii.gz
+    fslmaths $input -thr $label -uthr $label -bin $temp
+    if [ -z "$files" ]; then
+	command=$temp
+	files=$temp
+    else
+	command="$command -add $temp"
+	files="$files $temp"
+    fi
+done
+
+fslmaths $command -bin $output
+rm $files
