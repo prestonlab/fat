@@ -11,10 +11,13 @@ cp $input $output
 # put in new cope paths for feat files
 n=0
 for featdir; do
-    echo $featdir
     n=$((n+1))
     sed -e "s|feat_files($n) \".*\"|feat_files($n) \"$featdir\"|" -i $output
 done
+
+if [ $ntotal -eq $ninput ]; then
+    exit
+fi
 
 # update totals
 sed -e "s|fmri(npts) $ninput|fmri(npts) $ntotal|" \
