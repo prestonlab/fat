@@ -1,31 +1,37 @@
 #!/bin/bash
 
 if [ $# -lt 3 ]; then
-    echo "Usage: $0 model copeno mask outname [subjids]"
-    echo "Assumes you are accessing cope1 within the .gfeat directory."
+    echo "Usage: $0 gfeatdir mask outname [subjids]"
     exit 1
 fi
 
-model=$1
-copeno=$2
-mask=$3
-outname=$4
-if [ $# -lt 5 ]; then
+gfeatdir=$1
+mask=$2
+outname=$3
+if [ $# -lt 4 ]; then
     subjids=$SUBJIDS
 else
-    subjids=$5
+    subjids=$4
 fi
 
 sids=$(echo $subjids | tr ':' ' ')
+copedir=$gfeatdir/cope1.feat
 
 # directory for randomise results and related
-lev3=$STUDYDIR/batch/glm/$model/level3/cope${copeno}.gfeat
-rdir=$lev3/${outname}.sim
+if [ ! -d $copedir ]; then
+    echo "Input cope directory does not exist: $copedir"
+    exit 1
+fi
+if [ ! -f $mask ]; then
+    echo "Mask file does not exist: $mask"
+    exit 1
+fi
+
+rdir=$gfeatdir/${outname}.sim
 while [ -d $rdir ]; do
     rdir=${rdir}+
 done
 
-fdir=$lev3/cope1.feat
 mkdir -p $rdir
 cd $rdir
 
@@ -40,17 +46,16 @@ imcp $mask mask
 
 # just copy over z-stat image from feat
 echo "Copying voxelwise p-values from FEAT..."
-imcp $lev3/cope1.feat/stats/zstat1 .
+imcp $copedir/stats/zstat1 .
 
 if [ $(hostname | cut -c 1-3) = nid ]; then
     # assume running on a compute node on LS5; take advantage of all
-    # threads (although logical cores is supposed to be 64, only 48
-    # seem to actually get used)
+    # threads (multithreading allows twice the number of cores)
     export OMP_NUM_THREADS=48
 fi
 
 echo "Estimating smoothness within mask using 3dFWHMx on residuals..."
-imln $fdir/stats/res4d res4d
+imln $copedir/stats/res4d res4d
 rm -f acf*
 3dFWHMx -mask mask.nii.gz -acf acf -input res4d.nii.gz -out acf_vol > acf_smoothness
 
@@ -65,9 +70,9 @@ echo "Minimum cluster extent: $clust_extent"
 echo $clust_extent > clust_thresh
 
 echo "Calculating significant clusters..."
-imcp $fdir/stats/cope1 cope1
+imcp $copedir/stats/cope1 cope1
 fslmaths zstat1 -mas mask thresh_zstat1
-imcp $fdir/example_func .
+imcp $copedir/example_func .
 cp $FSLDIR/etc/luts/ramp.gif ramp.gif
 
 # report corrected clusters
