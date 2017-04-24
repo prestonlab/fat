@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 from string import Template
 from glob import glob
 import warnings
@@ -27,10 +27,13 @@ t1_brain = sp.image_path('anatomy', 'orig_brain')
 t1_warped = sp.image_path('anatomy', 'antsreg', 'data', 'orig_brain')
 refvol = sp.image_path('bold', 'antsreg', 'data', 'refvol')
 
-log.start()
-
 # find all level 1 feat directories for this model
 feat_dirs = sp.feat_dirs(args.model)
+
+if len(feat_dirs) == 0:
+    sys.exit()
+
+log.start()
 
 # invert refvol2orig transformation
 refvol2orig = os.path.join(bbreg, 'refvol-highres.mat')
