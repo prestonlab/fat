@@ -20,12 +20,16 @@ if [ ! -e $fsf ]; then
     exit 1
 fi
 
-lev3=${STUDYDIR}/batch/glm/${model}/level3
-mkdir -p $lev3
-if cd ${lev3}; then
-    rm -rf cope${copeno}*.gfeat
+# get the output directory from the fsf file
+output_dir=$(grep outputdir $fsf | awk -F '"' '{ print $2 }')
+parent_dir=$(dirname $output_dir)
+output_name=$(basename $output_dir)
+
+mkdir -p $parent_dir
+if cd $parent_dir; then
+    rm -rf $output_name*.gfeat
 else
-    echo "Error: problem creating level 3 directory: $lev3" 1>&2
+    echo "Error: problem creating parent directory: $parent_dir" 1>&2
     exit 1
 fi
 
