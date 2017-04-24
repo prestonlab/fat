@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ $# -lt 1 ]; then
+    echo "Revert the registration of a level 1 model to native space."
+    echo "Assumes that transform_level1.py or similar was used for"
+    echo "transforming the images."
+    echo
+    echo "Usage: revert_level1_reg.sh featdir"
+    exit 1
+fi
+
 featdir=$1
 
 if [ ! -d $featdir ]; then
