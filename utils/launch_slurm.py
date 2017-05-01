@@ -10,18 +10,19 @@ import subprocess
 import math
 from datetime import datetime
 
-CORES={'normal':24, 'largemem':32, 'hugemem': 20,
-       'development':24, 'gpu':10}
+CORES={'normal':48, 'largemem':32, 'hugemem': 20,
+       'development':48, 'gpu':10, 'largemem512GB':64}
 MAXNODES={'normal':171, 'largemem':342, 'hugemem': 2,
-          'development':11, 'gpu':4}
+          'development':11, 'gpu':4, 'largemem512GB':4}
 MAXCORES={'normal':4104, 'largemem':8208, 'hugemem': 40,
-          'development':264, 'gpu':40}
+          'development':264, 'gpu':40, 'largemem512GB':4*64}
 
 def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
                  jobname='launch', outfile=None, projname=None, queue='normal',
                  email=None, qsubfile=None, keepqsubfile=False,
                  test=False, compiler='intel', hold=None, cwd=None,
-                 nnodes=None, ntasks=None, tpn=None, antsproc=None):
+                 nnodes=None, ntasks=None, tpn=None, antsproc=None,
+                 schedule='dynamic'):
 
     cmd = serialcmd
     
@@ -162,7 +163,9 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     if not parametric:
         qsubfile.write('set -x\n')
         qsubfile.write(cmd + '\n')
+        qsubfile.write('set +x\n')
     else:
+        qsubfile.write('export LAUNCHER_SCHED=%s\n' % schedule)
         qsubfile.write('export LAUNCHER_JOB_FILE=%s\n' % script_name)
         if cwd is not None:
             qsubfile.write('export LAUNCHER_WORKDIR=%s\n' % cwd)
