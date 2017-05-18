@@ -7,6 +7,7 @@ import subprocess as sub
 from datetime import datetime
 from glob import glob
 from argparse import ArgumentParser
+import patio
 
 def imname(filepath):
     """Get the name of an .nii.gz file."""
@@ -299,6 +300,35 @@ class SubjPath:
         # backwards compatibility
         return self.bold_dirs(run_pattern)
 
+    def read_log(self, period, run, duration=None, verbose=False):
+        """Read a behavioral log file for one run."""
+        
+        # find the log for this run
+        log_dir = self.path('behav', 'log')
+        log = patio.find_run_log(log_dir, period, run)
+
+        # read in raw events
+        if verbose:
+            print "Reading events from %s" % log
+        events = patio.read_log(log)
+
+        # add duration field if specified
+        if duration is not None:
+            for i in range(len(events)):
+                events[i]['duration'] = duration
+        return events
+
+    def read_period(self, period, n_run, duration=None, verbose=False):
+        """Read all events for a period of an experiment."""
+        
+        events = patio.Events()
+        for i in range(n_run):
+            run_events = self.read_log(period, i + 1, duration, verbose)
+            for j in range(len(run_events)):
+                run_events[j]['chunks'] = i + 1
+            events.extend(run_events)
+        return events
+    
     def init_log(self, base, main, args):
         """Initialize a log for processing this subject."""
         log = SubjLog(self.subject, base, main, rm_existing=args.clean_logs,
