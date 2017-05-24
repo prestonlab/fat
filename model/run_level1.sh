@@ -31,7 +31,8 @@ for file in $onset_files; do
 done
 
 # prepare the subject's model directory
-subjmodeldir=${STUDYDIR}/${subjid}/model/${model}
+output_dir=$(grep 'set fmri(outputdir)' $fsf | cut -d \" -f 2)
+subjmodeldir=$(dirname $output_dir)
 mkdir -p $subjmodeldir
 
 if [ ! -d $subjmodeldir ]; then
