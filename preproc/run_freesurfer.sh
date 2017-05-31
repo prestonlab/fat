@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]; then
-    echo "Usage: run_freesurfer.sh subject"
+if [ $# -lt 2 ]; then
+    echo "Usage: run_freesurfer.sh subject nthreads"
     exit 1
 fi
 
@@ -16,6 +16,7 @@ if [ ! -d $STUDYDIR ]; then
 fi
 
 subject=$1
+nthreads=$2
 subjdir=$STUDYDIR/$subject
 
 if [ ! -f ${subjdir}/anatomy/highres.nii.gz ]; then
@@ -31,4 +32,5 @@ fi
 
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 recon-all -s ${subject} -sd ${subjdir}/anatomy/ \
-	  -i ${subjdir}/anatomy/highres.nii.gz -all
+	  -i ${subjdir}/anatomy/highres.nii.gz -all \
+	  -parallel -openmp $nthreads -itkthreads $nthreads 
