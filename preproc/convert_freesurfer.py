@@ -32,6 +32,12 @@ for i in range(len(src_names)):
     # fix orientation
     log.run('fslreorient2std %s %s' % (dest_file, dest_file))
 
+# register orig to highres
+log.run('antsRegistration -d 3 -r [{ref},{src},1] -t Rigid[0.1] -m MI[{ref},{src},1,32,Regular,0.25] -c [1000x500x250x100,1e-6,10] -f 8x4x2x1 -s 3x2x1x0vox -n BSpline -w [0.005,0.995] -o {xfm}'.format(
+        ref=impath(dest, 'highres'), src=impath(dest, 'orig'),
+        xfm=os.path.join(dest, 'orig-highres_')))
+o2h = os.path.join(dest, 'orig-highres_0GenericAffine.mat')
+    
 # use the FS parcelation to get an improved brain extraction
 
 # mask for original brain extraction
