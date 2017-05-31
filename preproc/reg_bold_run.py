@@ -27,7 +27,7 @@ srcvol = impath(srcdir, 'bold_cor_mcf_avg')
 refvol = impath(refdir, 'bold_cor_mcf_avg')
 bold = impath(srcdir, 'bold')
 mcf_file = os.path.join(srcdir, 'bold_cor_mcf.cat')
-mask = impath(srcdir, 'bold_mcf_brain_mask')
+mask = impath(refdir, 'fm', 'brainmask')
 
 # output files
 bold_reg = impath(srcdir, 'bold_reg')
