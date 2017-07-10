@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# given job submission output from stdin or a file, get the job id
+grep "Submitted batch job" | awk '{print $4}' < "${1:-/dev/stdin}"
