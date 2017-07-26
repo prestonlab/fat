@@ -229,7 +229,7 @@ class SubjPath:
         """Get all BOLD subdirectories with standard names."""
         return self.match_dirs(self.path('bold'), run_pattern)
 
-    def feat_dirs(self, model, feat_pattern='^\D+_\d+\.feat$'):
+    def feat_dirs(self, model, feat_pattern='.*\.feat$'):
         """Get all FEAT directories with standard names."""
         return self.match_dirs(self.path('model', model), feat_pattern)
     
