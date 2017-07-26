@@ -13,7 +13,7 @@ parser.add_argument('template', help="path to template image")
 parser.add_argument('--feat-pattern', '-f',
                     help="regular expression for feat directories",
                     metavar='regexp',
-                    default='^\D+_\d+\.feat$')
+                    default='.*\.feat$')
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)

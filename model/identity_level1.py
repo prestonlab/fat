@@ -9,7 +9,7 @@ parser.add_argument('model', help="name of model")
 parser.add_argument('--feat-pattern', '-f',
                     help="regular expression for feat directories (default: ^\D+_\d+\.feat$)",
                     metavar='regexp',
-                    default='^\D+_\d+\.feat$')
+                    default='.*\.feat$')
 parser.add_argument('--anat', '-a',
                     default="anatomy/bbreg/data/orig_brain",
                     help="path to anatomical image in functional space, relative to subject directory (default: anatomy/bbreg/data/orig_brain)")
@@ -18,7 +18,7 @@ args = parser.parse_args()
 sp = SubjPath(args.subject, args.study_dir)
 log = sp.init_log('%s_level1_ident' % args.model, 'model', args)
 
-feat_dirs = sp.feat_dirs(args.model)
+feat_dirs = sp.feat_dirs(args.model, args.feat_pattern)
 
 highres = impath(sp.subj_dir, args.anat)
 identity = sp.proj_path('resources', 'identity.mat')
