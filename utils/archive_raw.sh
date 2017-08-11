@@ -10,8 +10,21 @@
 
 if [ $# -eq 0 ]
 then
-    echo "Usage:   backup_raw.sh raw_dir study subject"
-    echo "Example: backup_raw.sh /corral-repl/utexas/prestonlab/bender/raw/bender_26 bender bender_26"
+    echo "Usage:   archive_raw.sh raw_dir study subject"
+    echo "Example: archive_raw.sh /corral-repl/utexas/prestonlab/bender/raw/bender_26 bender bender_26"
+    echo
+    echo "Data will be stored in your home directory on ranch in:"
+    echo '$HOME/$study/raw/raw_${subject}.tar.gz'
+    echo
+    echo "Before backing up data for a study, you must run:"
+    echo 'ssh $ARCHIVER "mkdir -p $ARCHIVE/[study]/raw"'
+    echo "(replace [study] with the study's name) to create"
+    echo "a directory for the data."
+    echo
+    echo "Data will be group-readable and writable in the archive."
+    echo "Note the data are copied to the archive, but the archive"
+    echo "is not backed up."
+    echo
     exit 1
 fi
 
