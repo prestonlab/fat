@@ -56,16 +56,19 @@ if [ ! -f ${src} ]; then
 fi
 
 # archive the raw tar file
-echo "Sending raw files to archive..."
-scp ${src} ${ARCHIVER}:${dest}
+if [ $? -eq 0 ]; then
+    echo "Sending raw data to archive..."
+    rsync --perms --chmod="u=rw,g=rw,o=" ${src} ${ARCHIVER}:${dest}
+else
+    echo "Error: problem compressing data."
+    exit 1
+fi
 
 # if scp successful, remove tar file
 if [ $? -eq 0 ]; then
     echo "Deleting local tar file..."
     rm ${src}
 
-    echo "Changing file permissions to make group accessible..."
-    ssh ${ARCHIVER} "chmod -R g+rwx ${ARCHIVE}/${study}/raw"
     echo "Archive appears to have been successful."
     echo "Please check the transfer and delete the local copy of raw files."
 else
