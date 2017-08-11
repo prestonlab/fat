@@ -49,20 +49,11 @@ parent_dir=`dirname ${raw_dir}`
 src=${parent_dir}/raw_${subject}.tar.gz
 dest=${ARCHIVE}/${study}/raw/raw_${subject}.tar.gz
 
-# check if the file for this session already exists
-if (ssh $ARCHIVER "test -f ${dest}"); then
-    echo "Archive file ${dest} already exists on $ARCHIVER. Quitting..."
-    exit 3
-fi
-
 # compress raw files
 if [ ! -f ${src} ]; then
     echo "Compressing raw files in ${raw_dir}..."
     tar czf ${src} ${raw_dir}
 fi
-
-# create archive folder for session
-ssh ${ARCHIVER} "mkdir -p ${ARCHIVE}/${study}/raw"
 
 # archive the raw tar file
 echo "Sending raw files to archive..."
