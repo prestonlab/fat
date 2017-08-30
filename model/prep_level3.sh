@@ -24,7 +24,7 @@ fi
 
 template=$1
 model=$2
-ncopes=$3
+copes=$3
 
 modeldir=${STUDYDIR}/batch/glm/${model}
 fsfdir=${modeldir}/fsf
@@ -34,8 +34,7 @@ mkdir -p ${fsfdir}
 fsftemplate=${modeldir}/${model}_level3.fsf
 cp ${template} ${fsftemplate}
 
-copes=`seq $ncopes`
-for cope_no in ${copes}; do
+for cope_no in $(echo $copes | tr ':' ' '); do
     copeid=cope${cope_no}
     customfsf=${fsfdir}/${model}_${copeid}.fsf
 
