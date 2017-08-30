@@ -89,6 +89,7 @@ if [ -z "$nos" ]; then
 fi
 
 nos=$(echo $nos | sed "s/:/ /g")
+subjects=""
 for no in $nos; do
     if [ $ids == 1 ]; then
 	subject=$no
@@ -96,14 +97,31 @@ for no in $nos; do
 	subject=${STUDY}_$(printf "%02d" $no)
     fi
     subj_command=$(echo $command | sed s/{}/$subject/g)
-    if [ $verbose -eq 1 ]; then
+    if [ $verbose -eq 1 -a $runpar -ne 1 ]; then
 	echo "$subj_command"
     fi
     if [ $noexec -ne 1 ]; then
 	if [ $runpar -eq 1 ]; then
-	    $subj_command &
+	    if [ -z "$subjects" ]; then
+		subjects="$subject"
+	    else
+		subjects="$subjects $subject"
+	    fi
 	else
 	    $subj_command
 	fi
     fi
 done
+
+if [ $runpar -eq 1 ]; then
+    # run collected commands using gnu parallel
+    if [ $verbose -eq 1 ]; then
+	echo "parallel $command ::: $subjects"
+    fi
+    if hash parallel 2>/dev/null; then
+	parallel $command ::: $subjects
+    else
+	echo "Error: Cannot find GNU parallel."
+	exit 1
+    fi
+fi
