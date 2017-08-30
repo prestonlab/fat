@@ -19,7 +19,9 @@ if [ $# -lt 1 ]; then
     echo "       do not execute commands"
     echo
     echo "-p"
-    echo "       run commands in parallel (run as background processes)"
+    echo "       run commands in parallel (requires GNU parallel)."
+    echo "       By default, will run one command per core until"
+    echo "       all commands are finished."
     echo
     echo "In the commands string, any '{}' will be replaced with"
     echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
