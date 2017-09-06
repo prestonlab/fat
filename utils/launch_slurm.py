@@ -174,7 +174,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         qsubfile.write('$LAUNCHER_DIR/paramrun\n')
     qsubfile.write('echo " "\necho " Job complete at $(date)"\necho " "\n')
     qsubfile.write('finish=$(date +%s)\n')
-    qsubfile.write('printf "Job duration: %02d:%02d:%02d (%d s)\n" $(((finish-start)/3600)) $(((finish-start)%3600/60)) $(((finish-start)%60)) $((finish-start))')
+    qsubfile.write('printf "Job duration: %02d:%02d:%02d (%d s)\n" $(((finish-start)/3600)) $(((finish-start)%3600/60)) $(((finish-start)%60)) $((finish-start))\n')
     
     qsubfile.close()
     
