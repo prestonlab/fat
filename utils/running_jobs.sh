@@ -1,7 +1,16 @@
 #!/bin/bash
 
+while getopts ":n:" opt; do
+    case $opt in
+	n)
+	    lines=$OPTARG
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
 job_dir=${BATCHDIR}
-running=`squeue -u $USER -h -o "%j" -S i`
+running=`squeue -u $USER -h -o "%j" -S i -t RUNNING,PENDING`
 for f in $running; do
     status=`squeue -u $USER -n $f -h -o %T`
     elapsed=`squeue -u $USER -n $f -h -o %M`
@@ -15,9 +24,13 @@ for f in $running; do
 	
     if [ -e ${file}${ext} ]; then
 	echo "$f ($status $elapsed/$limit):"
-	while read line; do
-	    echo $line
-	done < ${file}${ext}
+	if [ -n "$lines" ]; then
+	    head -n $lines ${file}${ext}
+	else
+	    while read line; do
+		echo $line
+	    done < ${file}${ext}
+	fi
     else
 	echo "$f ($status $elapsed/$limit)"
     fi
