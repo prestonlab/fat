@@ -41,8 +41,12 @@ fi
 
 subjids=""
 ids=0
-while getopts ":x:y:" opt; do
+test=false
+while getopts ":x:y:t" opt; do
     case $opt in
+	t)
+	    test=true
+	    ;;
 	x)
 	    subjids=$(subjids $OPTARG)
 	    ;;
@@ -58,10 +62,23 @@ runids="$2"
 shift 2
 
 jobfile=$(get_auto_jobfile.sh)
+
 if [ -z "$subjids" ]; then
-    run_runs.sh -ni "$command" "$runids" > $jobfile
+    if [ $test = true ]; then
+	run_runs.sh -ni "$command" "$runids"
+    else
+	run_runs.sh -ni "$command" "$runids" > $jobfile
+    fi
 else
-    run_runs.sh -ni "$command" "$runids" "$subjids" > $jobfile
+    if [ $test = true ]; then
+	run_runs.sh -ni "$command" "$runids" "$subjids"
+    else
+	run_runs.sh -ni "$command" "$runids" "$subjids" > $jobfile
+    fi
+fi
+
+if [ $test = true ]; then
+    exit 1
 fi
 
 cat $jobfile
