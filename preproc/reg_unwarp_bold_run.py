@@ -56,12 +56,13 @@ else:
     
     # nonlinear registration to the reference run
     xfm_base = os.path.join(reg_xfm, '%s-refvol_' % args.runid)
-    log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t s'.format(
-        mov=srcvol, fix=refvol, out=xfm_base, nitk=nitk))
-    
-    # convert the affine part to FSL format
     itk_file = xfm_base + '0GenericAffine.mat'
     txt_file = xfm_base + '0GenericAffine.txt'
+    if not os.path.exists(itk_file):
+        log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t s'.format(
+            mov=srcvol, fix=refvol, out=xfm_base, nitk=nitk))
+    
+    # convert the affine part to FSL format
     reg_file = os.path.join(reg_xfm, '%s-refvol.mat' % args.runid)
     log.run('ConvertTransformFile 3 %s %s' % (itk_file, txt_file))
     log.run('c3d_affine_tool -itk %s -ref %s -src %s -ras2fsl -o %s' % (
