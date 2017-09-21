@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo "Usage: featclean dir"
+    echo
+    echo "Deletes all files generated from an fsf file when feat_model"
+    echo "is run, for all fsf files in dir."
+    echo
+    exit 1
+else
+    dir=$1
+fi
+
+for fsffile in $dir/*.fsf; do
+    f=$(basename $fsffile .fsf)
+    rm -f ${f}.{con,frf,mat,min,png,ppm,trg,grp,fts}
+    rm -f ${f}_cov.{png,ppm}
+done
