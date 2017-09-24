@@ -18,10 +18,9 @@ if [ $# -lt 1 ]; then
     echo "-n"
     echo "       do not execute commands"
     echo
-    echo "-p"
+    echo "-p nproc"
     echo "       run commands in parallel (requires GNU parallel)."
-    echo "       By default, will run one command per core until"
-    echo "       all commands are finished."
+    echo "       Will run $nproc commands at once until all are finished."
     echo
     echo "In the commands string, any '{}' will be replaced with"
     echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
@@ -54,7 +53,7 @@ verbose=1
 ids=0
 noexec=0
 runpar=0
-while getopts ":qinp" opt; do
+while getopts ":qinp:" opt; do
     case $opt in
 	q)
 	    verbose=0
@@ -67,6 +66,7 @@ while getopts ":qinp" opt; do
 	    ;;
 	p)
 	    runpar=1
+	    nproc=$OPTARG
 	    ;;
     esac
 done
@@ -93,37 +93,45 @@ fi
 nos=$(echo $nos | sed "s/:/ /g")
 subjects=""
 for no in $nos; do
+    # get subject id
     if [ $ids == 1 ]; then
 	subject=$no
     else
 	subject=${STUDY}_$(printf "%02d" $no)
     fi
+
+    # create command
     subj_command=$(echo $command | sed s/{}/$subject/g)
     if [ $verbose -eq 1 -a $runpar -ne 1 ]; then
 	echo "$subj_command"
     fi
-    if [ $noexec -ne 1 ]; then
-	if [ $runpar -eq 1 ]; then
-	    if [ -z "$subjects" ]; then
-		subjects="$subject"
-	    else
-		subjects="$subjects $subject"
-	    fi
+
+    # get list of subjects for use with parallel
+    if [ $runpar -eq 1 ]; then
+	if [ -z "$subjects" ]; then
+	    subjects="$subject"
 	else
-	    $subj_command
+	    subjects="$subjects $subject"
 	fi
+    fi
+
+    # if running in serial, execute command
+    if [ $noexec -ne 1 ]; then
+	$subj_command
     fi
 done
 
 if [ $runpar -eq 1 ]; then
     # run collected commands using gnu parallel
     if [ $verbose -eq 1 ]; then
-	echo "parallel $command ::: $subjects"
+	echo "parallel -j $nproc $command ::: $subjects"
     fi
-    if hash parallel 2>/dev/null; then
-	parallel $command ::: $subjects
-    else
-	echo "Error: Cannot find GNU parallel."
-	exit 1
+    if [ $noexec -ne 1 ]; then
+	if hash parallel 2>/dev/null; then
+	    echo "parallel -j $nproc $command ::: $subjects"
+	else
+	    echo "Error: Cannot find GNU parallel."
+	    exit 1
+	fi
     fi
 fi
