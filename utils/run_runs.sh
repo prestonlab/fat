@@ -31,7 +31,9 @@ verbose=1
 ids=0
 noexec=0
 runpar=0
-while getopts ":qinp" opt; do
+runifexist=false
+runifmissing=false
+while getopts ":qinpf:m:" opt; do
     case $opt in
 	q)
 	    verbose=0
@@ -44,6 +46,14 @@ while getopts ":qinp" opt; do
 	    ;;
 	p)
 	    runpar=1
+	    ;;
+	f)
+	    runifexist=true
+	    file="$OPTARG"
+	    ;;
+	m)
+	    runifmissing=true
+	    file="$OPTARG"
 	    ;;
     esac
 done
@@ -63,6 +73,15 @@ fi
 if [ -z "$nos" ]; then
     for run in $runs; do
 	run_command=`echo $command | sed s/{r}/$run/g | sed s/{}/$run/g`
+	if [ $runifexist = true -o $runifmissing = true ]; then
+	    run_file=$(echo "$file" | sed s/{r}/$run/g | sed s/{}/$run/g)
+	    if [ $runifexist = true -a ! -f "$run_file" ]; then
+		continue
+	    elif [ $runifmissing = true -a -f "$run_file" ]; then
+		continue
+	    fi
+	fi
+	
 	if [ $verbose -eq 1 ]; then
 	    echo "$run_command"
 	fi
@@ -85,6 +104,15 @@ else
 	subj_command=`echo $command | sed s/{s}/$subject/g`
 	for run in $runs; do
 	    run_command=`echo $subj_command | sed s/{r}/$run/g`
+	    if [ $runifexist = true -o $runifmissing = true ]; then
+		run_file=$(echo "$file" | sed s/{s}/$subject/g | sed s/{r}/$run/g)
+		if [ $runifexist = true -a ! -f "$run_file" ]; then
+		    continue
+		elif [ $runifmissing = true -a -f "$run_file" ]; then
+		    continue
+		fi
+	    fi
+	    
 	    if [ $verbose -eq 1 ]; then
 		echo "$run_command"
 	    fi

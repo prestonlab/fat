@@ -42,7 +42,9 @@ fi
 subjids=""
 ids=0
 test=false
-while getopts ":x:y:t" opt; do
+runifexist=false
+runifmissing=false
+while getopts ":x:y:tf:n:" opt; do
     case $opt in
 	t)
 	    test=true
@@ -53,6 +55,14 @@ while getopts ":x:y:t" opt; do
 	y)
 	    subjids=$opt
 	    ;;
+	f)
+	    runifexist=true
+	    file="$OPTARG"
+	    ;;
+	n)
+	    runifmissing=true
+	    file="$OPTARG"
+	    ;;
     esac
 done
 shift $((OPTIND-1))
@@ -61,19 +71,26 @@ command="$1"
 runids="$2"
 shift 2
 
+args="-ni"
+if [ $runifexist = true ]; then
+    args="$args -f $file"
+elif [ $runifmissing = true ]; then
+    args="$args -m $file"
+fi
+
 jobfile=$(get_auto_jobfile.sh)
 
 if [ -z "$subjids" ]; then
     if [ $test = true ]; then
-	run_runs.sh -ni "$command" "$runids"
+	run_runs.sh $args "$command" "$runids"
     else
-	run_runs.sh -ni "$command" "$runids" > $jobfile
+	run_runs.sh $args "$command" "$runids" > $jobfile
     fi
 else
     if [ $test = true ]; then
-	run_runs.sh -ni "$command" "$runids" "$subjids"
+	run_runs.sh $args "$command" "$runids" "$subjids"
     else
-	run_runs.sh -ni "$command" "$runids" "$subjids" > $jobfile
+	run_runs.sh $args "$command" "$runids" "$subjids" > $jobfile
     fi
 fi
 
