@@ -22,7 +22,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
                  email=None, qsubfile=None, keepqsubfile=False,
                  test=False, compiler='intel', hold=None, cwd=None,
                  nnodes=None, ntasks=None, tpn=None, antsproc=None,
-                 schedule='dynamic'):
+                 schedule='dynamic', remora=None):
 
     cmd = serialcmd
     
@@ -145,9 +145,12 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
                        
     qsubfile.write('\numask 2\n\n')
 
+    if cwd is None:
+        cwd = os.getcwd()
+    
     qsubfile.write('echo " Starting at $(date)"\n')
     qsubfile.write('start=$(date +%s)\n')
-    qsubfile.write('echo " WORKING DIR: $(pwd)/"\n')
+    qsubfile.write('echo " WORKING DIR: %s/"\n' % cwd)
     qsubfile.write('echo " JOB ID:      $SLURM_JOB_ID"\n')
     qsubfile.write('echo " JOB NAME:    $SLURM_JOB_NAME"\n')
     qsubfile.write('echo " NODES:       $SLURM_NODELIST"\n')
@@ -157,13 +160,21 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     if compiler == "gcc":
         qsubfile.write('module swap intel gcc\n')
 
+    if remora is not None:
+        qsubfile.write('module load remora\n')
+
     if antsproc is not None:
         qsubfile.write('export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=%d\n' % antsproc)
-
+        
     if not parametric:
         qsubfile.write('set -x\n')
-        qsubfile.write(cmd + '\n')
+        if remora is not None:
+            qsubfile.write('remora ' + cmd + '\n')
+        else:
+            qsubfile.write(cmd + '\n')
         qsubfile.write('set +x\n')
+        if remora is not None:
+            qsubfile.write('mv %s/remora_$SLURM_JOB_ID %s\n' % (cwd, remora))
     else:
         qsubfile.write('export LAUNCHER_SCHED=%s\n' % schedule)
         qsubfile.write('export LAUNCHER_JOB_FILE=%s\n' % script_name)

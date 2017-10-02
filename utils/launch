@@ -47,6 +47,8 @@ parser.add_argument('-c', '--compiler', help='compiler (default=intel)',
                     dest='compiler', default='intel')
 parser.add_argument('-a', '--antsproc', help='number of processes for ANTS',
                     dest='antsproc', type=int)
+parser.add_argument('-x', '--remora',
+                    help='directory to save resource usage info using remora')
 parser.add_argument('-d', '-i', '--hold_jid',
                     help='wait for this job id to complete before running',
                     dest='hold', default=None)
@@ -68,5 +70,5 @@ launch_slurm(serialcmd=cmd, script_name=args.script_name,
              test=args.test, compiler=args.compiler, hold=args.hold,
              cwd=args.directory, nnodes=args.nodes,
              ntasks=args.ntasks, tpn=args.tpn, antsproc=args.antsproc,
-             schedule=args.schedule)
+             schedule=args.schedule, remora=args.remora)
 sys.exit(0)
