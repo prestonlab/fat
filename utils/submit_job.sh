@@ -1,13 +1,22 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-    echo "Usage: submit_job.sh [-s script] [commands] [launch options]"
+    echo "Usage: submit_job.sh [-x] [-s script] [commands] [launch options]"
     echo
     echo "Use either -s script to indicate a file with commands to run,"
     echo "where different lines should be run in parallel, or specify"
     echo "commands to run."
     echo
-    echo "Run launch -h for explanation of options."
+    echo "-s script"
+    echo "    Run commands in $script. Commands on different lines will"
+    echo "    be run in parallel."
+    echo
+    echo "-x"
+    echo "    Run remora on the command (only works with one command)"
+    echo "    to monitor resource usage (e.g. memory) periodically."
+    echo "    Results will be saved in $BATCHDIR/JobXXX.remora."
+    echo
+    echo "Run launch -h for explanation of other options."
     echo
     echo "Must define environment variable BATCHDIR. For example:"
     echo "export BATCHDIR=$WORK/batch"
@@ -42,20 +51,24 @@ if [ -z $BATCHDIR ]; then
 fi
 
 script=""
-while getopts ":s:" opt; do
+remora=false
+script_arg=0
+remora_arg=0
+while getopts ":s:x" opt; do
     case $opt in
         s)
             script=$OPTARG
+	    script_arg=2
             ;;
+	x)
+	    remora=true
+	    remora_arg=1
+	    ;;
     esac
 done
 
-# may have options beyond -s, so shift a max of 2 so we aren't
-# clipping out launch options
-if [ $OPTIND -gt 3 ]; then
-    OPTIND=3
-fi
-shift $((OPTIND-1))
+# -s and -x may also occur in launch options, so account manually
+shift $((script_arg + remora_arg))
 
 # get the next job file name that doesn't exist yet
 jobfile=$(get_auto_jobfile.sh)
@@ -75,4 +88,10 @@ file=$(basename $jobfile)
 name=$(echo $file | cut -d . -f 1)
 outfile=$BATCHDIR/${name}.out
 batchfile=$BATCHDIR/${name}.slurm
-launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
+
+args=""
+if [ $remora = true ]; then
+    args="${args} -x $BATCHDIR/${name}.remora"
+fi
+
+launch -s $jobfile -J $name -o $outfile -f $batchfile -k$args "$@"
