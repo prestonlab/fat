@@ -1,5 +1,27 @@
 #!/bin/bash
 
+if [ $# -lt 2 ]; then
+    echo "Usage:   build_template.sh template_dir image_prefix"
+    echo "Example: build_template.sh $WORK/bender/gptemplate/highres_brain_all highres_brain_bender"
+    echo
+    echo "template_dir"
+    echo "    path to directory with source images. Template will be made"
+    echo "    in this directory."
+    echo
+    echo "image_prefix"
+    echo "    files in the template_dir that start with this will be"
+    echo "    included in making the template."
+    echo
+    echo "Images will first be rigidly aligned to make an initial target."
+    echo "Then affine registration will be used to refine the template."
+    echo "Finally, nonlinear registration will be used to make the final"
+    echo "template."
+    echo
+    echo "Will attempt to distribute processes over 24 cores locally."
+    echo
+    exit 1
+fi
+
 template_dir=$1
 image_prefix=$2
 
