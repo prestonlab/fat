@@ -10,7 +10,7 @@ def dicom_filetype(hdr):
         'BOLD':['epfid'],
         'DTI':['ep_b'],
         'fieldmap':['fieldmap','field_mapping','FieldMap'],
-        'localizer':['localizer','Localizer','Scout','scout'],
+        'localizer':['Scout','scout'],
         'reference':['SBRef']
         }
 
