@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#  checknans - Print the number of NaN voxels in an image.
+#
+#  Usage: checknans file1 [file2 ... fileN]
+
+tempfile=$(mktemp)
+for file; do
+    fslmaths $file -nanm $tempfile
+    nnans=$(fslstats $tempfile -V | awk '{print $1}')
+    echo "$file: $nnans NaNs."
+done
+rm $tempfile
