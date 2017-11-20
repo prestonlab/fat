@@ -26,6 +26,7 @@ of execution:
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
+* `epi_reg_run.py` Determines how to unwarp the functional data, and aligns functional data to structural scans. Fieldmaps must have already been prepared.
 * `reg_unwarp_bold_run.py` Uses the output of `epi_reg`. Calculates alignment of each unwarped average
   functional scan to an unwarped average reference scan, then does
   unwarping and co-registration of each functional series in a single
@@ -76,7 +77,7 @@ This will automatically create a script with the command and use
 given a (sequentially ordered) name, and the submitted script will be
 in `$BATCHDIR/Job[job number].sh`. When the job finishes, the
 output will be placed in
-`$BATCHDIR/auto/Job[job number].out`.
+`$BATCHDIR/Job[job number].out`.
 
 More information about each job will be placed in the subject's `logs`
 directory. The `preproc.log` file stores summary information about the
