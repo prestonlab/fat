@@ -6,6 +6,8 @@ import os
 parser = SubjParser()
 parser.add_argument('runid', help="run identifier")
 parser.add_argument('ees', help="effective echo spacing", type=float)
+parser.add_argument('-a', '--anat', help="anatomical number (default: none)",
+                    default=None)
 parser.add_argument('-f', '--fieldmap', help="fieldmap number (default: none)",
                     default=None)
 parser.add_argument('-p', '--pedir', default='y-',
@@ -22,10 +24,17 @@ log.start()
 map_dir = sp.path('fieldmap')
 
 # structural files (use the one collected that day)
-highres = sp.image_path('anatomy', 'orig')
-highres_brain = sp.image_path('anatomy', 'orig_brain')
-highres_mask = sp.image_path('anatomy', 'brainmask')
-wm_mask = sp.image_path('anatomy', 'wm')
+if args.anat is not None:
+    highres = sp.image_path('anatomy', 'orig{}'.format(args.anat))
+    highres_brain = sp.image_path('anatomy', 'orig_brain{}'.format(args.anat))
+    highres_mask = sp.image_path('anatomy', 'brainmask{}'.format(args.anat))
+    wm_mask = sp.image_path('anatomy', 'wm{}'.format(args.anat))
+else:
+    highres = sp.image_path('anatomy', 'orig')
+    highres_brain = sp.image_path('anatomy', 'orig_brain')
+    highres_mask = sp.image_path('anatomy', 'brainmask')
+    wm_mask = sp.image_path('anatomy', 'wm')
+
 if not os.path.exists(highres):
     raise IOError('Highres does not exist: {}'.format(highres))
 if not os.path.exists(highres_brain):
