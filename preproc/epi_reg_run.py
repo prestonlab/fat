@@ -12,8 +12,6 @@ parser.add_argument('-k', '--keep', help="keep intermediate files",
                     action='store_true')
 args = parser.parse_args()
 
-from bender import BenderPath
-
 sp = SubjPath(args.subject, args.study_dir)
 log = sp.init_log('epireg_%s' % args.runid, 'preproc', args)
 
