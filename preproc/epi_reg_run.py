@@ -5,6 +5,9 @@ import os
 
 parser = SubjParser()
 parser.add_argument('runid', help="run identifier")
+parser.add_argument('ees', help="effective echo spacing", type=float)
+parser.add_argument('-p', '--pedir', default='y-',
+                    help="phase encoding direction (default: y-)")
 parser.add_argument('-k', '--keep', help="keep intermediate files",
                     action='store_true')
 args = parser.parse_args()
@@ -15,13 +18,6 @@ sp = SubjPath(args.subject, args.study_dir)
 log = sp.init_log('epireg_%s' % args.runid, 'preproc', args)
 
 log.start()
-
-number = int(args.subject.split('_')[1])
-if number >= 22:
-    ees = 0.000385 # echo spacing 0.77 ms / GRAPPA 2
-else:
-    ees = 0.00047 # echo spacing 0.94 ms / GRAPPA 2
-pedir = 'y-'
 
 map_dir = sp.path('fieldmap')
 
@@ -47,7 +43,7 @@ fmapmagbrain = impath(map_dir, 'fieldmap_mag_cor_brain')
 
 # run epi_reg
 cmd = 'epi_reg_ants --fmap=%s --fmapmag=%s --fmapmagbrain=%s --wmseg=%s --echospacing=%.06f --pedir=%s -v --epi=%s --t1=%s --t1brain=%s --out=%s --noclean' % (
-    fmap, fmapmag, fmapmagbrain, wm_mask, ees, pedir, epi_input, highres,
+    fmap, fmapmag, fmapmagbrain, wm_mask, args.ees, args.pedir, epi_input, highres,
     highres_brain, out_base)
 log.run(cmd)
 
@@ -55,7 +51,7 @@ log.run(cmd)
 shift = impath(fm_dir, 'epireg_fieldmaprads2epi_shift')
 warp = impath(fm_dir, 'epireg_epi_warp')
 log.run('convertwarp -r %s -s %s -o %s --shiftdir=%s --relout' % (
-    epi_input, shift, warp, pedir))
+    epi_input, shift, warp, args.pedir))
 
 # unwarp the average run image for registration purposes
 epi_unwarped = impath(fm_dir, 'epireg_epi_unwarped')
