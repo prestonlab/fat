@@ -1,11 +1,12 @@
 #!/bin/bash
 
 if [ $# -lt 3 ]; then
-    echo "Usage: $0 [-cm] image1 image2 output"
+    echo "Usage: merge_anat.sh [-cm] moving fixed output"
     echo
-    echo "Register and average two anatomical images."
+    echo "Register and average two anatomical images. Output will"
+    echo "be in the space of the fixed image."
     echo
-    echo "will create a temporary directory called ${image1}_${image2}"
+    echo 'will create a temporary directory called ${moving}_${fixed}'
     echo "with intermediate images."
     echo "-c"
     echo "    images are highres coronal partial images. Will use"
