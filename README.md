@@ -24,8 +24,8 @@ of execution:
   run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
 * `merge_anat.sh` Registers and averages anatomical (highres and coronal)
   images. Prepares MPRAGE scans for FreeSurfer.
-* `run_freesurfer.sh` Simple script that submits a job to run a
-  standard FreeSurfer reconstruction on a subject.
+* `run_freesurfer.sh` Simple script that runs a
+  standard FreeSurfer reconstruction on one subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
 * `reg_freesurfer.py` If you had multiple highres scans that you merged using merge_anat.sh,
