@@ -23,17 +23,24 @@ def impath(*args):
 class SubjParser(ArgumentParser):
     """Class for parsing standard arguments."""
     
-    def __init__(self, include_log=True):
-        ArgumentParser.__init__(self)
+    def __init__(self, include_log=True, raw=False, **init_args):
+        if raw:
+            from argparse import RawTextHelpFormatter
+            ArgumentParser.__init__(self, formatter_class=RawTextHelpFormatter,
+                                    **init_args)
+        else:
+            ArgumentParser.__init__(self, **init_args)
         self.add_argument('subject', type=str,
                           help="name of subject directory in study directory")
         if "STUDYDIR" in os.environ:
             study_dir = os.environ['STUDYDIR']
         else:
             study_dir = None
-            
+
+        s = """path to main study directory; if not set, value of STUDYDIR
+environment variable will be used"""
         self.add_argument('--study-dir', type=str, default=study_dir,
-                          help="path to main study directory; if not set, value of STUDYDIR environment variable will be used")
+                          help=s)
         if include_log:
             self.add_argument('--dry-run',
                               help="display commands without executing",
