@@ -22,18 +22,31 @@ of execution:
   correction, brain extraction, and quality assurance. Assumes that
   files have been placed in a standard directory structure where each
   run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
+* `merge_anat.sh` Registers and averages anatomical (highres and coronal)
+  images. Prepares MPRAGE scans for FreeSurfer.
 * `run_freesurfer.sh` Simple script that submits a job to run a
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
 * `prep_fieldmap.py` Prepares a fieldmap for use with unwarping.
-* `epi_reg_run.py` Determines how to unwarp the functional data, and aligns functional data to structural scans. Fieldmaps must have already been prepared.
-* `reg_unwarp_bold_run.py` Uses the output of `epi_reg`. Calculates alignment of each unwarped average
-  functional scan to an unwarped average reference scan, then does
-  unwarping and co-registration of each functional series in a single
-  step.
+* `epi_reg_run.py` Determines how to unwarp the functional data, and aligns 
+  functional data to structural scans.
+* `reg_unwarp_bold_run.py` Calculates alignment of each unwarped average
+  functional scan to an unwarped average reference scan, then applies
+  motion correction, unwarping, co-registration, and mean bias correction
+  to a raw functional scan.
 
-See the Bender GitHub project for more specific examples.
+## Processing all your data
+
+All scripts are designed to do the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. If you want to run everything in serial, you can write a script with for loops to process all your functional scans. For example:
+
+```bash
+for subject in bender_02 bender_04 bender_05; do
+    for run in study_1 study_2 study_3 study_4 study_5 study_6; do
+    	prep_bold_run.sh $WORK/bender/$subject/BOLD/$run
+    done
+done
+```
 
 ## Setting up your environment
 
@@ -41,7 +54,7 @@ Some scripts in the toolbox use environment variables so you don't have to speci
 
 * `STUDY` - name of the study (e.g. `bender`)
 * `STUDYDIR` - path to the main study directory, where the subject
-  directories are (e.g. `/corral-repl/utexas/prestonlab/bender`)
+  directories are (e.g. `/work/03206/mortonne/lonestar/bender`)
 * `BATCHDIR` - path to the directory where batch scripts should be
   stored. Your work directory might be a good place for this. It may
   also be helpful to have a directory that is specific to the study
@@ -65,9 +78,9 @@ commands make sense, you can easily submit a job by typing:
 
 `submit_job.sh '[scriptname] [subject ID] [other arguments]' [options for launch]`
 
-For example, to test out `convert_dicom.py` on `bender_1`:
+For example, to test out `convert_dicom.py` on `bender_01`:
 
-`convert_dicom.py bender_1 --dry-run`
+`convert_dicom.py bender_01 --dry-run`
 
 To actually submit a job to run the DICOM conversion:
 
