@@ -46,11 +46,35 @@ of execution:
 All scripts are designed to do the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. If you want to run everything in serial, you can write a script with for loops to process all your functional scans. For example:
 
 ```bash
+#!/bin/bash
 for subject in bender_02 bender_04 bender_05; do
     for run in study_1 study_2 study_3 study_4 study_5 study_6; do
     	prep_bold_run.sh $WORK/bender/$subject/BOLD/$run
     done
 done
+```
+
+Save the above to a script, say prep_bold_all_runs.sh, in a directory (we'll call it $scriptdir) and run `chmod +x $scriptdir/prep_bold_all_runs.sh` to make it an executable script. Then, if you haven't already, run `export PATH=$PATH:$scriptdir` to add the directory to your path. Finally, run by just typing `prep_vold_all_runs.sh`. Don't run a script like that on a regular login. Instead, run it on the virtual login node, using an idev session, or by submitting a job.
+
+You can do the same thing as the above script in one line of code, using one of the utilities in FAT:
+
+```bash
+run_runs.sh -i "prep_bold_run.sh $WORK/bender/{s}/BOLD/{r}" study_1:study_2:study_3:study_4:study_5:study_6 bender_02:bender_04:bender_05
+```
+
+Every place with {s} will be replaced by the subject code, and every {r} will be replaced by the run code. Every combination of them will be run. Use the -n flag to just print the commands without running them, so you can check them first.
+
+To save you some typing, you can define environment variables to store some commonly accessed information, putting them in your .bashrc so they will always be available. For example, in your .bashrc:
+
+```bash
+STUDYRUNS=study_1:study_2:study_3:study_4:study_5:study_6
+SUBJIDS=bender_02:bender_04:bender_05
+```
+
+Then running a script for all subjects and all study runs is quick:
+
+```bash
+run_runs.sh -i "prep_bold_run.sh $WORK/bender/{s}/BOLD/{r}" $STUDYRUNS $SUBJIDS
 ```
 
 ## Setting up your environment
