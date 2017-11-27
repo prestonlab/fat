@@ -28,6 +28,11 @@ of execution:
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
+* `reg_freesurfer.py` If you had multiple highres scans that you merged using merge_anat.sh,
+  run this to place the main FreeSurfer outputs into the spaces of the original highres
+  scans. Then when running prep_fieldmap.py and epi_reg_run.py, you can then use any of the
+  highres scans as a registration target (it's generally best to use the scan taken closest
+  in time to the functional scan you're registering).
 * `prep_fieldmap.py` Prepares a fieldmap for use with unwarping.
 * `epi_reg_run.py` Determines how to unwarp the functional data, and aligns 
   functional data to structural scans.
