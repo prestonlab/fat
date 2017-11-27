@@ -3,9 +3,19 @@
 from subjutil import *
 import os
 
-parser = SubjParser()
-parser.add_argument('runid', help="run identifier")
-parser.add_argument('refrun', help="reference run")
+s = """Finalize preprocessing of a functional run.
+
+Assumes you have already run prep_bold_run.sh, prep_fieldmap.py, and
+epi_reg_run.py. Takes the raw BOLD data for one functional run and runs
+motion correction, unwarping, registration to a reference functional run,
+and mean bias field correction.
+"""
+
+parser = SubjParser(description=s, raw=True)
+parser.add_argument('runid',
+                    help="data in [subjdir]/BOLD/[runid] will be processed")
+parser.add_argument('refrun',
+                    help="runid for the reference functional run to register to")
 parser.add_argument('-k', '--keep', help="keep intermediate files",
                     action='store_true')
 args = parser.parse_args()

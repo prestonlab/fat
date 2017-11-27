@@ -3,7 +3,35 @@
 from subjutil import *
 import os
 
-parser = SubjParser()
+s = """Register functional scan to anatomical space and unwarp.
+
+Assumes you have already run prep_fieldmap.py or similar to skull-strip
+your fieldmap scan and calculate an image with radians/second, and that
+you have a white-matter mask in structural image space generated from
+FreeSurfer.
+
+Required images:
+
+[subjdir]/anatomy/origX.nii.gz - highres anatomical image (X indicates
+    anatomical scan number; if none specified, X is omitted)
+[subjdir]/anatomy/orig_brainX.nii.gz - skull-stripped highres image
+[subjdir]/anatomy/brainmaskX.nii.gz - brain mask for highres image
+[subjdir]/anatomy/wmX.nii.gz - white matter mask for highres image
+
+[subjdir]/fieldmap/fieldmap_mag_corX.nii.gz - fieldmap magnitude
+    (X indicates fieldmap scan number; if none specified, X is omitted)
+[subjdir]/fieldmap/fieldmap_mag_cor_brainX.nii.gz - skull-stripped
+    magnitude image
+[subjdir]/fieldmap/fieldmap_rads_brainX.nii.gz - fieldmap image in
+    radians/second.
+
+[subjdir]/BOLD/[runid]/bold_cor_mcf_avg.nii.gz - functional image to 
+    register to structural space and calculate unwarping.
+
+See also: prep_fieldmap.py, reg_unwarp_bold_run.py.
+"""
+
+parser = SubjParser(description=s, raw=True)
 parser.add_argument('runid', help="run identifier")
 parser.add_argument('ees', help="effective echo spacing", type=float)
 parser.add_argument('-a', '--anat', help="anatomical number (default: none)",
