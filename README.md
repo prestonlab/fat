@@ -24,10 +24,15 @@ of execution:
   run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
 * `merge_anat.sh` Registers and averages anatomical (highres and coronal)
   images. Prepares MPRAGE scans for FreeSurfer.
-* `run_freesurfer.sh` Simple script that submits a job to run a
-  standard FreeSurfer reconstruction on a subject.
+* `run_freesurfer.sh` Simple script that runs a
+  standard FreeSurfer reconstruction on one subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
   into Nifti format and places them in the anatomy directory.
+* `reg_freesurfer.py` If you had multiple highres scans that you merged using merge_anat.sh,
+  run this to place the main FreeSurfer outputs into the spaces of the original highres
+  scans. Then when running prep_fieldmap.py and epi_reg_run.py, you can then use any of the
+  highres scans as a registration target (it's generally best to use the scan taken closest
+  in time to the functional scan you're registering).
 * `prep_fieldmap.py` Prepares a fieldmap for use with unwarping.
 * `epi_reg_run.py` Determines how to unwarp the functional data, and aligns 
   functional data to structural scans.
