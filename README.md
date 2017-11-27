@@ -22,6 +22,8 @@ of execution:
   correction, brain extraction, and quality assurance. Assumes that
   files have been placed in a standard directory structure where each
   run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
+* `merge_anat.sh` Registers and averages anatomical (highres and coronal)
+  images. Prepares MPRAGE scans for FreeSurfer.
 * `run_freesurfer.sh` Simple script that submits a job to run a
   standard FreeSurfer reconstruction on a subject.
 * `convert_freesurfer.py` Converts some important FreeSurfer files
