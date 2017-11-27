@@ -14,9 +14,9 @@ format, for use with epi_reg_run.py.
 Required images: 
 
 [subjdir]/anatomy/orig_brain.nii.gz - skull-stripped T1-weighted
-image. If multiple images exist, should be named highres1.nii.gz,
-highres2.nii.gz, etc. Set the -a flag to indicate which anatomical
-image to use (e.g. 1 for highres1.nii.gz)
+image. If multiple images exist, should be named orig_brain1.nii.gz,
+orig_brain2.nii.gz, etc. Set the -a flag to indicate which anatomical
+image to use (e.g. 1 for orig_brain1.nii.gz)
 
 [subjdir]/anatomy/brainmask.nii.gz - brain mask in the space of the
 T1-weighted image. If multiple T1 scans exist, which be named
