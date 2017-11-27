@@ -41,6 +41,8 @@ of execution:
   motion correction, unwarping, co-registration, and mean bias correction
   to a raw functional scan.
 
+See [Preprocessing](https://github.com/prestonlab/fat/wiki/fMRI-Preprocessing) for more information.
+
 ## Processing all your data
 
 All scripts are designed to do only the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. See [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts) for different ways to process multiple subjects and functional scanning runs.
