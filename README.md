@@ -41,23 +41,16 @@ of execution:
   motion correction, unwarping, co-registration, and mean bias correction
   to a raw functional scan.
 
+See [Preprocessing](https://github.com/prestonlab/fat/wiki/fMRI-Preprocessing) for more information.
+
 ## Processing all your data
 
-All scripts are designed to do the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. If you want to run everything in serial, you can write a script with for loops to process all your functional scans. For example:
-
-```bash
-for subject in bender_02 bender_04 bender_05; do
-    for run in study_1 study_2 study_3 study_4 study_5 study_6; do
-    	prep_bold_run.sh $WORK/bender/$subject/BOLD/$run
-    done
-done
-```
+All scripts are designed to do only the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. See [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts) for different ways to process multiple subjects and functional scanning runs.
 
 ## Setting up your environment
 
 Some scripts in the toolbox use environment variables so you don't have to specify the same options every time (they can usually be specified on the commandline also):
 
-* `STUDY` - name of the study (e.g. `bender`)
 * `STUDYDIR` - path to the main study directory, where the subject
   directories are (e.g. `/work/03206/mortonne/lonestar/bender`)
 * `BATCHDIR` - path to the directory where batch scripts should be
@@ -67,6 +60,14 @@ Some scripts in the toolbox use environment variables so you don't have to speci
   on. (e.g. `/work/03206/mortonne/batch/bender`)
 * `PATH` and `PYTHONPATH` must be set to include `fat/utils` and
   `fat/preproc`.
+* `SUBJIDFORMAT` - format for creating subject IDs from subject numbers. For example,
+  if `SUBJIDFORMAT=bender_%02d`, then every subject ID will be `bender_` followed by a
+  two-digit number. This can optionally be used by some scripts to make specifying subjects easier (e.g. run_subjs.sh; see [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts)). For example:
+  ```bash
+  export SUBJIDFORMAT=No_%03d
+  run_subjs.sh -n "convert_dicom.py {}" 3:4:5
+  ```
+  This will print the convert_dicom.py command for each subject (No_003, No_004, and No_005), one line per command. Remove the -n flag to actually run the commands.
 
 See
 [this sample profile](https://github.com/prestonlab/bender/blob/master/bender_profile)
