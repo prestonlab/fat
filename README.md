@@ -51,7 +51,6 @@ All scripts are designed to do only the minimum amount of processing; for exampl
 
 Some scripts in the toolbox use environment variables so you don't have to specify the same options every time (they can usually be specified on the commandline also):
 
-* `STUDY` - name of the study (e.g. `bender`)
 * `STUDYDIR` - path to the main study directory, where the subject
   directories are (e.g. `/work/03206/mortonne/lonestar/bender`)
 * `BATCHDIR` - path to the directory where batch scripts should be
@@ -61,6 +60,14 @@ Some scripts in the toolbox use environment variables so you don't have to speci
   on. (e.g. `/work/03206/mortonne/batch/bender`)
 * `PATH` and `PYTHONPATH` must be set to include `fat/utils` and
   `fat/preproc`.
+* `SUBJIDFORMAT` - format for creating subject IDs from subject numbers. For example,
+  if `SUBJIDFORMAT=bender_%02d`, then every subject ID will be `bender_` followed by a
+  two-digit number. Another example:
+  ```bash
+  export SUBJIDFORMAT=No_%03d
+  subjids 3 4 5
+  ```
+  This will print No_003:No_004:No_005. This is used by some scripts to make specifying subjects faster (e.g. run_subjs.sh; see [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts)).
 
 See
 [this sample profile](https://github.com/prestonlab/bender/blob/master/bender_profile)
