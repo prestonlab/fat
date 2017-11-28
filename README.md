@@ -62,12 +62,12 @@ Some scripts in the toolbox use environment variables so you don't have to speci
   `fat/preproc`.
 * `SUBJIDFORMAT` - format for creating subject IDs from subject numbers. For example,
   if `SUBJIDFORMAT=bender_%02d`, then every subject ID will be `bender_` followed by a
-  two-digit number. Another example:
+  two-digit number. This can optionally be used by some scripts to make specifying subjects easier (e.g. run_subjs.sh; see [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts)). For example:
   ```bash
   export SUBJIDFORMAT=No_%03d
-  subjids 3 4 5
+  run_subjs.sh -n "convert_dicom.py {}" 3:4:5
   ```
-  This will print No_003:No_004:No_005. This is used by some scripts to make specifying subjects faster (e.g. run_subjs.sh; see [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts)).
+  This will print the convert_dicom.py command for each subject (No_003, No_004, and No_005), one line per command. Remove the -n flag to actually run the commands.
 
 See
 [this sample profile](https://github.com/prestonlab/bender/blob/master/bender_profile)
