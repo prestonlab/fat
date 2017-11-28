@@ -33,11 +33,11 @@ See also: prep_fieldmap.py, reg_unwarp_bold_run.py.
 
 parser = SubjParser(description=s, raw=True)
 parser.add_argument('runid', help="run identifier")
-parser.add_argument('ees', help="effective echo spacing", type=float)
+parser.add_argument('ees', help="effective echo spacing (s)", type=float)
 parser.add_argument('-a', '--anat', help="anatomical number (default: none)",
-                    default=None)
+                    default='')
 parser.add_argument('-f', '--fieldmap', help="fieldmap number (default: none)",
-                    default=None)
+                    default='')
 parser.add_argument('-p', '--pedir', default='y-',
                     help="phase encoding direction (default: y-)")
 parser.add_argument('-k', '--keep', help="keep intermediate files",
@@ -52,16 +52,10 @@ log.start()
 map_dir = sp.path('fieldmap')
 
 # structural files (use the one collected that day)
-if args.anat is not None:
-    highres = sp.image_path('anatomy', 'orig{}'.format(args.anat))
-    highres_brain = sp.image_path('anatomy', 'orig_brain{}'.format(args.anat))
-    highres_mask = sp.image_path('anatomy', 'brainmask{}'.format(args.anat))
-    wm_mask = sp.image_path('anatomy', 'wm{}'.format(args.anat))
-else:
-    highres = sp.image_path('anatomy', 'orig')
-    highres_brain = sp.image_path('anatomy', 'orig_brain')
-    highres_mask = sp.image_path('anatomy', 'brainmask')
-    wm_mask = sp.image_path('anatomy', 'wm')
+highres = sp.image_path('anatomy', 'orig{}'.format(args.anat))
+highres_brain = sp.image_path('anatomy', 'orig_brain{}'.format(args.anat))
+highres_mask = sp.image_path('anatomy', 'brainmask{}'.format(args.anat))
+wm_mask = sp.image_path('anatomy', 'wm{}'.format(args.anat))
 
 if not os.path.exists(highres):
     raise IOError('Highres does not exist: {}'.format(highres))
@@ -84,16 +78,11 @@ fm_dir = sp.path('bold', args.runid, 'fm')
 out_base = os.path.join(fm_dir, 'epireg')
 log.run('mkdir -p %s' % fm_dir)
 
-if args.fieldmap is not None:
-    # more than one fieldmap; must specify
-    fmap = impath(map_dir, 'fieldmap_rads_brain{}'.format(args.fieldmap))
-    fmapmag = impath(map_dir, 'fieldmap_mag_cor{}'.format(args.fieldmap))
-    fmapmagbrain = impath(map_dir,
-                          'fieldmap_mag_cor_brain{}'.format(args.fieldmap))
-else:
-    fmap = impath(map_dir, 'fieldmap_rads_brain')
-    fmapmag = impath(map_dir, 'fieldmap_mag_cor')
-    fmapmagbrain = impath(map_dir, 'fieldmap_mag_cor_brain')
+# more than one fieldmap; must specify
+fmap = impath(map_dir, 'fieldmap_rads_brain{}'.format(args.fieldmap))
+fmapmag = impath(map_dir, 'fieldmap_mag_cor{}'.format(args.fieldmap))
+fmapmagbrain = impath(map_dir,
+                      'fieldmap_mag_cor_brain{}'.format(args.fieldmap))
 
 if not os.path.exists(fmap):
     raise IOError('Fieldmap does not exist: {}'.format(fmap))
