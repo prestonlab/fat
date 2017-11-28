@@ -97,7 +97,7 @@ for no in $nos; do
     if [ $ids == 1 ]; then
 	subject=$no
     else
-	subject=${STUDY}_$(printf "%02d" $no)
+	subject=$(subjids $no)
     fi
 
     # create command

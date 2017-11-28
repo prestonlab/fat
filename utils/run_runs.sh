@@ -99,7 +99,7 @@ else
 	if [ $ids -eq 1 ]; then
 	    subject=$no
 	else
-	    subject=${STUDY}_`printf "%02d" $no`
+	    subject=$(subjids $no)
 	fi
 	subj_command=`echo $command | sed s/{s}/$subject/g`
 	for run in $runs; do

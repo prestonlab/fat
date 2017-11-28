@@ -34,7 +34,7 @@ if [ $# -lt 2 ]; then
     echo "    does not exist."
     echo
     echo "Example:"
-    echo "export STUDY=bender"
+    echo "export SUBJIDFORMAT=bender_%02d"
     echo "export BATCHDIR=$WORK/batch"
     echo "export SUBJNOS=1:2:3:4"
     echo 'submit_subj_job.sh "convert_dicom.py {}" $SUBJNOS -N 1 -n 4 -r 00:30:00'

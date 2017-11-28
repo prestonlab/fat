@@ -22,8 +22,7 @@ if [ $# -lt 1 ]; then
     echo
     echo "-x"
     echo "    colon-separated list of subject numbers. Full subject IDs"
-    echo "    will be created as STUDY_DD, where STUDY is an environment"
-    echo "    variable, and DD is the number zero-padded to two digits."
+    echo "    will be created based on SUBJIDFORMAT. See subjids for details."
     echo "-y"
     echo "    colon-separated list of full subject IDs."
     echo
@@ -78,18 +77,18 @@ elif [ $runifmissing = true ]; then
     args="$args -m $file"
 fi
 
-jobfile=$(get_auto_jobfile.sh)
-
 if [ -z "$subjids" ]; then
     if [ $test = true ]; then
 	run_runs.sh $args "$command" "$runids"
     else
+	jobfile=$(get_auto_jobfile.sh)
 	run_runs.sh $args "$command" "$runids" > $jobfile
     fi
 else
     if [ $test = true ]; then
 	run_runs.sh $args "$command" "$runids" "$subjids"
     else
+	jobfile=$(get_auto_jobfile.sh)
 	run_runs.sh $args "$command" "$runids" "$subjids" > $jobfile
     fi
 fi
