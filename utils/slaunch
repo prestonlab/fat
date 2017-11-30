@@ -1,22 +1,24 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "slaunch   Submit a job to run multiple subjects."
+    echo "slaunch - Submit a job to process multiple subjects."
     echo
-    echo "Usage: slaunch [pre-options] commands subjects [options]"
+    echo "Usage: slaunch [command options] commands subjects [launch options]"
     echo
     echo "Construct a command for multiple subjects and submit a job to"
     echo "run the commands in parallel."
     echo
-    echo "Run launch -h for explanation of options. Use the -t pre-option"
-    echo "to show the list of commands that will be executed without"
-    echo "submitting a job."
-    echo
     echo "In the commands string, any '{}' will be replaced with"
-    echo "subject identifier."
+    echo "subject identifier. Use the -t option to see the commands without"
+    echo "actually submitting a job."
     echo
     echo "Example:"
-    echo 'slaunch -i "convert_dicom.py {}" bender_01:bender_01a -N 1 -n 2 -r 00:30:00'
+    echo 'slaunch -t "convert_dicom.py {}" bender_01:bender_01a'
+    echo
+    echo "Uses the -t (test) option to display all commands that would"
+    echo "be run. Note the command must be placed in quotes."
+    echo
+    echo 'slaunch "convert_dicom.py {}" bender_01:bender_01a -N 1 -n 2 -r 00:30:00'
     echo
     echo "runs 'convert_dicom.py bender_01' and 'convert_dicom.py bender_01a'"
     echo "in parallel and saves output to the current directory."
@@ -24,13 +26,15 @@ if [ $# -lt 2 ]; then
     echo "Example:"
     echo "export SUBJIDFORMAT=bender_%02d # zero-padded two-digit number"
     echo 'export BATCHDIR=$WORK/batch'
-    echo 'slaunch "convert_dicom.py {}" 1:2:3:4 -N 1 -n 4 -r 00:30:00'
+    echo 'slaunch -g "convert_dicom.py {}" 1:2:3:4 -N 1 -n 4 -r 00:30:00'
     echo
     echo "runs 'convert_dicom.py bender_01', 'convert_dicom.py bender_02',"
     echo "'convert_dicom.py bender_03', and 'convert_dicom.py bender_04'"
     echo "in parallel on one node, and writes logs to $WORK/batch."
+    echo "Subject IDs are created from the subject numbers based on the"
+    echo "SUBJIDFORMAT variable."
     echo
-    echo "Pre-options:"
+    echo "Command options:"
     echo "-t"
     echo "    Test; just display all commands that would be run."
     echo
@@ -47,11 +51,14 @@ if [ $# -lt 2 ]; then
     echo "    with the subject, and that subject only runs if the file"
     echo "    does not exist."
     echo
-    echo "-i"
-    echo "    Subject inputs are IDs (e.g. bender_01) instead of numbers"
-    echo "    (e.g. 1)."
+    echo "-g"
+    echo "    Generate subject IDs based on subject numbers. Must set the"
+    echo "    SUBJIDFORMAT environment variable. printf will be used to"
+    echo "    generate subject IDs based on the input numbers, based on"
+    echo "    SUBJIDFORMAT."
     echo
-    echo "See also run_subjs.sh for a version that runs commands locally."
+    echo "Launch options:"
+    echo "Run 'launch -h' to see all job submission options."
     echo
     exit 1
 fi
@@ -59,8 +66,8 @@ fi
 test=false
 runifexist=false
 runifmissing=false
-subjids=false
-while getopts ":f:n:tJ:i" opt; do
+ids=true
+while getopts ":f:n:tJ:g" opt; do
     case $opt in
 	t)
 	    test=true
@@ -76,8 +83,8 @@ while getopts ":f:n:tJ:i" opt; do
 	J)
 	    jobname="$OPTARG"
 	    ;;
-	i)
-	    subjids=true
+	g)
+	    ids=false
 	    ;;
     esac
 done
@@ -106,7 +113,7 @@ fi
 
 for no in $nos; do
     # get the subject identifier
-    if [ $subjids = true ]; then
+    if [ $ids = true ]; then
 	subject=$no
     else
 	subject=$(subjids $no)
