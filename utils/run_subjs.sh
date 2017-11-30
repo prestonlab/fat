@@ -128,7 +128,7 @@ if [ $runpar -eq 1 ]; then
     fi
     if [ $noexec -ne 1 ]; then
 	if hash parallel 2>/dev/null; then
-	    echo "parallel -j $nproc $command ::: $subjects"
+	    parallel -q -j $nproc "$command" ::: $subjects
 	else
 	    echo "Error: Cannot find GNU parallel."
 	    exit 1
