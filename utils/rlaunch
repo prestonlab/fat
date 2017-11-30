@@ -35,13 +35,15 @@ if [ $# -lt 1 ]; then
     echo "    will be automatically assigned."
     echo
     echo "-f file"
-    echo "    Test for a file dependency. Any {} is replaced with the"
-    echo "    subject, and that subject is only run if the file exists."
+    echo "    Test for a file dependency. A given command is only run"
+    echo "    if this file exists. May contain {s} and/or {r}, which will"
+    echo "    be expanded with the current subject ID and run ID."
     echo
     echo "-n file"
-    echo "    Test for an output that does not exist. Any {} is replaced"
-    echo "    with the subject, and that subject only runs if the file"
-    echo "    does not exist."
+    echo "    Test for an output that does not exist. A given command"
+    echo "    only runs if the file does not exist. May contain {s}"
+    echo "    and/or {r}, which will be expanded with the current subject"
+    echo "    ID and run ID."
     echo
     echo "-g"
     echo "    Generate subject IDs based on subject numbers. Must set the"
