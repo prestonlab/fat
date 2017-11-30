@@ -52,7 +52,7 @@ while getopts ":x:y:tf:n:" opt; do
 	    subjids=$(subjids $OPTARG)
 	    ;;
 	y)
-	    subjids=$opt
+	    subjids=$OPTARG
 	    ;;
 	f)
 	    runifexist=true
