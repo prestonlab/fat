@@ -136,7 +136,7 @@ for no in $nos; do
     fi
     
     # fill in subject ID and split commands
-    subj_command=$(echo $command | sed s/{}/$subject/g | tr ':' '\n')
+    subj_command=$(echo $command | sed s/{}/$subject/g | sed s/{s}/$subject/g | tr ':' '\n')
     echo "$subj_command"
     
     if [ $test = false ]; then
