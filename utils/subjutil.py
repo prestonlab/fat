@@ -283,6 +283,9 @@ class SubjPath:
         pattern = 'functional_%s_\d+' % task
         files = self.bold_files(dir_pattern=pattern)
 
+        if len(files) < 2:
+            return
+
         # get the number of volumes for each scan in this task
         n_vols = []
         for f in files:
