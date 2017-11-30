@@ -1,0 +1,152 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+    echo "slaunch   Submit a job to run multiple subjects."
+    echo
+    echo "Usage: slaunch [pre-options] commands subjects [options]"
+    echo
+    echo "Construct a command for multiple subjects and submit a job to"
+    echo "run the commands in parallel."
+    echo
+    echo "Run launch -h for explanation of options. Use the -t pre-option"
+    echo "to show the list of commands that will be executed without"
+    echo "submitting a job."
+    echo
+    echo "In the commands string, any '{}' will be replaced with"
+    echo "subject identifier."
+    echo
+    echo "Example:"
+    echo 'slaunch -i "convert_dicom.py {}" bender_01:bender_01a -N 1 -n 2 -r 00:30:00'
+    echo
+    echo "runs 'convert_dicom.py bender_01' and 'convert_dicom.py bender_01a'"
+    echo "in parallel and saves output to the current directory."
+    echo
+    echo "Example:"
+    echo "export SUBJIDFORMAT=bender_%02d # zero-padded two-digit number"
+    echo 'export BATCHDIR=$WORK/batch'
+    echo 'slaunch "convert_dicom.py {}" 1:2:3:4 -N 1 -n 4 -r 00:30:00'
+    echo
+    echo "runs 'convert_dicom.py bender_01', 'convert_dicom.py bender_02',"
+    echo "'convert_dicom.py bender_03', and 'convert_dicom.py bender_04'"
+    echo "in parallel on one node, and writes logs to $WORK/batch."
+    echo
+    echo "Pre-options:"
+    echo "-t"
+    echo "    Test; just display all commands that would be run."
+    echo
+    echo "-J"
+    echo "    Job name. If not specified, a serial number JobXXX"
+    echo "    will be automatically assigned."
+    echo
+    echo "-f file"
+    echo "    Test for a file dependency. Any {} is replaced with the"
+    echo "    subject, and that subject is only run if the file exists."
+    echo
+    echo "-n file"
+    echo "    Test for an output that does not exist. Any {} is replaced"
+    echo "    with the subject, and that subject only runs if the file"
+    echo "    does not exist."
+    echo
+    echo "-i"
+    echo "    Subject inputs are IDs (e.g. bender_01) instead of numbers"
+    echo "    (e.g. 1)."
+    echo
+    echo "See also run_subjs.sh for a version that runs commands locally."
+    echo
+    exit 1
+fi
+
+test=false
+runifexist=false
+runifmissing=false
+subjids=false
+while getopts ":f:n:tJ:i" opt; do
+    case $opt in
+	t)
+	    test=true
+	    ;;
+	f)
+	    runifexist=true
+	    file="$OPTARG"
+	    ;;
+	n)
+	    runifmissing=true
+	    file="$OPTARG"
+	    ;;
+	J)
+	    jobname="$OPTARG"
+	    ;;
+	i)
+	    subjids=true
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+command="$1"
+nos="$2"
+shift 2
+
+nos=$(echo $nos | sed "s/:/ /g")
+
+if [ -z "$BATCHDIR" ]; then
+    export BATCHDIR=.
+fi
+
+# determine file to write commands to
+if [ -n "$jobname" ]; then
+    jobfile=$BATCHDIR/${jobname}.sh
+    if [ -f "$jobfile" ]; then
+	echo "Error: job file already exists: $jobfile"
+	exit 1
+    fi
+else
+    jobfile=$(get_auto_jobfile.sh)
+fi
+
+for no in $nos; do
+    # get the subject identifier
+    if [ $subjids = true ]; then
+	subject=$no
+    else
+	subject=$(subjids $no)
+    fi
+
+    if [ $runifexist = true ]; then
+	# check for a dependency file
+	subj_file=$(echo "$file" | sed s/{}/$subject/g)
+	if [ ! -f "$subj_file" ]; then
+	    echo "Missing file: $subj_file"
+	    continue
+	fi
+    elif [ $runifmissing = true ]; then
+	# check for a missing output file
+	subj_file=$(echo "$file" | sed s/{}/$subject/g)
+	if [ -f "$subj_file" ]; then
+	    echo "File exists: $subj_file"
+	    continue
+	fi
+    fi
+    
+    # fill in subject ID and split commands
+    subj_command=$(echo $command | sed s/{}/$subject/g | tr ':' '\n')
+    echo "$subj_command"
+    
+    if [ $test = false ]; then
+	echo -e "$subj_command" >> $jobfile
+    fi
+done
+
+if [ $test = true ]; then
+    exit 1
+fi
+
+chmod +x $jobfile
+
+# set the output file and sbatch file to standard names
+file=$(basename $jobfile)
+name=$(echo $file | cut -d . -f 1)
+outfile=$BATCHDIR/${name}.out
+batchfile=$BATCHDIR/${name}.slurm
+
+launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
