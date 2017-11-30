@@ -1,0 +1,137 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo "rlaunch - Submit a job to process multiple subjects and runs."
+    echo
+    echo "Usage: rlaunch [command options] commands subjects runs [launch options]"
+    echo
+    echo "Construct a command to run multiple runs for multiple subjects and"
+    echo "submit a job to run the commands in parallel. In the commands,"
+    echo "every {s} will be replaced with the subject ID, and every {r} will"
+    echo "be replaced by the run name. A command will be generated for"
+    echo "each subject/run combination."
+    echo
+    echo "Example:"
+    echo "SUBJIDS=bender_02:bender_04:bender_05"
+    echo "RUNIDS=study_1:study_2:study_3:study_4:study_5:study_6"
+    echo 'rlaunch -t "prep_bold_run.sh $STUDYDIR/{s}/BOLD/{r}" $SUBJIDS $RUNIDS'
+    echo "Uses the -t (test) option to display all the commands that would"
+    echo "be run."
+    echo
+    echo "export BATCHDIR=$WORK/batch/launchscripts"
+    echo 'rlaunch "prep_bold_run.sh $STUDYDIR/{s}/BOLD/{r}" $SUBJIDS $RUNIDS -N 3 -n 18 -a 4 -r 01:00:00'
+    echo
+    echo "Executes prep_bold_run.sh for all study runs for the three"
+    echo "subjects, in parallel, on three nodes, with 4 threads per process."
+    echo "If the BATCHDIR variable is set, output logs will be saved there;"
+    echo "otherwise, results will be saved in the current directory."
+    echo
+    echo "Command options:"
+    echo "-t"
+    echo "    Test; just display all commands that would be run."
+    echo
+    echo "-J"
+    echo "    Job name. If not specified, a serial number JobXXX"
+    echo "    will be automatically assigned."
+    echo
+    echo "-f file"
+    echo "    Test for a file dependency. Any {} is replaced with the"
+    echo "    subject, and that subject is only run if the file exists."
+    echo
+    echo "-n file"
+    echo "    Test for an output that does not exist. Any {} is replaced"
+    echo "    with the subject, and that subject only runs if the file"
+    echo "    does not exist."
+    echo
+    echo "-g"
+    echo "    Generate subject IDs based on subject numbers. Must set the"
+    echo "    SUBJIDFORMAT environment variable. printf will be used to"
+    echo "    generate subject IDs based on the input numbers, based on"
+    echo "    SUBJIDFORMAT."
+    echo
+    echo "Launch options:"
+    echo "Run 'launch -h' to see all job submission options."
+    echo    
+    exit 1
+fi
+
+test=false
+runifexist=false
+runifmissing=false
+ids=true
+while getopts ":f:n:tJ:g" opt; do
+    case $opt in
+	t)
+	    test=true
+	    ;;
+	f)
+	    runifexist=true
+	    file="$OPTARG"
+	    ;;
+	n)
+	    runifmissing=true
+	    file="$OPTARG"
+	    ;;
+	J)
+	    jobname="$OPTARG"
+	    ;;
+	g)
+	    ids=false
+	    ;;
+    esac
+done
+shift $((OPTIND-1))
+
+command="$1"
+subjnos="$2"
+runids="$3"
+shift 3
+
+args="-ni"
+if [ $runifexist = true ]; then
+    args="$args -f $file"
+elif [ $runifmissing = true ]; then
+    args="$args -m $file"
+fi
+
+if [ $ids = true ]; then
+    subjects="$subjnos"
+else
+    subjects=$(subjids $subjnos)
+fi
+
+if [ -z "$BATCHDIR" ]; then
+    export BATCHDIR=.
+fi
+
+# determine file to write commands to
+if [ -n "$jobname" ]; then
+    jobfile=$BATCHDIR/${jobname}.sh
+    if [ -f "$jobfile" ]; then
+	echo "Error: job file already exists: $jobfile"
+	exit 1
+    fi
+else
+    jobfile=$(get_auto_jobfile.sh)
+fi
+
+if [ $test = true ]; then
+    run_runs.sh $args "$command" "$runids" "$subjects"
+else
+    run_runs.sh $args "$command" "$runids" "$subjects" > $jobfile
+fi
+
+if [ $test = true ]; then
+    exit 1
+fi
+
+cat $jobfile
+chmod +x $jobfile
+
+# set the output file and sbatch file to standard names
+file=$(basename $jobfile)
+name=$(echo $file | cut -d . -f 1)
+outfile=$BATCHDIR/${name}.out
+batchfile=$BATCHDIR/${name}.slurm
+
+launch -s $jobfile -J $name -o $outfile -f $batchfile -k "$@"
