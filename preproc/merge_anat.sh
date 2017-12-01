@@ -36,6 +36,15 @@ mov=$1
 fix=$2
 out=$3
 
+if [ $(imtest $mov) = 0 ]; then
+    echo "Moving image not found: $mov"
+    exit 1
+fi
+if [ $(imtest $fix) = 0 ]; then
+    echo "Fixed image not found: $fix"
+    exit 1
+fi
+
 mdir=$(dirname $mov)
 
 mov_name=$(basename $mov | cut -d . -f 1)
