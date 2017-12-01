@@ -2,8 +2,15 @@
 
 if [ $# -lt 1 ]; then
     echo "Usage: prep_bold_run.sh [-k] bold_dir"
+    echo
+    echo "Required:"
+    echo "bold_dir"
+    echo "    Path to directory with a raw functional timeseries image named"
+    echo "    bold.nii.gz. Outputs will be placed in this directory."
+    echo
+    echo "Options:"
     echo "-k"
-    echo "    keep intermediate files"
+    echo "    Keep intermediate files."
     exit 1
 fi
 
