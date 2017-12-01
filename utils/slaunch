@@ -30,7 +30,7 @@ if [ $# -lt 2 ]; then
     echo
     echo "runs 'convert_dicom.py bender_01', 'convert_dicom.py bender_02',"
     echo "'convert_dicom.py bender_03', and 'convert_dicom.py bender_04'"
-    echo "in parallel on one node, and writes logs to $WORK/batch."
+    echo 'in parallel on one node, and writes logs to $WORK/batch.'
     echo "Subject IDs are created from the subject numbers based on the"
     echo "SUBJIDFORMAT variable."
     echo
