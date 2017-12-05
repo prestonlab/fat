@@ -116,6 +116,7 @@ def rename_anat(sp, log):
     """Give anatomical scans standard names and backup intermediate files."""
     hdrs, dirs = dicom_headers(sp)
     anat_files = sp.glob('anatomy', '*.nii.gz')
+    anat_files.sort()
     highres_ind = 1
     other_dir = sp.path('anatomy', 'other')
     log.run('mkdir -p %s' % other_dir)
