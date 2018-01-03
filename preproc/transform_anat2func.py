@@ -4,8 +4,26 @@ from subjutil import *
 import os
 import re
 
-parser = SubjParser()
+s = """Tranform anatomical images to native functional space.
+
+Given transformation information calculated using epi_reg_ants,
+transforms commonly used anatomical images to native functional space.
+
+You must specify the reference run, which specifies which run to use
+as the common native functional space.
+
+If you have multiple anatomical scans for each subject, use the -a
+flag to specify which anatomical images to transform (e.g., '2' to
+specify the anatomical image collected on day 2).
+
+By default, will transform a number of commonly used anatomical images
+and masks. Can customize using the --images and --labels flags.
+"""
+
+parser = SubjParser(description=s, raw=True)
 parser.add_argument('refrun', help="reference run")
+parser.add_argument('-a', '--anat', default='',
+    help="anatomical image number (default: none)")
 parser.add_argument('--images', '-i',
                     help="file names of images to transform",
                     default='orig orig_brain')
@@ -37,7 +55,7 @@ refvol = sp.image_path('bold', args.refrun, 'bold_cor_mcf_avg_unwarp_brain')
 
 # apply the transformation to each structural file of interest
 for image_name in images:
-    in_file = sp.image_path('anatomy', image_name)
+    in_file = sp.image_path('anatomy', image_name + args.anat)
     out_file = impath(reg_data, image_name)
     cmd = 'flirt -interp spline -in %s -ref %s -applyxfm -init %s -out %s' % (
         in_file, refvol, anat2func, out_file)
@@ -45,7 +63,7 @@ for image_name in images:
 
 # can't use interpolation on label images
 for image_name in labels:
-    in_file = sp.image_path('anatomy', image_name)
+    in_file = sp.image_path('anatomy', image_name + args.anat)
     out_file = impath(reg_data, image_name)
     cmd = 'flirt -interp nearestneighbour -in %s -ref %s -applyxfm -init %s -out %s' % (
         in_file, refvol, anat2func, out_file)
