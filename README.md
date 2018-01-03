@@ -1,51 +1,7 @@
 FAT
 ===
 
-Functional analysis toolbox: scripts for analysis of fMRI data
-
-# Preprocessing
-
-There are a number of simple tools for running preprocessing and
-creating standard directory structure and file names. These tools
-include most of the basic functionality of `setup_subject.py`, and are
-designed to be easier to understand and fix when problems arise.
-
-Here is a list of available preprocessing scripts in the usual order
-of execution:
-
-* `convert_dicom.py` Converts DICOM files to Nifti format. This should
-  work on either data downloaded from XNAT or files that were exported
-  manually.
-* `rename_nifti.py` Creates standard sub-directories and renames Nifti
-  files to standard names.
-* `prep_bold_run.sh` Does basic processing of BOLD runs, including motion
-  correction, brain extraction, and quality assurance. Assumes that
-  files have been placed in a standard directory structure where each
-  run is in a file called `[SUBJECT_DIR]/BOLD/[RUN_NAME]/bold.nii.gz`.
-* `merge_anat.sh` Registers and averages anatomical (highres and coronal)
-  images. Prepares MPRAGE scans for FreeSurfer.
-* `run_freesurfer.sh` Simple script that runs a
-  standard FreeSurfer reconstruction on one subject.
-* `convert_freesurfer.py` Converts some important FreeSurfer files
-  into Nifti format and places them in the anatomy directory.
-* `reg_freesurfer.py` If you had multiple highres scans that you merged using merge_anat.sh,
-  run this to place the main FreeSurfer outputs into the spaces of the original highres
-  scans. Then when running prep_fieldmap.py and epi_reg_run.py, you can then use any of the
-  highres scans as a registration target (it's generally best to use the scan taken closest
-  in time to the functional scan you're registering).
-* `prep_fieldmap.py` Prepares a fieldmap for use with unwarping.
-* `epi_reg_run.py` Determines how to unwarp the functional data, and aligns 
-  functional data to structural scans.
-* `reg_unwarp_bold_run.py` Calculates alignment of each unwarped average
-  functional scan to an unwarped average reference scan, then applies
-  motion correction, unwarping, co-registration, and mean bias correction
-  to a raw functional scan.
-
-See [Preprocessing](https://github.com/prestonlab/fat/wiki/fMRI-Preprocessing) for more information.
-
-## Processing all your data
-
-All scripts are designed to do only the minimum amount of processing; for example, prep_bold_run.sh only processes a single run. This allows you to run processing in whatever way makes the most sense for you. See [Running Scripts](https://github.com/prestonlab/fat/wiki/Running-Scripts) for different ways to process multiple subjects and functional scanning runs.
+Functional analysis toolbox: scripts for analysis of fMRI data. See the [Wiki](https://github.com/prestonlab/fat/wiki) for detailed documentation.
 
 ## Setting up your environment
 
