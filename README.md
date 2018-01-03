@@ -1,7 +1,7 @@
 FAT
 ===
 
-Functional analysis toolbox: scripts for analysis of fMRI data. See the [Wiki](https://github.com/prestonlab/fat/wiki) for detailed documentation.
+Functional analysis toolbox: scripts for analysis of fMRI data. See the [Wiki](https://github.com/prestonlab/fat/wiki) for detailed documentation. If you want to use the toolbox for preprocessing fMRI data, the [Preprocessing Tutorial](https://github.com/prestonlab/fat/wiki/Tutorial) is a good place to start.
 
 ## Setting up your environment
 
