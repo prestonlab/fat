@@ -19,7 +19,7 @@ log.run('mkdir -p %s' % reg_data)
 log.run('mkdir -p %s' % reg_xfm)
 
 xfm_base = os.path.join(reg_xfm, 'orig-template_')
-t1_brain = sp.image_path('anatomy', 'orig_brain.nii.gz')
+highres = sp.image_path('anatomy', 'orig_brain')
 
 # from buildtemplateparallel.sh
 log.run('ANTS 3 -m CC[{template},{highres},1,5] -t SyN[0.25] -r Gauss[3,0] -o {xfm} -i 30x90x20 --use-Histogram-Matching  --number-of-affine-iterations 10000x10000x10000x10000x10000 --MI-option 32x16000'.format(
