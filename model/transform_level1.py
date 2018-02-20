@@ -61,7 +61,7 @@ islabel = [False,False,True]
 native_dir = os.path.join(args.featdir, 'native')
 native_stats_dir = os.path.join(args.featdir, 'native', 'stats')
 if os.path.exists(native_dir):
-    continue
+    raise IOError('Backup directory already exists.')
 
 if not os.path.exists(native_dir):
     log.run('mkdir -p %s' % native_dir)
