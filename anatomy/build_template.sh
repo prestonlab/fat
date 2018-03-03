@@ -34,9 +34,10 @@ cd $template_dir
 files=$(ls ${image_prefix}*.nii.gz | tr '\n' ' ')
 
 nj=$(echo $files | wc -w)
-if [ $nj -gt 24 ]; then
-    nj=24
+if [ $nj -gt 8 ]; then
+    nj=8
 fi
+
 init=${template_dir}/init_template.nii.gz
 
 echo "running buildtemplateparallel.sh"
@@ -45,6 +46,9 @@ echo "pwd: $pd"
 echo "threads: $nj"
 echo "init: $init"
 echo "files: $files"
+
+# make sure the parallel processes don't step on one another
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=3
 
 if [ ! -f $init ]; then
     # build an initial template using rigid, then affine, alignment
