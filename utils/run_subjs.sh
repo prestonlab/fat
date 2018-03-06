@@ -1,51 +1,53 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-    echo "run_subjs.sh   Run a command on multiple subjects."
-    echo
-    echo "Usage: run_subjs.sh [OPTION] commands [SUBJNOS]"
-    echo
-    echo "Options:"
-    echo "-q"
-    echo "       do not print commands before executing"
-    echo
-    echo "-i"
-    echo "       subject inputs are IDs (e.g. bender_01) instead of"
-    echo "       numbers (e.g. 1). If subjects not specified, the"
-    echo "       SUBJIDS environment variable will be used instead"
-    echo "       of SUBJNOS."
-    echo
-    echo "-n"
-    echo "       do not execute commands"
-    echo
-    echo "-p nproc"
-    echo "       run commands in parallel (requires GNU parallel)."
-    echo "       Will run $nproc commands at once until all are finished."
-    echo
-    echo "In the commands string, any '{}' will be replaced with"
-    echo "subject identifier. Takes subject numbers (e.g. 1, 2)"
-    echo "and constructs them in the format \$STUDY_DD, e.g. mystudy_01."
-    echo "If subject numbers aren't specified, but the environment"
-    echo "variable SUBJNOS is set, that will be used to set the"
-    echo "subjects list. Subject numbers in SUBJNOS should be colon-"
-    echo "separated, e.g. 1:2:3."
-    echo
-    echo "Does the same thing as a for loop over subjects, but saves"
-    echo "some typing and makes it easy to specify which subset of"
-    echo "subjects to run. Assumes that subjects have two zero-padded"
-    echo "digits in their identifier. If not, can set the SUBJIDS"
-    echo "environment variable and use the -i option."
-    echo
-    echo "Example"
-    echo "To print the ID for the first four subjects in a study"
-    echo "called mystudy:"
-    echo "export STUDY=mystudy # only have to run this once"
-    echo "run_subjs.sh 'echo {}' 1:2:3:4"
-    echo
-    echo "Using the SUBJIDS environment variable:"
-    echo "export SUBJIDS=No_003:No_004:No_005"
-    echo "run_subjs.sh -i 'echo {}'"
-    echo
+    cat <<EOF
+run_subjs.sh   Run a command on multiple subjects.
+
+Usage: run_subjs.sh [OPTION] commands [SUBJNOS]
+
+Options:
+-q
+       do not print commands before executing
+
+-i
+       subject inputs are IDs (e.g. bender_01) instead of
+       numbers (e.g. 1). If subjects not specified, the
+       SUBJIDS environment variable will be used instead
+       of SUBJNOS.
+
+-n
+       do not execute commands
+
+-p nproc
+       run commands in parallel (requires GNU parallel).
+       Will run  commands at once until all are finished.
+
+In the commands string, any '{}' will be replaced with
+subject identifier. Takes subject numbers (e.g. 1, 2)
+and constructs them in the format $STUDY_DD, e.g. mystudy_01.
+If subject numbers aren't specified, but the environment
+variable SUBJNOS is set, that will be used to set the
+subjects list. Subject numbers in SUBJNOS should be colon-
+separated, e.g. 1:2:3.
+
+Does the same thing as a for loop over subjects, but saves
+some typing and makes it easy to specify which subset of
+subjects to run. Assumes that subjects have two zero-padded
+digits in their identifier. If not, can set the SUBJIDS
+environment variable and use the -i option.
+
+Example
+To print the ID for the first four subjects in a study
+called mystudy:
+export STUDY=mystudy # only have to run this once
+run_subjs.sh 'echo {}' 1:2:3:4
+
+Using the SUBJIDS environment variable:
+export SUBJIDS=No_003:No_004:No_005
+run_subjs.sh -i 'echo {}'
+
+EOF
     exit 1
 fi
 
