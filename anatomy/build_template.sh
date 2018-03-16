@@ -61,7 +61,7 @@ files=$(ls ${image_prefix}*.nii.gz | tr '\n' ' ')
 
 nj=$(echo $files | wc -w)
 if [ $nj -gt $max_nj ]; then
-    nj=$max_mj
+    nj=$max_nj
 fi
 
 init=${template_dir}/init_template.nii.gz
