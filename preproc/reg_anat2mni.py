@@ -22,10 +22,13 @@ log.run('mkdir -p %s' % reg_xfm)
 
 xfm_base = os.path.join(reg_xfm, 'orig-template_')
 highres = sp.image_path('anatomy', 'orig_brain' + args.anat)
+highres_cor = sp.image_path('anatomy', 'orig_brain_cor{}'.format(args.anat))
+
+log.run('N4BiasFieldCorrection -d 3 -i {} -o {}'.format(highres, highres_cor))
 
 # from buildtemplateparallel.sh
 log.run('ANTS 3 -m CC[{template},{highres},1,5] -t SyN[0.25] -r Gauss[3,0] -o {xfm} -i 30x90x20 --use-Histogram-Matching  --number-of-affine-iterations 10000x10000x10000x10000x10000 --MI-option 32x16000'.format(
-    template=args.template, highres=highres, xfm=xfm_base))
+    template=args.template, highres=highres_cor, xfm=xfm_base))
 
 xfm_file = xfm_base + 'Affine.txt'
 warp_file = xfm_base + 'Warp.nii.gz'
