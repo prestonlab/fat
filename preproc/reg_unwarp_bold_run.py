@@ -16,6 +16,8 @@ parser.add_argument('runid',
                     help="data in [subjdir]/BOLD/[runid] will be processed")
 parser.add_argument('refrun',
                     help="runid for the reference functional run to register to")
+parser.add_argument('-l', '--linear', help="use only linear transforms (default is to use nonlinear SyN transform)",
+                    action='store_true')
 parser.add_argument('-k', '--keep', help="keep intermediate files",
                     action='store_true')
 args = parser.parse_args()
@@ -69,8 +71,13 @@ else:
     itk_file = xfm_base + '0GenericAffine.mat'
     txt_file = xfm_base + '0GenericAffine.txt'
     if not os.path.exists(itk_file):
-        log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t s'.format(
-            mov=srcvol, fix=refvol, out=xfm_base, nitk=nitk))
+        if args.linear:
+            tflag = 'a' # rigid + affine
+        else:
+            tflag = 's' # rigid + affine + deformable syn
+        
+        log.run('antsRegistrationSyN.sh -d 3 -m {mov} -f {fix} -o {out} -n {nitk} -t {transform}'.format(
+            mov=srcvol, fix=refvol, out=xfm_base, nitk=nitk, transform=tflag))
     
     # convert the affine part to FSL format
     reg_file = os.path.join(reg_xfm, '%s-refvol.mat' % args.runid)
@@ -82,16 +89,19 @@ else:
     log.run('applywarp -i %s -r %s -o %s --premat=%s -w %s --postmat=%s --interp=spline --rel --paddingsize=1' %
         (bold, refvol, bold_init, mcf_file, warp_file, reg_file))
     log.run('fslmaths %s -Tmean %s' % (bold_init, bold_init_avg))
-    
-    # apply co-registration warp. Tried to figure out how to do this
-    # with FSL so that all transformations would be in one step, but
-    # as of 2017-02-06 there doesn't seem to be a tool for converting
-    # ITK/ANTS warps to FSL format. So will settle for two
-    # interpolations to take the raw bold to motion-corrected,
-    # unwarped common functional space
-    warp = xfm_base + '1Warp.nii.gz'
-    log.run('antsApplyTransforms -d 3 -e 3 -i {} -o {} -r {} -t {} -n BSpline'.format(
-        bold_init, bold_reg, refvol, warp))
+
+    if args.linear:
+        log.run('cp {} {}'.format(bold_init, bold_reg))
+    else:
+        # apply co-registration warp. Tried to figure out how to do this
+        # with FSL so that all transformations would be in one step, but
+        # as of 2017-02-06 there doesn't seem to be a tool for converting
+        # ITK/ANTS warps to FSL format. So will settle for two
+        # interpolations to take the raw bold to motion-corrected,
+        # unwarped common functional space
+        warp = xfm_base + '1Warp.nii.gz'
+        log.run('antsApplyTransforms -d 3 -e 3 -i {} -o {} -r {} -t {} -n BSpline'.format(
+            bold_init, bold_reg, refvol, warp))
 
     if not args.keep:
         log.run('rm -f %s' % bold_init)
