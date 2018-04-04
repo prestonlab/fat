@@ -122,14 +122,14 @@ for no in $nos; do
     if [ $runifexist = true ]; then
 	# check for a dependency file
 	subj_file=$(echo "$file" | sed s/{}/$subject/g)
-	if [ ! -f "$subj_file" ]; then
+	if [ ! -a "$subj_file" ]; then
 	    echo "Missing file: $subj_file"
 	    continue
 	fi
     elif [ $runifmissing = true ]; then
 	# check for a missing output file
 	subj_file=$(echo "$file" | sed s/{}/$subject/g)
-	if [ -f "$subj_file" ]; then
+	if [ -a "$subj_file" ]; then
 	    echo "File exists: $subj_file"
 	    continue
 	fi
