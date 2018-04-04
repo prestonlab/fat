@@ -75,9 +75,9 @@ if [ -z "$nos" ]; then
 	run_command=`echo $command | sed s/{r}/$run/g | sed s/{}/$run/g`
 	if [ $runifexist = true -o $runifmissing = true ]; then
 	    run_file=$(echo "$file" | sed s/{r}/$run/g | sed s/{}/$run/g)
-	    if [ $runifexist = true -a ! -f "$run_file" ]; then
+	    if [ $runifexist = true -a ! -a "$run_file" ]; then
 		continue
-	    elif [ $runifmissing = true -a -f "$run_file" ]; then
+	    elif [ $runifmissing = true -a -a "$run_file" ]; then
 		continue
 	    fi
 	fi
@@ -106,9 +106,9 @@ else
 	    run_command=`echo $subj_command | sed s/{r}/$run/g`
 	    if [ $runifexist = true -o $runifmissing = true ]; then
 		run_file=$(echo "$file" | sed s/{s}/$subject/g | sed s/{r}/$run/g)
-		if [ $runifexist = true -a ! -f "$run_file" ]; then
+		if [ $runifexist = true -a ! -a "$run_file" ]; then
 		    continue
-		elif [ $runifmissing = true -a -f "$run_file" ]; then
+		elif [ $runifmissing = true -a -a "$run_file" ]; then
 		    continue
 		fi
 	    fi
