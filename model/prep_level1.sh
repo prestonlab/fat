@@ -5,61 +5,35 @@ then
     echo "Prepare level 1 analysis from an FSL template"
     echo
     echo "Usage:"
-    echo "`basename $0` template model runids [subjids]"
+    echo "`basename $0` example outdir model orig_subj orig_run all_subj all_run"
+    echo
+    echo "Example:"
+    echo 'prep_level1.sh disp_stim_mistr_02_disp_1.fsf $WORK/mistr/batch/glm/disp_stim/fsf disp_stim mistr_02 disp_1 $SUBJIDS $RUNS'
     echo
     echo "Inputs:"
     echo "template   path to FSF template"
     echo "model      name of statistical model"
     echo "runids     list of run IDs (separated by :)"
-    echo "subjids    list of subject IDs. If not specified,"
-    echo "           SUBJIDS environment variable will be used."
-    echo
-    echo "Level 1 Template variables:"
-    echo "STUDYDIR   path to directory with study data"
-    echo "SUBJID     full subject identifier, e.g. prex_01"
-    echo "RUNID      full identifier for each run, e.g. pre_1"
-    echo
-    echo "Environment variables used:"
-    echo "STUDYDIR   path to directory with subject directories"
-    echo "SUBJIDS    (optional) list of subject identifiers"
+    echo "subjids    list of subject IDs."
     echo
     exit 1
 fi
 
-template=$1
-model=$2
-runids="$3"
-if [ $# -lt 4 ]; then
-    if [ -u $SUBJIDS ]; then
-	echo "ERROR: Must specify subject identifiers."
-	exit 1
-    fi
-    sids="`echo $SUBJIDS | sed "s/:/ /g"`"
-else
-    sids="`echo $4 | sed "s/:/ /g"`"
-fi
+example="$1"
+outdir="$2"
+model="$3"
+orig_subj="$4"
+orig_run="$5"
+all_subj="$6"
+all_run="$7"
 
-# study-level directory for automatically generated scripts and
-# later higher-level analysis
-glmdir=${STUDYDIR}/batch/glm
-modeldir=${glmdir}/${model}
-fsfdir=${modeldir}/fsf
-mkdir -p ${fsfdir}
+mkdir -p "$outdir"
 
-fsftemplate=${modeldir}/${model}_level1.fsf
-cp ${template} ${fsftemplate}
-
-rids="`echo $runids | sed "s/:/ /g"`"
-for subjid in $sids; do
-    for runid in $rids; do
-	# path to customized FSF file
-	customfsf=${fsfdir}/${model}_${subjid}_${runid}.fsf
-
-	# use sed to create the customized file
-	sed -e "s|STUDYDIR|${STUDYDIR}|g" \
-	    -e "s|SUBJID|${subjid}|g" \
-	    -e "s|RUNID|${runid}|g" \
-	    <${fsftemplate} >${customfsf}
+for subj in $(echo $all_subj | tr ':' ' '); do
+    for run in  $(echo $all_run | tr ':' ' '); do
+	customfsf="$outdir"/${model}_${subj}_${run}.fsf
+	sed -e "s|${orig_subj}|${subj}|g" \
+	    -e "s|${orig_run}|${run}|g" \
+	    <$example >$customfsf
     done
 done
-
