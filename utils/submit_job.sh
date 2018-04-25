@@ -17,7 +17,7 @@ commands to run.
 -J
     Job name. Information about the job will be saved in
     \$BATCHDIR/\${jobname}XX.{sh,slurm,out}, where XX is a
-    serial number. Default is: Job
+    serial number. Default is 'Job'.
 
 -s script
     Run commands in \$script. Commands on different lines will
@@ -45,6 +45,7 @@ submit_job.sh 'echo "hello world"' -N 1 -n 1 -r 00:01:00 -p development
 echo 'echo "hello world 1"' > myscript.sh
 echo 'echo "hello world 2"' >> myscript.sh
 submit_job.sh -s myscript.sh -N 1 -n 2 -r 00:01:00 -p development
+
 EOF
     exit 1
 fi
