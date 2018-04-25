@@ -8,14 +8,20 @@ if [ $# -lt 1 ]; then
     echo "where different lines should be run in parallel, or specify"
     echo "commands to run."
     echo
-    echo "-s script"
-    echo '    Run commands in $script. Commands on different lines will'
-    echo "    be run in parallel."
-    echo
     echo "-x"
     echo "    Run remora on the command (only works with one command)"
     echo "    to monitor resource usage (e.g. memory) periodically."
     echo '    Results will be saved in $BATCHDIR/JobXXX.remora.'
+    echo
+    echo "-J"
+    echo "    Job name. Information about the job will be saved in"
+    echo "    $BATCHDIR/${jobname}XX.{sh,slurm,out}, where XX is a"
+    echo "    serial number. Default is: Job"
+    echo
+    echo "-s script"
+    echo '    Run commands in $script. Commands on different lines will'
+    echo "    be run in parallel. If this option is used, it must come"
+    echo "    last before any launch options."
     echo
     echo "Run launch -h for explanation of other options."
     echo
@@ -48,25 +54,19 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-if [ -z $BATCHDIR ]; then
-    echo "Error: Must define BATCHDIR to indicate directory to save jobs in."
-    exit 1
-fi
-
 script=""
 remora=false
-script_arg=0
-remora_arg=0
-jobname=""
+jobname=Job
 while getopts ":s:xJ:" opt; do
     case $opt in
         s)
+	    # read script file and stop reading options (prevents
+	    # confusion between submit_job options and launch options)
             script="$OPTARG"
-	    script_arg=2
+	    break
             ;;
 	x)
 	    remora=true
-	    remora_arg=1
 	    ;;
 	J)
 	    jobname="$OPTARG"
@@ -74,22 +74,14 @@ while getopts ":s:xJ:" opt; do
     esac
 done
 
-# -s and -x may also occur in launch options, so account manually
-shift $((script_arg + remora_arg))
+shift $((OPTIND-1))
 
-if [ -n "$jobname" ]; then
-    jobfile=$BATCHDIR/${jobname}.sh
-    if [ -f "$jobfile" ]; then
-	echo "Error: job file already exists: $jobfile"
-	exit 1
-    fi
-else
-    # get the next job file name that doesn't exist yet
-    jobfile=$(get_auto_jobfile.sh)
-fi
+# get the next job file for this basename, in the BATCHDIR
+jobfile=$(get_auto_jobfile.sh "$jobname")
 
 if [ -n "$script" ]; then
     # script with one or more commands
+    echo "Script: $script"
     cp $script $jobfile
     chmod +x $jobfile
 else
