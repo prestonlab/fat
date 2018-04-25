@@ -39,8 +39,9 @@ if [ $# -lt 2 ]; then
     echo "    Test; just display all commands that would be run."
     echo
     echo "-J"
-    echo "    Job name. If not specified, a serial number JobXXX"
-    echo "    will be automatically assigned."
+    echo "    Job name. Information about the job will be saved in"
+    echo "    $BATCHDIR/${jobname}XX.{sh,slurm,out}, where XX is a"
+    echo "    serial number. Default is: Job"
     echo
     echo "-f file"
     echo "    Test for a file dependency. Any {} is replaced with the"
@@ -67,6 +68,7 @@ test=false
 runifexist=false
 runifmissing=false
 ids=true
+jobname=Job
 while getopts ":f:n:tJ:g" opt; do
     case $opt in
 	t)
@@ -101,15 +103,7 @@ if [ -z "$BATCHDIR" ]; then
 fi
 
 # determine file to write commands to
-if [ -n "$jobname" ]; then
-    jobfile=$BATCHDIR/${jobname}.sh
-    if [ -f "$jobfile" ]; then
-	echo "Error: job file already exists: $jobfile"
-	exit 1
-    fi
-else
-    jobfile=$(get_auto_jobfile.sh)
-fi
+jobfile=$(get_auto_jobfile.sh "$jobname")
 
 for no in $nos; do
     # get the subject identifier
