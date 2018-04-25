@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ -z $BATCHDIR ]; then
+    echo "Error: Must define BATCHDIR to indicate directory to save jobs in." >&2
+    exit 1
+fi
 
 mkdir -p $BATCHDIR
 
