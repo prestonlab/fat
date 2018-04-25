@@ -16,5 +16,5 @@ set2 = set(sys.argv[2].split(':'))
 diff = list(set1.difference(set2))
 diff_number = [int(d) for d in diff]
 diff_number.sort()
-print ':'.join(['%02d' % d for d in diff_number])
+print ':'.join(['%d' % d for d in diff_number])
 
