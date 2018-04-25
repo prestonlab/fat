@@ -32,8 +32,9 @@ Command options:
     Test; just display all commands that would be run.
 
 -J
-    Job name. If not specified, a serial number JobXXX
-    will be automatically assigned.
+    Job name. Information about the job will be saved in
+    \$BATCHDIR/\${jobname}XX.{sh,slurm,out}, where XX is a
+    serial number. Default is 'Job'.
 
 -f file
     Test for a file dependency. A given command is only run
@@ -63,6 +64,7 @@ test=false
 runifexist=false
 runifmissing=false
 ids=true
+jobname=Job
 while getopts ":f:n:tJ:g" opt; do
     case $opt in
 	t)
@@ -109,15 +111,7 @@ if [ -z "$BATCHDIR" ]; then
 fi
 
 # determine file to write commands to
-if [ -n "$jobname" ]; then
-    jobfile=$BATCHDIR/${jobname}.sh
-    if [ -f "$jobfile" ]; then
-	echo "Error: job file already exists: $jobfile"
-	exit 1
-    fi
-else
-    jobfile=$(get_auto_jobfile.sh)
-fi
+jobfile=$(get_auto_jobfile.sh "$jobname")
 
 if [ $test = true ]; then
     run_runs.sh $args "$command" "$runids" "$subjects"
