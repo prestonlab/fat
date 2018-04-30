@@ -1,11 +1,10 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Usage: zstat_randomise.sh [-s studydir] [-v voxalpha] [-i interp] [-n nperm] [-m mask] [-a anat] filepath subjids"
+    echo "Usage: zstat_randomise.sh [-s studydir] [-i interp] [-n nperm] [-m mask] [-a anat] filepath subjids"
     exit 1
 fi
 
-voxalpha=0.01
 interp=BSpline
 mask=""
 n_perm=2000
@@ -15,9 +14,6 @@ while getopts ":s:a:i:n:m:" opt; do
     case $opt in
 	s)
 	    studydir=$OPTARG
-	    ;;
-	v)
-	    voxalpha=$OPTARG
 	    ;;
 	a)
 	    anat=$OPTARG
@@ -40,7 +36,6 @@ subjects=$2
 
 echo "Options:"
 echo "filepath: $filepath"
-echo "alpha:    $voxalpha"
 echo "nperm:    $n_perm"
 echo "interp:   $interp"
 echo "mask:     $mask"
@@ -61,8 +56,8 @@ for subject in $(echo $subjects | tr ':' ' '); do
     if [ -n "$mask" ]; then
 	flags+=("-p $mask")
     fi
-    if [ -n "$alpha" ]; then
-	flags+=("-a $alpha")
+    if [ -n "$anat" ]; then
+	flags+=("-a $anat")
     fi
     zstat_std=$studydir/$subject/$filepath/zstat_std.nii.gz
     if [ ! -f $zstat_std ]; then
