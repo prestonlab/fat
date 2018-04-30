@@ -18,7 +18,7 @@ log = sp.init_log(args.model, 'model', args)
 # find FSF files for this subject
 data_dir = os.path.dirname(sp.path('base'))
 model_dir = os.path.join(data_dir, 'batch', 'glm', args.model)
-pattern = '%s_%s*.fsf' % (args.model, args.subject)
+pattern = '{}_{}*.fsf'.format(args.model, args.subject)
 fsf_files = glob(os.path.join(model_dir, 'fsf', pattern))
 fsf_files.sort()
 
@@ -26,49 +26,49 @@ log.start()
 
 # temporary subject directory for individual beta images
 out_dir = os.path.join(model_dir, 'beta', args.subject)
-log.run('mkdir -p %s' % out_dir)
+log.run('mkdir -p {}'.format(out_dir))
 
 beta_files = []
 for f in fsf_files:
     # use a feat utility to create the design matrix
     (base, ext) = os.path.splitext(f)
     name = os.path.basename(base)
-    log.run('feat_model %s' % base)
+    log.run('feat_model {}'.format(base))
 
     design = read_fsl_design(f)
     bold = design['feat_files']
     if not bold.endswith('.nii.gz'):
         bold += '.nii.gz'
     if not os.path.exists(bold):
-        raise IOError('BOLD file not found: %s' % bold)
+        raise IOError('BOLD file not found: {}'.format(bold))
 
     # obtain individual trial estimates
     if args.mask is not None:
-        log.run('betaseries.py %s %s %d %s' % (base, out_dir, args.n, args.mask))
+        log.run('betaseries.py {} {} {:d} -m {}'.format(base, out_dir,
+                                                        args.n, args.mask))
     else:
-        log.run('betaseries.py %s %s %d' % (base, out_dir, args.n))
+        log.run('betaseries.py {} {} {:d}'.format(base, out_dir, args.n))
 
     # get one file with estimates for each trial/stimulus
     beta_file = os.path.join(out_dir, name + '.nii.gz')
     ev_files = []
     for i in range(args.n):
-        ev_files.append(os.path.join(out_dir, 'ev%03d.nii.gz' % i))
-    cmd = 'fslmerge -t %s %s' % (beta_file, ' '.join(ev_files))
-    log.run(cmd)
+        ev_files.append(os.path.join(out_dir, 'ev{:03d}.nii.gz'.format(i)))
+    log.run('fslmerge -t {} {}'.format(beta_file, ' '.join(ev_files)))
     beta_files.append(beta_file)
 
     # remove temp files
-    log.run('rm %s' % ' '.join(ev_files))
-    log.run('rm %s*.{con,png,ppm,frf,mat,min,trg}' % base)
+    log.run('rm {}'.format(' '.join(ev_files)))
+    log.run('rm {}*.{{con,png,ppm,frf,mat,min,trg}}'.format(base))
 
 # merge all runs into one file
 out_file = os.path.join(model_dir, 'beta',
-                        '%s_beta.nii.gz' % args.subject)
-cmd = 'fslmerge -t %s %s' % (out_file, ' '.join(beta_files))
+                        '{}_beta.nii.gz'.format(args.subject))
+cmd = 'fslmerge -t {} {}'.format(out_file, ' '.join(beta_files))
 log.run(cmd)
 
 # delete individual run beta files
-log.run('rm %s' % ' '.join(beta_files))
-log.run('rmdir %s' % out_dir)
+log.run('rm {}'.format(' '.join(beta_files)))
+log.run('rmdir {}'.format(out_dir))
 
 log.finish()

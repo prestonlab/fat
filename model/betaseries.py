@@ -2,6 +2,18 @@
 """betaseries: script for computing beta-series regression on fMRI data
 """
 
+from argparse import ArgumentParser
+parser = ArgumentParser(description="Estimate betaseries using LS-S regression (Mumford et al. 2014).")
+parser.add_argument('modelbase', type=str,
+                    help="path to model files, without file extension")
+parser.add_argument('betadir', type=str,
+                    help="path to directory in which to save betaseries image")
+parser.add_argument('ntrials', type=int,
+                    help="number of trials to be estimated")
+parser.add_argument('-m', '--mask', type=str,
+                    help="(optional) path to mask image, indicating included voxels")
+args = parser.parse_args()
+
 from mvpa2.misc.fsl.base import FslGLMDesign, read_fsl_design
 from mvpa2.datasets.mri import fmri_dataset
 
@@ -14,39 +26,39 @@ from scipy.sparse import spdiags
 from scipy.linalg import toeplitz
 from mvpa2.datasets.mri import *
 import os
-import sys
 from copy import copy
 
-fsffile = sys.argv[1]+'.fsf'
-matfile = sys.argv[1]+'.mat'
-betadir = sys.argv[2]
-ntrials = int(sys.argv[3])
+fsffile = args.modelbase + '.fsf'
+matfile = args.modelbase + '.mat'
+betadir = args.betadir
+ntrials = args.ntrials
 
 time_res = 0.1
 ntrials_total = ntrials
 good_evs = range(0,ntrials)
 
-print "Loading design..."
+print("Loading design...")
 design = read_fsl_design(fsffile)
 desmat = FslGLMDesign(matfile)
 
 nevs = desmat.mat.shape[1]
 ntp = desmat.mat.shape[0]
 
-# load data
-print "Loading data..."
+# find input bold data
+print("Loading data...")
 bold = design['feat_files']
 if not bold.endswith('.nii.gz'):
     bold += '.nii.gz'
 if not os.path.exists(bold):
-    raise IOError('BOLD file not found: %s' % bold)
-if len(sys.argv) > 4:
+    raise IOError('BOLD file not found: {}'.format(bold))
+
+if args.mask is not None:
     # user specified a mask
-    mask = sys.argv[4]
+    mask = args.mask
     if not mask.endswith('.nii.gz'):
         mask += '.nii.gz'
     if not os.path.exists(mask):
-        raise IOError('Mask file not found: %s' % mask)
+        raise IOError('Mask file not found: {}'.format(mask))
     data = fmri_dataset(bold, mask=mask)
 else:
     # load all voxels
@@ -54,13 +66,13 @@ else:
 nvox = data.nfeatures
 
 # design matrix
-print "Creating design matrices..."
+print("Creating design matrices...")
 if design.has_key('confoundev_files'):
     conf_file = design['confoundev_files']
-    print "Loading confound file %s..." % conf_file
+    print("Loading confound file {}...".format(conf_file))
     dm_nuisance = N.loadtxt(conf_file)
 else:
-    print "No confound file indicated. Including no confound regressors..."
+    print("No confound file indicated. Including no confound regressors...")
     dm_nuisance = None
 dm_extra = desmat.mat[:,ntrials:]
 trial_ctr = 0
@@ -89,7 +101,7 @@ for e in range(len(good_evs)):
     beta_maker[trial_ctr,:]=beta_maker_loop[0,:]
     trial_ctr+=1
 
-print "Estimating model..."
+print("Estimating model...")
 # this uses Jeanette's trick of extracting the beta-forming vector for each
 # trial and putting them together, which allows estimation for all trials
 # at once
@@ -99,4 +111,5 @@ glm_res_full = N.dot(beta_maker,data.samples)
 for e in range(len(glm_res_full)):
     outdata = zscore(glm_res_full[e])
     ni = map2nifti(data,data=outdata)
-    ni.to_filename(betadir+'/ev%03d.nii.gz'%(good_evs[e]))
+    ni.to_filename(os.path.join(betadir,
+                                'ev{:03d}.nii.gz'.format(good_evs[e])))
