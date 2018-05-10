@@ -15,7 +15,19 @@ to the real EVs, which include for example temporal derivatives of the
 original EVs). The trials to model are assumed to be the first ones listed.
 For example, if 30 orig EVs are included in the model, and ntrials is set
 to 20, then the last 10 EVs are assumed to be modeling things other than
-the individual trials.
+the individual trials. The exception are temporal derivatives of the trial
+EVs, which are assumed to be interleaved with the original trial EVs.
+
+If derivatives are included in the model, they will be included as
+additional regressors. If --sep-derivs is included as an option, then the
+current trial derivative and other trial derivatives will be estimated
+separately.
+
+For unknown reasons, each trial image is z-scored over voxels. This
+means that the value of a voxel in a given trial image will depend on
+things like the size of the mask and values at other voxels. For
+legacy purposes, for now that is still the default. To write raw
+betaseries estimates, use the --no-zscore flag.
 
 You may also specify confound regressors (defined in the fsf file under
 'confoundev_files'), which will be included as regressors of no interest.
@@ -31,6 +43,10 @@ parser.add_argument('ntrials', type=int,
                     help="number of trials to be estimated")
 parser.add_argument('-m', '--mask', type=str,
                     help="(optional) path to mask image, indicating included voxels")
+parser.add_argument('-n', '--no-zscore', action="store_true",
+                    help="do not z-score trial images over voxels")
+parser.add_argument('-s', '--sep-derivs', action="store_true",
+                    help="use separate trial and other derivative regressors")
 args = parser.parse_args()
 
 from mvpa2.misc.fsl.base import FslGLMDesign, read_fsl_design
@@ -44,15 +60,45 @@ import os
 fsffile = args.modelbase + '.fsf'
 matfile = args.modelbase + '.mat'
 betadir = args.betadir
-ntrials = args.ntrials
-
-good_evs = range(0,ntrials)
+n_trial = args.ntrials
 
 print("Loading design...")
 design = read_fsl_design(fsffile)
 desmat = FslGLMDesign(matfile)
 
-ntp, nevs = desmat.mat.shape
+n_tp, n_evs = desmat.mat.shape
+
+# number of original regressors and all regressors including
+# derivatives
+n_orig = design['fmri(evs_orig)']
+
+# check which trial regressors have temporal derivatives
+isderiv = N.zeros(n_orig, dtype=bool)
+for i in range(n_orig):
+    f = 'fmri(deriv_yn{:d})'.format(i+1)
+    isderiv[i] = design[f]
+
+# check if derivatives are included for all trials
+n_trial_deriv = N.sum(isderiv)
+if n_trial_deriv == n_trial:
+    deriv = True
+elif n_trial_deriv == 0:
+    deriv = False
+else:
+    raise ValueError('Must either include derivatives for all trials or none.')
+    
+if deriv:
+    # temporal derivatives are included. FEAT interleaves them with
+    # the original ones, starting with the first original regressor
+    n_trial_evs = n_trial * 2
+    trial_evs = range(0, n_trial_evs, 2)
+    deriv_evs = range(1, n_trial_evs, 2)
+    print("Using derivatives of trial regressors.")
+else:
+    # trial regressors are just the first N regressors
+    n_trial_evs = n_trial
+    trial_evs = range(0, n_trial)
+    deriv_evs = []
 
 # find input bold data
 print("Loading data...")
@@ -74,8 +120,10 @@ else:
     # load all voxels
     data = fmri_dataset(bold)
 
-# design matrix
-print("Creating design matrices...")
+# everything after the trial EVs is regressors of no interest
+dm_extra = desmat.mat[:,n_trial_evs:]
+
+# additional confound regressors
 if design.has_key('confoundev_files'):
     conf_file = design['confoundev_files']
     print("Loading confound file {}...".format(conf_file))
@@ -83,32 +131,51 @@ if design.has_key('confoundev_files'):
 else:
     print("No confound file indicated. Including no confound regressors...")
     dm_nuisance = None
-dm_extra = desmat.mat[:,ntrials:]
 
 # create a beta-forming vector for each trial
-beta_maker = N.zeros((ntrials, ntp))
-for e in range(len(good_evs)):
-    # trial of interest
-    ev = good_evs[e]
-    dm_toi = desmat.mat[:,ev,N.newaxis]
+print("Creating design matrices...")
+beta_maker = N.zeros((n_trial, n_tp))
+for i, ev in enumerate(trial_evs):
+    # this trial
+    if deriv and args.sep_derivs:
+        # if using separate derivatives, include a dedicated regressor
+        # for this trial
+        dm_trial = N.hstack((desmat.mat[:,ev,N.newaxis],
+                             desmat.mat[:,deriv_evs[i],N.newaxis]))
+    else:
+        # just the one regressor for this trial
+        dm_trial = desmat.mat[:,ev,N.newaxis]
 
-    # other trials
-    other_good_evs = [x for x in good_evs if x != ev]
-    dm_otherevs = desmat.mat[:,other_good_evs]
-    dm_otherevs = N.sum(dm_otherevs[:,:,N.newaxis], 1)
+    # other trials, summed together
+    other_trial_evs = [x for x in trial_evs if x != ev]
+    if deriv:
+        if args.sep_derivs:
+            # only include derivatives except for this trial
+            other_deriv_evs = [x for x in deriv_evs if x != deriv_evs[i]]
+            dm_otherevs = N.hstack((
+                N.sum(desmat.mat[:,other_trial_evs,N.newaxis],1),
+                N.sum(desmat.mat[:,other_deriv_evs,N.newaxis],1)))
+        else:
+            # put all derivatives in one regressor
+            dm_otherevs = N.hstack((
+                N.sum(desmat.mat[:,other_trial_evs,N.newaxis],1),
+                N.sum(desmat.mat[:,deriv_evs,N.newaxis],1)))
+    else:
+        # just one regressor for all other trials
+        dm_otherevs = N.sum(desmat.mat[:,other_trial_evs,N.newaxis],1)
 
     # put together the design matrix
     if dm_nuisance is not None:
-        dm_full = N.hstack((dm_toi, dm_otherevs, dm_nuisance, dm_extra))
+        dm_full = N.hstack((dm_trial, dm_otherevs, dm_nuisance, dm_extra))
     else:
-        dm_full = N.hstack((dm_toi, dm_otherevs, dm_extra))
+        dm_full = N.hstack((dm_trial, dm_otherevs, dm_extra))
     s = dm_full.shape
     dm_full = dm_full - N.kron(N.ones(s), N.mean(dm_full,0))[:s[0],:s[1]]
-    dm_full = N.hstack((dm_full, N.ones((ntp,1))))
+    dm_full = N.hstack((dm_full, N.ones((n_tp,1))))
 
     # calculate beta-forming vector
     beta_maker_loop = N.linalg.pinv(dm_full)
-    beta_maker[e,:] = beta_maker_loop[0,:]
+    beta_maker[i,:] = beta_maker_loop[0,:]
 
 print("Estimating model...")
 # this uses Jeanette's trick of extracting the beta-forming vector for each
@@ -117,8 +184,11 @@ print("Estimating model...")
 glm_res_full = N.dot(beta_maker, data.samples)
 
 # map the data into images and save to betaseries directory
-for e in range(len(glm_res_full)):
-    outdata = zscore(glm_res_full[e])
-    ni = map2nifti(data,data=outdata)
+for i in range(len(glm_res_full)):
+    if args.no_zscore:
+        ni = map2nifti(data, glm_res_full[i])
+    else:
+        outdata = zscore(glm_res_full[i])
+        ni = map2nifti(data, data=outdata)
     ni.to_filename(os.path.join(betadir,
-                                'ev{:03d}.nii.gz'.format(good_evs[e])))
+                                'ev{:03d}.nii.gz'.format(i)))
