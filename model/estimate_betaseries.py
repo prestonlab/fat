@@ -10,6 +10,8 @@ parser = SubjParser()
 parser.add_argument('model', help="name of model", type=str)
 parser.add_argument('n', help="number of trials to estimate", type=int)
 parser.add_argument('-m', '--mask', help="mask file", type=str, default=None)
+parser.add_argument('-n', '--no-zscore', action="store_true",
+                    help="do not z-score trial images over voxels")
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
@@ -18,8 +20,12 @@ log = sp.init_log(args.model, 'model', args)
 # find FSF files for this subject
 data_dir = os.path.dirname(sp.path('base'))
 model_dir = os.path.join(data_dir, 'batch', 'glm', args.model)
-pattern = '{}_{}*.fsf'.format(args.model, args.subject)
-fsf_files = glob(os.path.join(model_dir, 'fsf', pattern))
+pattern = os.path.join(model_dir, 'fsf',
+                       '{}_{}*.fsf'.format(args.model, args.subject))
+fsf_files = glob(pattern)
+if not fsf_files:
+    raise IOError('No FSF files found matching: {}'.format(pattern))
+
 fsf_files.sort()
 
 log.start()
@@ -42,12 +48,14 @@ for f in fsf_files:
     if not os.path.exists(bold):
         raise IOError('BOLD file not found: {}'.format(bold))
 
-    # obtain individual trial estimates
+    opt = ''
     if args.mask is not None:
-        log.run('betaseries.py {} {} {:d} -m {}'.format(base, out_dir,
-                                                        args.n, args.mask))
-    else:
-        log.run('betaseries.py {} {} {:d}'.format(base, out_dir, args.n))
+        opt += ' -m {}'.format(args.mask)
+    if args.no_zscore:
+        opt += ' -n'
+    
+    # obtain individual trial estimates
+    log.run('betaseries.py {} {} {:d}{}'.format(base, out_dir, args.n, opt))
 
     # get one file with estimates for each trial/stimulus
     beta_file = os.path.join(out_dir, name + '.nii.gz')
