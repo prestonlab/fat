@@ -52,11 +52,10 @@ dest=${ARCHIVE}/${study}/raw/raw_${subject}.tar.gz
 # compress raw files
 if [ ! -f ${src} ]; then
     echo "Compressing raw files in ${raw_dir}..."
-    tar czf ${src} ${raw_dir}
 fi
 
 # archive the raw tar file
-if [ $? -eq 0 ]; then
+if [ -f $src ] || tar czf $src $raw_dir; then
     echo "Sending raw data to archive..."
     rsync --perms --chmod="u=rw,g=rw,o=" ${src} ${ARCHIVER}:${dest}
 else
