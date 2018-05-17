@@ -32,6 +32,7 @@ while getopts ":vkf:" opt; do
 	    ;;
 	f)
 	    highpass=$OPTARG
+	    ;;
     esac
 done
 shift $((OPTIND-1))
@@ -55,13 +56,14 @@ if [ $(imtest $mask) = 0 ]; then
     echo "Error: mask does not exist: $mask"
     exit 1
 fi
-    
+
 fslmaths $func $sdir/prefiltered_func_data -odt float
+imcp $mask $sdir/mask
+
 pd=$(pwd)
 cd $sdir
 funcdata=prefiltered_func_data
 
-imcp $mask mask
 median_intensity=$(fslstats $funcdata -k mask -p 50)
 fslmaths $funcdata -mas mask prefiltered_func_data_thresh
 funcdata=prefiltered_func_data_thresh
