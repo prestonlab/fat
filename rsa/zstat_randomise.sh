@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Usage: zstat_randomise.sh [-s studydir] [-i interp] [-n nperm] [-m mask] [-a anat] filepath subjids"
+    echo "Usage: zstat_randomise.sh [-s studydir] [-i interp] [-n nperm] [-m mask] [-a anat] [-f filename] filepath subjids"
     exit 1
 fi
 
@@ -10,7 +10,8 @@ mask=""
 n_perm=2000
 studydir=$STUDYDIR
 anat=""
-while getopts ":s:a:i:n:m:" opt; do
+filename="zstat"
+while getopts ":s:a:i:n:m:f:" opt; do
     case $opt in
 	s)
 	    studydir=$OPTARG
@@ -27,6 +28,9 @@ while getopts ":s:a:i:n:m:" opt; do
 	m)
 	    mask=$OPTARG
 	    ;;
+	f)
+	    filename=$OPTARG
+	    ;;
     esac
 done
 shift $((OPTIND-1))
@@ -36,6 +40,7 @@ subjects=$2
 
 echo "Options:"
 echo "filepath: $filepath"
+echo "filename: $filename"
 echo "nperm:    $n_perm"
 echo "interp:   $interp"
 echo "mask:     $mask"
@@ -46,7 +51,7 @@ mkdir -p $outdir
 echo "Transforming z-statistic images to template space..."
 files=""
 for subject in $(echo $subjects | tr ':' ' '); do
-    zstat_subj=$studydir/$subject/$filepath/zstat.nii.gz
+    zstat_subj=$studydir/$subject/$filepath/${filename}.nii.gz
     if [ ! -f $zstat_subj ]; then
 	echo "Error: file not found: $zstat_subj"
 	exit 1
