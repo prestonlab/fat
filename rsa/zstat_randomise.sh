@@ -1,7 +1,39 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Usage: zstat_randomise.sh [-s studydir] [-i interp] [-n nperm] [-m mask] [-a anat] [-f filename] filepath subjids"
+    cat <<EOF
+Run group-level analysis of searchlight results.
+
+Usage: zstat_randomise.sh [-s studydir] [-n nperm] [-m mask] [-a anat] [-f filename] filepath subjids
+
+filepath
+    Relative path to searchlight results. For example, if a participant's 
+    results are in e.g. \$STUDYDIR/mistr_02/rsa/my_searchlight, then the
+    relative path is rsa/my_searchlight.
+
+subjids
+    List of subject identifiers, separated by colons. For example:
+    mistr_02:mistr_04:mistr_05
+
+OPTIONS
+-s STUDYDIR
+    Path to main directory for the study to process.
+
+-n NPERM
+    Number of permutations to use for randomise.
+
+-m MASK
+    Path to a mask to use for the group-level analysis.
+
+-a ANAT
+    Suffix for anatomical image used for template registration for
+    each subject.
+
+-f FILENAME
+    Searchlight results for each subjects are expected to be in:
+    \$STUDYDIR/\$subject/\$filepath/FILENAME.nii.gz. Default is: zstat.
+
+EOF
     exit 1
 fi
 
