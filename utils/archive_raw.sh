@@ -57,7 +57,7 @@ fi
 # archive the raw tar file
 if [ -f $src ] || tar czf $src $raw_dir; then
     echo "Sending raw data to archive..."
-    rsync --perms --chmod="u=rw,g=rw,o=" ${src} ${ARCHIVER}:${dest}
+    rsync --perms --chmod="Dug+x,u=rw,g=rw,o=" ${src} ${ARCHIVER}:${dest}
 else
     echo "Error: problem compressing data."
     exit 1
