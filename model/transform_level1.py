@@ -12,6 +12,8 @@ parser.add_argument('featdir', help="path to feat directory")
 parser.add_argument('template', help="path to template image")
 parser.add_argument('-a', '--anat', default='',
                     help="anatomical image number used to register reference functional volume (default: none)")
+parser.add_argument('-i', '--interp', default='BSpline',
+                    help="type of interpolation to use for statistics images (default BSpline; see antsApplyTransforms for options)")
 args = parser.parse_args()
 
 sp = SubjPath(args.subject, args.study_dir)
@@ -48,8 +50,8 @@ if not os.path.exists(func2anat_affine):
 anat2mni_warp = os.path.join(antsreg, 'orig-template_Warp.nii.gz')
 anat2mni_affine = os.path.join(antsreg, 'orig-template_Affine.txt')
 
-transform = Template('antsApplyTransforms -d 3 -i $native -o $mni -n BSpline -r %s -t %s -t %s -t %s' % (
-    args.template, anat2mni_warp, anat2mni_affine, func2anat_affine))
+transform = Template('antsApplyTransforms -d 3 -i $native -o $mni -n %s -r %s -t %s -t %s -t %s' % (
+    args.interp, args.template, anat2mni_warp, anat2mni_affine, func2anat_affine))
 transform_label = Template('antsApplyTransforms -d 3 -i $native -o $mni -n NearestNeighbor -r %s -t %s -t %s -t %s' % (
     args.template, anat2mni_warp, anat2mni_affine, func2anat_affine))
 
