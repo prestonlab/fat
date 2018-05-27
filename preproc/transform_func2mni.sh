@@ -21,7 +21,7 @@ subject
     for the study before calling.
 
 OPTIONS
--a
+-a anat
     Suffix of anatomical image series that was used as reference
     When registration was done to the template. Should also be the
     image used as a target for registering the reference functional
@@ -32,7 +32,7 @@ OPTIONS
     Input image is a mask. If set, will use nearest neighbor
     interpolation. Otherwise, B-spline interpolation will be used.
 
--p
+-p postmask
     Post-mask to apply to the transformed image. This is useful
     to remove very small values outside the brain that occur when
     using B-spline interpolation.
