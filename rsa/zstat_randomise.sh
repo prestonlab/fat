@@ -4,7 +4,7 @@ if [ $# -lt 2 ]; then
     cat <<EOF
 Run group-level analysis of searchlight results.
 
-Usage: zstat_randomise.sh [-s studydir] [-n nperm] [-m mask] [-a anat] [-f filename] filepath subjids
+Usage: zstat_randomise.sh [-s studydir] [-n nperm] [-m mask] [-a anat] [-i interp] [-f filename] filepath subjids
 
 filepath
     Relative path to searchlight results. For example, if a participant's 
@@ -20,7 +20,7 @@ OPTIONS
     Path to main directory for the study to process.
 
 -n NPERM
-    Number of permutations to use for randomise.
+    Number of permutations to use for randomise (default 2000).
 
 -m MASK
     Path to a mask to use for the group-level analysis.
@@ -28,6 +28,9 @@ OPTIONS
 -a ANAT
     Suffix for anatomical image used for template registration for
     each subject.
+
+-i INTERP
+    Type of interpolation to use (default is BSpline).
 
 -f FILENAME
     Searchlight results for each subjects are expected to be in:
@@ -96,10 +99,15 @@ for subject in $(echo $subjects | tr ':' ' '); do
     if [ -n "$anat" ]; then
 	flags+=("-a $anat")
     fi
+    if [ -n "$interp" ]; then
+	flags+=("-n $interp")
+    fi
     zstat_std=$studydir/$subject/$filepath/zstat_std.nii.gz
     if [ ! -f $zstat_std ]; then
 	echo "transform_func2mni.sh ${flags[@]} $zstat_subj $zstat_std $subject"
 	transform_func2mni.sh "${flags[@]}" $zstat_subj $zstat_std $subject
+    else
+	echo "$zstat_std exists."
     fi
 
     if [ -z "$files" ]; then
