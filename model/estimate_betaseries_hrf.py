@@ -8,6 +8,7 @@ from mvpa2.misc.fsl.base import read_fsl_design
 
 parser = SubjParser()
 parser.add_argument('model', help="name of model", type=str)
+parser.add_argument('resname', help="name of results directory", type=str)
 parser.add_argument('n', help="number of trials to estimate", type=int)
 parser.add_argument('modeltype',
                     help="GLM model to use (r1glm, r1glms glms glm)")
@@ -34,7 +35,7 @@ fsf_files.sort()
 log.start()
 
 # temporary subject directory for individual beta images
-out_dir = os.path.join(model_dir, 'beta', args.subject)
+out_dir = os.path.join(model_dir, args.resname, args.subject)
 log.run('mkdir -p {}'.format(out_dir))
 
 beta_files = []
@@ -69,7 +70,7 @@ for f in fsf_files:
     log.run('rm {}*.{{con,png,ppm,frf,mat,min,trg}}'.format(base))
 
 # merge all runs into one file
-out_file = os.path.join(model_dir, 'beta',
+out_file = os.path.join(model_dir, args.resname,
                         '{}_beta.nii.gz'.format(args.subject))
 cmd = 'fslmerge -t {} {}'.format(out_file, ' '.join(beta_files))
 log.run(cmd)
