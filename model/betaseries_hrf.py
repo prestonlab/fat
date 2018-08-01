@@ -150,6 +150,9 @@ else:
     # load all voxels
     data = fmri_dataset(bold)
 
+# remove voxel means
+data.samples -= np.mean(data.samples, 0)
+
 # glm estimation
 ind = np.argsort(onsets)
 tr = design['fmri(tr)']
@@ -161,8 +164,9 @@ hrfs, betas = he.glm(conds[ind], onsets[ind], tr, data.samples,
 
 # write out hrf estimates
 outname = os.path.splitext(os.path.splitext(args.outfile)[0])[0]
-hrf_file = outname + '_hrfs.txt'
-np.savetxt(hrf_file, hrfs)
+hrf_file = outname + '_hrfs.nii.gz'
+ni = map2nifti(data, hrfs)
+ni.to_filename(hrf_file)
 
 # write out betaseries
 ni = map2nifti(data, betas)
