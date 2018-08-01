@@ -30,7 +30,7 @@ OPTIONS
     each subject.
 
 -i INTERP
-    Type of interpolation to use (default is BSpline).
+    Type of interpolation to use (default is Linear).
 
 -f FILENAME
     Searchlight results for each subjects are expected to be in:
@@ -40,7 +40,7 @@ EOF
     exit 1
 fi
 
-interp=BSpline
+interp=Linear
 mask=""
 n_perm=2000
 studydir=$STUDYDIR
