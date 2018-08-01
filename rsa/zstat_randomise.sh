@@ -46,7 +46,8 @@ n_perm=2000
 studydir=$STUDYDIR
 anat=""
 filename="zstat"
-while getopts ":s:a:i:n:m:f:" opt; do
+overwrite=false
+while getopts ":s:a:i:n:m:f:o" opt; do
     case $opt in
 	s)
 	    studydir=$OPTARG
@@ -65,6 +66,9 @@ while getopts ":s:a:i:n:m:f:" opt; do
 	    ;;
 	f)
 	    filename=$OPTARG
+	    ;;
+	o)
+	    overwrite=true
 	    ;;
     esac
 done
@@ -103,7 +107,7 @@ for subject in $(echo $subjects | tr ':' ' '); do
 	flags+=("-n $interp")
     fi
     zstat_std=$studydir/$subject/$filepath/zstat_std.nii.gz
-    if [ ! -f $zstat_std ]; then
+    if [ ! -f $zstat_std -o $overwrite = true ]; then
 	echo "transform_func2mni.sh ${flags[@]} $zstat_subj $zstat_std $subject"
 	transform_func2mni.sh "${flags[@]}" $zstat_subj $zstat_std $subject
     else
@@ -119,7 +123,7 @@ done
 
 echo "Concatenating files..."
 zstat_cat=$outdir/zstat_all.nii.gz
-if [ ! -f $zstat_cat ]; then
+if [ ! -f $zstat_cat -o $overwrite = true ]; then
     fslmerge -t $zstat_cat $files
 fi
 
