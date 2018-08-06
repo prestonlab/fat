@@ -2,87 +2,70 @@
 
 if [ $# -eq 0 ]
 then
-    echo "Prepare level 2 analysis from an FSL template"
-    echo
-    echo "Usage:"
-    echo "`basename $0` [-d studydir] [-s subjids] [-p] template model"
-    echo
-    echo "Optional inputs:"
-    echo "-d"
-    echo "      path to base study directory. If not specified,"
-    echo "      STUDYDIR environment variable will be used."
-    echo
-    echo "-s"
-    echo "      list of subject ids, separated by ':'. If not"
-    echo "      specified, SUBJIDS environment variable will be used."
-    echo
-    echo "-p"
-    echo "      if set, will allow use of a partial set of level 1 models."
-    echo "      Will check for existence of a feat directory for each"
-    echo "      run in each subject's fsf file. If all are missing, no"
-    echo "      level 2 fsf will be generated. If some are missing, each"
-    echo "      level 2 fsf file will just use the level 1 feat directories"
-    echo "      that exist."
-    echo
-    echo "Required inputs:"
-    echo "template   path to FSF template"
-    echo "model      name of statistical model"
-    echo
-    echo "These strings will be replaced in the FSF template:"
-    echo "STUDYDIR   path to directory with study data"
-    echo "SUBJID     full subject identifier, e.g. bender_01"
-    echo
-    echo 'Customized fsf files will be placed in $STUDYDIR/batch/glm/$model.'
-    echo
+    cat <<EOF
+Prepare level 2 analysis from an example FSF file.
+
+Usage:
+prep_level2.sh [-p] example outdir model orig_subj all_subj
+
+Example:
+prep_level2.sh disp_stim_mistr_02.fsf \$STUDYDIR/batch/glm/disp_stim/fsf disp_stim mistr_02 \$SUBJIDS
+
+Inputs:
+example
+    Path to example FSF file created using FEAT for one subject.
+
+outdir
+    Path to output directory. Customized FSF files for each subject
+    will be saved in this directory.
+
+model
+    Model name. Used to set the filenames of the FSF files.
+
+orig_subj
+    Subject ID for the subject used in the example FSF file.
+
+all_subj
+    Colon-separated list of all subjects to create FSF files for.
+
+Options:
+-p
+    Include partial inputs. If this option is set, will check whether
+    each of the level 1 FEAT directories listed in the FSF file exists.
+    Any directories that do not exist for a subject will be excluded from
+    that subject's level 2 FSF file.
+EOF
     exit 1
 fi
 
-partial=0
-while getopts ":d:s:p" opt; do
+partial=false
+while getopts ":p" opt; do
     case $opt in
-	d)
-	    STUDYDIR=$OPTARG
-	    ;;
-	s)
-	    SUBJIDS=$OPTARG
-	    ;;
 	p)
-	    partial=1
+	    partial=true
 	    ;;
     esac
 done
 shift $((OPTIND-1))
 
-if [ -z $STUDYDIR ]; then
-    echo "Error: Study directory undefined."
-fi
-if [ -z $SUBJIDS ]; then
-    echo "Error: Subject identifiers undefined."
-fi
+example="$1"
+outdir="$2"
+model="$3"
+orig_subj="$4"
+all_subj="$5"
 
-template=$1
-model=$2
+mkdir -p "$outdir"
 
-modeldir=${STUDYDIR}/batch/glm/${model}
-fsfdir=${modeldir}/fsf
-mkdir -p ${fsfdir}
-
-# copy template to standard file
-fsftemplate=${modeldir}/${model}_level2.fsf
-cp ${template} ${fsftemplate}
-
-sids="`echo $SUBJIDS | sed "s/:/ /g"`"
-for subjid in ${sids}; do
-    customfsf=${fsfdir}/${model}_${subjid}.fsf
-
+for subj in $(echo $all_subj | tr ':' ' '); do
     # create the customized file
-    sed -e "s|STUDYDIR|${STUDYDIR}|g" \
-	-e "s|SUBJID|${subjid}|g" \
-	<${fsftemplate} >${customfsf}
+    customfsf="$outdir"/${model}_${subj}.fsf
+    sed -e "s|${orig_subj}|${subj}|g" <"$example" >"$customfsf"
 
-    if [ $partial = 1 ]; then
-	# get inputs that exist
-	files=$(grep feat_files $customfsf | cut -d '"' -f 2 | tr '\n' ' ')
+    if [ $partial = true ]; then
+	# get all included level 1 feat directories
+	files=$(grep feat_files "$customfsf" | cut -d '"' -f 2 | tr '\n' ' ')
+
+	# only feat directories that exist
 	include=""
 	for f in $files; do
 	    if [ -e $f ]; then
@@ -96,11 +79,11 @@ for subjid in ${sids}; do
 	
 	if [ -z "$include" ]; then
 	    # no inputs exist; remove fsf file
-	    rm $customfsf
+	    rm "$customfsf"
 	else
 	    # some inputs exist; create custom fsf file
-	    gfeat_subset $customfsf temp $include
-	    mv temp $customfsf
+	    gfeat_subset "$customfsf" temp $include
+	    mv temp "$customfsf"
 	fi
     fi
 done
