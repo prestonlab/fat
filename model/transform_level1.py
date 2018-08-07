@@ -16,8 +16,10 @@ parser.add_argument('-i', '--interp', default='BSpline',
                     help="type of interpolation to use for statistics images (default BSpline; see antsApplyTransforms for options)")
 args = parser.parse_args()
 
+featname = os.path.splitext(os.path.basename(args.featdir))[0]
+
 sp = SubjPath(args.subject, args.study_dir)
-log = SubjLog(args.subject, 'translev1', 'model',
+log = SubjLog(args.subject, 'translev1_' + featname, 'model',
               args.clean_logs, args.dry_run)
 
 bbreg = sp.path('anatomy', 'bbreg', 'transforms')
