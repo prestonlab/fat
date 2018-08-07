@@ -33,7 +33,7 @@ output_name=$(basename $output_dir)
 
 # remove existing output directories
 if cd $parent_dir; then
-    rm -rf $output_name*.gfeat
+    rm -rf ${output_name}.gfeat
 else
     echo "Error: parent directory does not exist: $parent_dir" 1>&2
     exit 1
