@@ -16,8 +16,10 @@ if not os.path.exists(src):
     raise IOError('FreeSurfer directory does not exist: %s' % src)
 
 log.start()
-src_names = ['orig', 'brainmask', 'aparc+aseg']
-dest_names = ['orig', 'orig_brain_auto', 'aparc+aseg']
+src_names = ['orig', 'brainmask', 'aparc+aseg',
+             'aparc.a2009s+aseg', 'aparc.DKTatlas+aseg']
+dest_names = ['orig', 'orig_brain_auto', 'aparc+aseg',
+              'aparc.a2009s+aseg', 'aparc.DKTatlas+aseg']
 for i in range(len(src_names)):
     src_file = os.path.join(src, src_names[i] + '.mgz')
     dest_file = os.path.join(dest, dest_names[i] + '.nii.gz')

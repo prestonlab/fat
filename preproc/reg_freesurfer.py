@@ -34,8 +34,10 @@ o2h = os.path.join(dest, 'orig-highres_0GenericAffine.mat')
 
 h2h_affine = os.path.join(dest, reg_dir, 'mov-fix_0GenericAffine.mat')
 h2h_warp = os.path.join(dest, reg_dir, 'mov-fix_1InverseWarp.nii.gz')
-images = ['orig', 'orig_brain', 'brainmask', 'aparc+aseg', 'ctx', 'wm']
-labels = [False, False, True, True, True, True]
+images = ['orig', 'orig_brain', 'brainmask', 'aparc+aseg',
+          'aparc.a2009s+aseg', 'aparc.DKTatlas+aseg', 'ctx', 'wm']
+labels = [False, False, True, True,
+          True, True, True, True]
 for image, label in zip(images, labels):
     if label:
         interp = 'NearestNeighbor'
