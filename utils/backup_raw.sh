@@ -39,6 +39,7 @@ for file in $raw_dir/*; do
 done
 
 # is this a valid directory with dicom subdirectories?
+#this is a test please disregard
 
 # compress raw files
 if [ ! -f $src ]; then
