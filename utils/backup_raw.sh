@@ -34,12 +34,19 @@ for file in $raw_dir/*; do
     if [ -d $file ]; then
 	# this is a directory
 	# check for any dicoms
-	# if good, set isvalid to true and break
+	if [[ $file == *.dcm ]] || [[ $file == *.nii]]
+        # if good, set isvalid to true and break
+            isvalid=true
+	    break
+	fi
     fi
 done
 
 # is this a valid directory with dicom subdirectories?
-
+#this is a test please disregard
+if isvalid=false
+    echo "There is no raw data in this directory"
+fi
 # compress raw files
 if [ ! -f $src ]; then
     echo "Compressing raw files in $src..."
