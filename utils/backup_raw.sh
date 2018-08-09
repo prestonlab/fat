@@ -34,7 +34,13 @@ for file in $raw_dir/*; do
     if [ -d $file ]; then
 	# this is a directory
 	# check for any dicoms
-	# if good, set isvalid to true and break
+	if [[ $file == *.dcm ]] || [[ $file == *.nii]]
+        # if good, set isvalid to true and break
+            isvalid=true
+	    
+	else
+	    echo "this directory does not contain any raw data"
+	fi
     fi
 done
 
