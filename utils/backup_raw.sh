@@ -34,7 +34,7 @@ for file in $raw_dir/*; do
     if [ -d $file ]; then
 	# this is a directory
 	# check for any dicoms
-	if [[ $file == *.dcm ]] || [[ $file == *.nii]]
+	if [[ $file == *.dcm ] || [ $file == *.nii]]
         # if good, set isvalid to true and break
             isvalid=true
 	    break
