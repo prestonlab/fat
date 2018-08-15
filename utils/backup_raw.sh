@@ -34,7 +34,8 @@ for file in $raw_dir/*; do
     if [ -d $file ]; then
 	# this is a directory
 	# check for any dicoms
-	if [[[ $file == *.dcm ]] -o [[ $file == *.nii]]]; then
+	if [[ ${file: -4} == ".dcm" ] -o [ ${file: -4} == ".nii"]]; then 
+
         # if good, set isvalid to true and break
             isvalid=true
 	    break
@@ -44,7 +45,7 @@ done
 
 # is this a valid directory with dicom subdirectories?
 #this is a test please disregard
-if isvalid=false
+if isvalid=false; then
     echo "There is no raw data in this directory"
 fi
 # compress raw files
