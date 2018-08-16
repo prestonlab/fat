@@ -30,16 +30,18 @@ dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
 # sanity checks
 isvalid=false
-for file in $raw_dir/*; do
-    if [ -d $file ]; then
+for subdir in $raw_dir/*; do
+    if [ -d $subdir ]; then
 	# this is a directory
 	# check for any dicoms
-	if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".nii"] || [ ${file: -4} == ".IMA "]; then 
-
-        # if good, set isvalid to true and break
-            isvalid=true
-	    break
-	fi
+	has_dicoms=false
+	for file in $subdir/*; do
+	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
+               # if good, set isvalid to true and break
+               isvalid=true
+	       break
+	    fi
+	done    
     fi
 done
 
