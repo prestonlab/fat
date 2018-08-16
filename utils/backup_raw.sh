@@ -34,7 +34,7 @@ for file in $raw_dir/*; do
     if [ -d $file ]; then
 	# this is a directory
 	# check for any dicoms
-	if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".nii"]; then 
+	if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".nii"] || [ ${file: -4} == ".IMA "]; then 
 
         # if good, set isvalid to true and break
             isvalid=true
