@@ -52,8 +52,8 @@ parser.add_argument('-x', '--remora',
 parser.add_argument('-d', '-i', '--hold_jid',
                     help='wait for this job id to complete before running',
                     dest='hold', default=None)
-parser.add_argument('-b', '--schedule', default='dynamic',
-                    help="schedule type (default: dynamic)")
+parser.add_argument('-b', '--schedule', default='interleaved',
+                    help="schedule type (default: interleaved)")
 
 (args, command) = parser.parse_known_args(sys.argv[1:])
 
