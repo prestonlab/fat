@@ -60,7 +60,7 @@ for subdir in $raw_dir/*; do
 	# check for any dicoms
 	has_dicoms=false
 	for file in $subdir/*; do
-	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
+	    if [ $(file -ib "$file") == "application/dicom" ]; then 
                # if good, set isvalid to true and break
                isvalid=true
                has_dicoms=true 
