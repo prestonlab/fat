@@ -68,6 +68,10 @@ for subdir in $raw_dir/*; do
 	    fi
 	done
     fi
+   
+    if [isvalid=true]; then
+       break
+    fi
 done
 
 # is this a valid directory with dicom subdirectories?
