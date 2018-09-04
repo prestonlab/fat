@@ -52,6 +52,7 @@ if [ $has_sk_option == false ]; then
    fi
 fi 
 # sanity checks
+# need to work on this more just forking this so I don't keep updating the master branch annoyingly.
 isvalid=false
 for subdir in $raw_dir/*; do
     if [ -d $subdir ]; then
