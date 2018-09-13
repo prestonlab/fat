@@ -168,6 +168,6 @@ hrf_file = outname + '_hrfs.nii.gz'
 ni = map2nifti(data, hrfs)
 ni.to_filename(hrf_file)
 
-# write out betaseries
+# write out initial betaseries
 ni = map2nifti(data, betas)
 ni.to_filename(args.outfile)
