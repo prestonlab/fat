@@ -138,7 +138,7 @@ def filter_ev(ev, hrf_ds, desmat, outname):
 
     # calculate filtered image for this regressor
     print('{}: temporal filtering...'.format(ev))
-    sub.call(['fslmaths',filepath,'-bptf',hpf_sigma,
+    sub.call(['fslmaths',filepath,'-bptf','{:.4f}'.format(hpf_sigma),
               '-1','-add',mean_file,filt_file])
 
     print('{}: reading filtered dataset...'.format(ev))
@@ -152,10 +152,15 @@ def filter_ev(ev, hrf_ds, desmat, outname):
 # list of voxelwise regressor images for each EV
 # each item includes a [TRs x voxels] matrix
 print("High-pass filtering EV regressors...")
-outname = args.outfile.split('.nii.gz')[0]
-l = Parallel(n_jobs=args.n_jobs,verbose=10)(delayed(filter_ev)(ev, hrf_ds,
-                                                               desmat_all_vox,
-                                                               outname)
-                                            for ev in range(n_trial_evs))
+outname = args.outfile.split('.npy')[0]
+if args.n_jobs > 1:
+    l = Parallel(n_jobs=args.n_jobs,verbose=10)(delayed(filter_ev)(ev, hrf_ds,
+                                                                   desmat_all_vox,
+                                                                   outname)
+                                                for ev in range(n_trial_evs))
+else:
+    l = [filter_ev(ev, hrf_ds, desmat_all_vox, outname)
+         for ev in range(n_trial_evs)]
+    
 desmat_all_vox_filt = np.dstack(l)
 np.save(args.outfile, desmat_all_vox_filt)
