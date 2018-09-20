@@ -4,11 +4,22 @@ if [ $# -eq 0 ]; then
     cat <<EOF
 Usage:   backup_raw.sh subject_dicom_dir studytype study subject
 Example: backup_raw.sh remind_202a fmri remind remind_202a
+Use the '-sk' flag to skip overwrite check
 EOF
     exit 1
 fi
 
 DATADIR=/corral-repl/utexas/prestonlab
+has_sk_option = false
+while getopts ":sk:" opt; do 
+    case $opt in
+        sk) 
+           echo "-sk triggered overwrite check skipped" >&2
+           has_sk_option = true
+           ;;
+    esac
+done 
+
 
 raw_dir="$1"
 studytype="$2"
@@ -28,6 +39,19 @@ destdir=$DATADIR/raw/$studytype/$study
 mkdir -p $destdir
 dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
+if has_sk_option = false; then
+   if [ -f dest]; then
+      echo "This file already exists would you like to overwrite?"
+      read varname
+ 
+
+      if [varname =="yes"]; then
+         echo "overwriting file"
+      else 
+         echo "Quitting operation"
+      fi 
+   fi
+fi 
 # sanity checks
 isvalid=false
 for subdir in $raw_dir/*; do
@@ -39,6 +63,7 @@ for subdir in $raw_dir/*; do
 	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
                # if good, set isvalid to true and break
                isvalid=true
+
 	       break
 	    fi
 	done    
@@ -66,3 +91,4 @@ fi
 
 # set permissions for raw tar file
 chmod 775 $dest
+
