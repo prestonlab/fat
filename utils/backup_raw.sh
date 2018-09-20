@@ -10,12 +10,12 @@ EOF
 fi
 
 DATADIR=/corral-repl/utexas/prestonlab
-has_sk_option = false
+has_sk_option=false
 while getopts ":sk:" opt; do 
     case $opt in
         sk) 
            echo "-sk triggered overwrite check skipped" >&2
-           has_sk_option = true
+           has_sk_option=true
            ;;
     esac
 done 
@@ -39,17 +39,17 @@ destdir=$DATADIR/raw/$studytype/$study
 mkdir -p $destdir
 dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
-if has_sk_option = false; then
+if [ $has_sk_option = false]; then
    if [ -f dest]; then
       echo "This file already exists would you like to overwrite?"
       read varname
- 
-
-      if [varname =="yes"]; then
+      if [[ $varname == "yes" ] || [ $varname == "y" ]] ; then
          echo "overwriting file"
       else 
          echo "Quitting operation"
       fi 
+    else 
+       break
    fi
 fi 
 # sanity checks
@@ -60,13 +60,16 @@ for subdir in $raw_dir/*; do
 	# check for any dicoms
 	has_dicoms=false
 	for file in $subdir/*; do
-	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
+	    if [[ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]]; then 
                # if good, set isvalid to true and break
                isvalid=true
-
+               has_dicoms=true 
 	       break
 	    fi
-	done    
+	done
+       if [$has_dicoms = true]
+          break
+       fi     
     fi
 done
 
