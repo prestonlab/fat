@@ -43,7 +43,7 @@ if [ $has_sk_option = false]; then
    if [ -f dest]; then
       echo "This file already exists would you like to overwrite?"
       read varname
-      if [[ $varname == "yes" ] || [ $varname == "y" ]] ; then
+      if [ $varname == "yes" ] || [ $varname == "y" ] ; then
          echo "overwriting file"
       else 
          echo "Quitting operation"
@@ -60,7 +60,7 @@ for subdir in $raw_dir/*; do
 	# check for any dicoms
 	has_dicoms=false
 	for file in $subdir/*; do
-	    if [[ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]]; then 
+	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
                # if good, set isvalid to true and break
                isvalid=true
                has_dicoms=true 
