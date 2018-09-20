@@ -40,16 +40,15 @@ mkdir -p $destdir
 dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
 if [ $has_sk_option == false ]; then
-   if [ -f dest]; then
+   if [ -e $dest ]; then
       echo "This file already exists would you like to overwrite?"
       read varname
       if [ $varname == "yes" ] || [ $varname == "y" ]; then
          echo "overwriting file"
       else 
          echo "Quitting operation"
+	 exit 1
       fi 
-    else 
-       break
    fi
 fi 
 # sanity checks
@@ -67,15 +66,12 @@ for subdir in $raw_dir/*; do
 	       break
 	    fi
 	done
-       if [ $has_dicoms == true ]
-          break
-       fi     
     fi
 done
 
 # is this a valid directory with dicom subdirectories?
 #this is a test please disregard
-if [ isvalid == false]; then
+if [ isvalid == false ]; then
     echo "There is no raw data in this directory"
 fi
 # compress raw files
