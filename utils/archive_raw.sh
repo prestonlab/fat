@@ -45,9 +45,10 @@ if [ ! -d ${raw_dir} ]; then
 fi
 
 # determine directories
-parent_dir=`dirname ${raw_dir}`
+#parent_dir=`dirname ${raw_dir}`
+parent_dir=${raw_dir}
 src=${parent_dir}/raw_${subject}.tar.gz
-dest=${ARCHIVE}/${study}/raw/raw_${subject}.tar.gz
+dest=${ARCHIVE}/raw/fmri/${study}/raw_${subject}.tar.gz
 
 # compress raw files
 if [ ! -f ${src} ]; then
@@ -64,12 +65,12 @@ else
 fi
 
 # if scp successful, remove tar file
-if [ $? -eq 0 ]; then
-    echo "Deleting local tar file..."
-    rm ${src}
+#if [ $? -eq 0 ]; then
+#    echo "Deleting local tar file..."
+#    rm ${src}
 
-    echo "Archive appears to have been successful."
-    echo "Please check the transfer and delete the local copy of raw files."
-else
-    echo "*** ERROR: ARCHIVE FAILED ***"
-fi
+#    echo "Archive appears to have been successful."
+#    echo "Please check the transfer and delete the local copy of raw files."
+#else
+#    echo "*** ERROR: ARCHIVE FAILED ***"
+#fi
