@@ -4,12 +4,30 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 s = """Estimate a betaseries using FIR HRF estimation for one run.
 
-First, set up an fsf file using FEAT. You'll need one EV for each 
-trial/stimulus to estimate activation for. The script will use the 
-onset files, confound matrix (if specified), and the high-pass filter 
-setting. In the model, the first ntrials regressors are assumed to be 
-the trials of interest. Any additional regressors after that will be 
-included as regressors of no interest.
+First, set up an fsf file using FEAT. You'll need one EV for each
+trial/stimulus to estimate activation for. The script will use the
+onset files, confound matrix (if specified), and the high-pass filter
+setting. In the model, the first ntrials regressors are assumed to be
+the trials of interest. Any additional regressors after that will be
+included as regressors of no interest. 
+
+The BOLD data to estimate the model for will be the file specified in
+the FEAT model (in the fsf file, this is in the feat_files
+field). Generally, these data should have already been smoothed (if
+desired) and high-pass filtered; the high-pass filter specified in the
+model is only applied to the model itself, and it's assumed that the
+data have already been filtered using the same FWHM.
+
+The script first calculates an initial estimate of both the betaseries
+and the HRF function at each voxel, estimating both simultaneously
+using a rank-one GLM method (Pedregosa et al. 2015). It then
+optionally smooths the voxel HRF estimates to improve their
+reliability. The HRF estimates are then used to create a design matrix
+for each voxel and each individual trial/stimulus using the LS-S
+method (Mumford et al. 2012). Each design matrix is high-pass
+filtered. Finally, the betaseries image is estimated using ordinary
+least squares.
+
 """
 
 parser = ArgumentParser(description=s, formatter_class=RawTextHelpFormatter)
