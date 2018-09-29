@@ -4,6 +4,7 @@ import numbers
 from collections import MutableSequence
 from collections import OrderedDict
 import sys
+import six
 import numpy as np
 
 class Events(MutableSequence):
@@ -118,8 +119,8 @@ class Events(MutableSequence):
     def match(self, **kwargs):
         """Find events that match a set of conditions."""
 
-        inc = np.array([True for i in range(self.__len__())])
-        for key, val in kwargs.iteritems():
+        inc = np.ones(self.__len__(), dtype=bool)
+        for key, val in six.iteritems(kwargs):
             carray = self.array(key)
             if val == 'nan':
                 # must use special test for NaNs
