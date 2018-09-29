@@ -13,10 +13,13 @@ class Events(MutableSequence):
         if data is not None:
             if isinstance(data, dict):
                 # convert a dict of lists into a list of dicts
-                fields = data.keys()
-                n = len(data[fields[0]])
+                fields = list(data.keys())
+                n_field = [len(data[k]) for k in data.keys()]
+                if len(np.unique(n_field)) > 1:
+                    raise ValueError('Fields are different length.')
+                
                 l = []
-                for i in range(n):
+                for i in range(n_field[0]):
                     d = OrderedDict()
                     for f in fields:
                         d[f] = data[f][i]
