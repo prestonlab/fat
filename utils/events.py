@@ -7,6 +7,46 @@ import sys
 import six
 import numpy as np
 
+def make_index(indices):
+    """Translate a set of numeric labels into one array.
+    
+    Inputs
+    ------
+    indices - iterable of tuples
+        Set of indices for a list of entries.
+
+    Outputs
+    -------
+    index - array of indices
+        New, single index of each entry, based on the list of indices.
+    
+    sortcomb - [entries x indices] array
+        The original list of indices for each value of index.
+    
+    """
+    
+    # array where each row has a unique combination of indices
+    ucomb = np.vstack({tuple(ind) for ind in zip(*indices)})
+
+    # sort in order of increasing indices
+    ind = np.lexsort(tuple([*ucomb[:,::-1].T]))
+    sortcomb = ucomb[ind,:]
+
+    # initialize new index array with one label for each combination
+    # of the original index set
+    index_list = [np.array(i) for i in indices]
+    n_entry = len(indices[0])
+    n_unique, n_index = sortcomb.shape
+    index = np.empty(n_entry)
+    index.fill(np.nan)
+    for i in range(n_unique):
+        # find entries matching this set of indices
+        match = np.ones(n_entry, dtype=bool)
+        for j in range(n_index):
+            match = np.logical_and(match, index_list[j] == sortcomb[i,j])
+        index[match] = i
+    return index, sortcomb
+
 class Events(MutableSequence):
 
     def __init__(self, data=None):
