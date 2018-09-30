@@ -104,25 +104,28 @@ tr = float(design['fmri(tr)'])
 hpf = float(design['fmri(paradigm_hp)'])
 hpf_sigma = hpf / 2.0 / tr
 
+# generate canonical HRF at the sampled times
+(n_hrf_tp, n_vox) = hrf_ds.shape
+hrf_length = (n_hrf_tp - 1) * tr
+xx = np.arange(0, hrf_length + 1, tr)
+canonical = he.hrf.spmt(xx)
+
 # get a design matrix for each voxel
 print("Creating voxel-specific design matrices...")
-n_vox = hrf_ds.shape[1]
-n_hrf_tp = hrf_ds.shape[0]
-hrf_length = (n_hrf_tp-1) * tr
 desmat_all_vox = np.zeros((n_tp, n_vox, n_trial_evs))
 for i in range(n_vox):
-    hrf_estimate = hrf_ds.samples[:,i]
-
     # re-normalize so that the max is one and there is a positive
     # correlation with the canonical HRF
-    xx = np.arange(0, hrf_length+1, tr)
-    sign = np.sign(np.dot(hrf_estimate, he.hrf.spmt(xx)))
+    hrf_estimate = hrf_ds.samples[:,i]
+    sign = np.sign(np.dot(hrf_estimate, canonical))
     norm = np.abs(hrf_estimate).max()
     norm_hrf = hrf_estimate * sign / norm
-    vox_mat, Q = he.utils.create_design_matrix(conds, onsets, tr, n_tp,
-                                               basis=[hrf_estimate],
-                                               hrf_length=hrf_length)
-    desmat_all_vox[:,i,:] = vox_mat
+
+    # generate the design matrix
+    (desmat_all_vox[:,i,:],
+     Q) = he.utils.create_design_matrix(conds, onsets, tr, n_tp,
+                                        basis=[norm_hrf],
+                                        hrf_length=hrf_length)
 
 def filter_ev(ev, hrf_ds, desmat, outname):
     print('{}: writing data to file...'.format(ev))
@@ -154,9 +157,9 @@ def filter_ev(ev, hrf_ds, desmat, outname):
 print("High-pass filtering EV regressors...")
 outname = args.outfile.split('.npy')[0]
 if args.n_jobs > 1:
-    l = Parallel(n_jobs=args.n_jobs,verbose=10)(delayed(filter_ev)(ev, hrf_ds,
-                                                                   desmat_all_vox,
-                                                                   outname)
+    l = Parallel(n_jobs=args.n_jobs,
+                 verbose=10)(delayed(filter_ev)(ev, hrf_ds,
+                                                desmat_all_vox, outname)
                                                 for ev in range(n_trial_evs))
 else:
     l = [filter_ev(ev, hrf_ds, desmat_all_vox, outname)
