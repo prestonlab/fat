@@ -32,7 +32,7 @@ least squares.
 
 parser = ArgumentParser(description=s, formatter_class=RawTextHelpFormatter)
 parser.add_argument('modelbase', type=str,
-                    help="path to model files, without file extension")
+                    help="path to .fsf file, without file extension")
 parser.add_argument('ntrials', type=int,
                     help="number of trials to be estimated")
 parser.add_argument('outdir', type=str,
@@ -57,9 +57,9 @@ if not os.path.exists(args.outdir):
 # creates betaseries_init, betaseries_init_hrfs
 print("Creating initial betaseries and HRF estimates...")
 init_file = os.path.join(args.outdir, 'betaseries_init')
-sub.call(['betaseries_hrf.py', args.modelbase, args.ntrials,
+sub.call(['betaseries_hrf.py', args.modelbase, str(args.ntrials),
           'r1glm','fir', init_file, '-m', args.mask, '-j', '24',
-          '-l', args.hrf_length])
+          '-l', '{:.2f}'.format(args.hrf_length)])
 hrf_file = os.path.join(args.outdir, 'betaseries_init_hrfs.nii.gz')
 
 # smooth the initial hrf estimates
@@ -74,7 +74,7 @@ else:
 # make a new design matrix for each voxel
 print("Creating voxelwise design matrices...")
 voxel_design_file = os.path.join(args.outdir, 'betaseries_design.npy')
-sub.call(['betaseries_refine_hrf.py', args.modelbase, args.ntrials,
+sub.call(['betaseries_refine_hrf.py', args.modelbase, str(args.ntrials),
           hrf_smooth_file, voxel_design_file, '-m', args.mask,
           '-j', '8'])
 
