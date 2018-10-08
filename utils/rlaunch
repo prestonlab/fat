@@ -107,7 +107,10 @@ else
 fi
 
 if [ -z "$BATCHDIR" ]; then
-    export BATCHDIR=.
+    export BATCHDIR=$PWD
+elif [ ! -d "$BATCHDIR" ]; then
+    echo "Error: BATCHDIR does not exist: $BATCHDIR"
+    exit 1
 fi
 
 # determine file to write commands to
