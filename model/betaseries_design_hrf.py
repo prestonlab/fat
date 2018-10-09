@@ -10,7 +10,7 @@ parser.add_argument('ntrials', type=int,
 parser.add_argument('hrffile', type=str,
                     help="path to hrf image")
 parser.add_argument('outfile', type=str,
-                    help="path to file to save design matrices")
+                    help="base name of files to save EV images")
 parser.add_argument('-m', '--mask', default=None,
                     help="(optional) path to mask image, indicating included voxels")
 args = parser.parse_args()
@@ -18,7 +18,7 @@ args = parser.parse_args()
 import os
 import numpy as np
 from mvpa2.misc.fsl.base import FslGLMDesign, read_fsl_design
-from mvpa2.datasets.mri import fmri_dataset
+from mvpa2.datasets.mri import fmri_dataset, map2nifti
 import hrf_estimation as he
 
 design = read_fsl_design(args.modelbase + '.fsf')
@@ -105,4 +105,12 @@ for i in range(n_vox):
      Q) = he.utils.create_design_matrix(conds, onsets, tr, n_tp,
                                         basis=[norm_hrf],
                                         hrf_length=hrf_length)
-np.save(args.outfile, desmat_all_vox)
+
+# write out individual EV images
+ev_files = []
+for ev in range(n_trial_evs):
+    print('{}: writing data to file...'.format(ev))
+    nifti = map2nifti(hrf_ds, desmat_all_vox[:,:,ev])
+    filepath = '{}_ev{:d}.nii.gz'.format(args.outfile, ev)
+    nifti.to_filename(filepath)
+    ev_files.append(filepath)
