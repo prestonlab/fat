@@ -17,6 +17,8 @@ parser.add_argument('-m', '--mask', default=None,
                     help="(optional) path to mask image, indicating included voxels")
 parser.add_argument('-j', '--n-jobs', type=int, default=1,
                     help="number of CPUs to use (default 1)")
+parser.add_argument('-k', '--keep', help="keep intermediate files",
+                    action='store_true')
 args = parser.parse_args()
 
 import os
@@ -73,11 +75,9 @@ def filter_ev(ev, hrf_ds, outname):
 
     return filt_file
 
-# list of voxelwise regressor images for each EV
-# each item includes a [TRs x voxels] matrix
+# filter all EV images
 print("High-pass filtering EV regressors...")
-
-nif args.n_jobs > 1:
+if args.n_jobs > 1:
     filt_files = Parallel(n_jobs=args.n_jobs,
                           verbose=10)(delayed(filter_ev)(ev, hrf_ds, outname)
                                       for ev in range(n_trial_evs))
@@ -98,8 +98,9 @@ np.save(args.outfile, desmat_all_vox_filt)
 del desmat_all_vox_filt
 
 # remove temp files
-for ev in range(n_trial_evs):
-    ev_file = '{}_ev{:d}.nii.gz'.format(outname, ev)
-    mean_file = '{}_ev{:d}_mean.nii.gz'.format(outname, ev)
-    filt_file = '{}_ev{:d}_filt.nii.gz'.format(outname, ev)
-    sub.call(['rm',ev_file,mean_file,filt_file])
+if not args.keep:
+    for ev in range(n_trial_evs):
+        ev_file = '{}_ev{:d}.nii.gz'.format(outname, ev)
+        mean_file = '{}_ev{:d}_mean.nii.gz'.format(outname, ev)
+        filt_file = '{}_ev{:d}_filt.nii.gz'.format(outname, ev)
+        sub.call(['rm',ev_file,mean_file,filt_file])
