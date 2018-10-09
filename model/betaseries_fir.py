@@ -45,6 +45,8 @@ parser.add_argument('-j', '--n-jobs', type=int, default=1,
                     help="number of CPUs to use (default 1)")
 parser.add_argument('-l', '--hrf-length', type=float, default=20.0,
                     help="length of HRF to estimate in s (default: 20 s)")
+parser.add_argument('-o', '--overwrite', type=bool, default=False,
+                    help="overwrite existing results")
 args = parser.parse_args()
 
 import os
@@ -53,33 +55,61 @@ import subprocess as sub
 if not os.path.exists(args.outdir):
     os.makedirs(args.outdir)
 
+log_file = os.path.join(args.outdir, 'log.txt')
+log = open(log_file, 'w')
+print("Estimating betaseries and HRF shape...")
+print("Status will be written to: {}".format(log_file))
+
 # initial estimates
 # creates betaseries_init, betaseries_init_hrfs
-print("Creating initial betaseries and HRF estimates...")
 init_file = os.path.join(args.outdir, 'betaseries_init')
-sub.call(['betaseries_hrf.py', args.modelbase, str(args.ntrials),
-          'r1glm','fir', init_file, '-m', args.mask, '-j', '24',
-          '-l', '{:.2f}'.format(args.hrf_length)])
 hrf_file = os.path.join(args.outdir, 'betaseries_init_hrfs.nii.gz')
+if args.overwrite or not os.path.exists(hrf_file):
+    print("Creating initial betaseries and HRF estimates...")
+    sub.call(['betaseries_hrf.py', args.modelbase, str(args.ntrials),
+              'r1glm','fir', init_file, '-m', args.mask, '-j', '24',
+              '-l', '{:.2f}'.format(args.hrf_length)],
+             stdout=log, stderr=log)
 
 # smooth the initial hrf estimates
 if args.smooth is not None:
-    print("Smoothing HRF estimates...")
     hrf_smooth_file = os.path.join(args.outdir, 'betaseries_init_hrfs_sm.nii.gz')
-    sub.call(['smooth_susan', hrf_file, args.mask, args.smooth,
-              hrf_smooth_file])
+    if args.overwrite or not os.path.exists(hrf_smooth_file):
+        print("Smoothing HRF estimates...")
+        sub.call(['smooth_susan', hrf_file, args.mask, args.smooth,
+                  hrf_smooth_file], stdout=log, stderr=log)
 else:
     hrf_smooth_file = hrf_file
 
 # make a new design matrix for each voxel
-print("Creating voxelwise design matrices...")
-voxel_design_file = os.path.join(args.outdir, 'betaseries_design.npy')
-sub.call(['betaseries_refine_hrf.py', args.modelbase, str(args.ntrials),
-          hrf_smooth_file, voxel_design_file, '-m', args.mask,
-          '-j', '8'])
+ev_design_base = os.path.join(args.outdir, 'betaseries_design')
 
+# check whether the output files exist
+all_exist = True
+for ev in range(args.ntrials):
+    design_file = '{}_ev{:d}.nii.gz'.format(ev_design_base, ev)
+    if not os.path.exists(design_file):
+        all_exist = False
+        break
+
+if args.overwrite or not all_exist:
+    print("Creating voxelwise design matrices...")
+    sub.call(['betaseries_design_hrf.py', args.modelbase, str(args.ntrials),
+              hrf_smooth_file, ev_design_base, '-m', args.mask],
+             stdout=log, stderr=log)
+
+voxel_design_file = os.path.join(args.outdir, 'betaseries_design.npy')
+if args.overwrite or not os.path.exists(voxel_design_file):
+    print("Filtering design matrices...")
+    sub.call(['betaseries_filter_hrf.py', args.modelbase, str(args.ntrials),
+              hrf_smooth_file, ev_design_base, voxel_design_file,
+              '-m', args.mask, '-j', '24'], stdout=log, stderr=log)
+    
 # final estimation with the new design matrices
-print("Estimating final betaseries image...")
 betaseries_file = os.path.join(args.outdir, 'betaseries.nii.gz')
-sub.call(['betaseries_hrf_model.py', args.modelbase, voxel_design_file,
-          betaseries_file, '-m', args.mask])
+if args.overwrite or not os.path.exists(betaseries_file):
+    print("Estimating final betaseries image...")
+    sub.call(['betaseries_hrf_model.py', args.modelbase, voxel_design_file,
+              betaseries_file, '-m', args.mask], stdout=log, stderr=log)
+
+log.close()
