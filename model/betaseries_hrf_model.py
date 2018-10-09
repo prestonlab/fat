@@ -96,6 +96,7 @@ for j in range(n_vox):
     # trial and putting them together, which allows estimation for all trials
     # at once
     betaimage[:,j] = np.dot(beta_maker, data.samples[:,j])
+del desmat_all_vox
 
 # write out betaseries
 print("Writing betaseries image...")
