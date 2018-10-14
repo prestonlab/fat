@@ -6,7 +6,8 @@ parser = SubjParser(include_log=False)
 parser.add_argument('mask', help="name of mask file")
 parser.add_argument('model', help="name of model")
 parser.add_argument('items', help='faces or places?')
-parser.add_argument('radius', type=int, help='searchlight radius') 
+parser.add_argument('radius', type=int, help='searchlight radius')
+parser.add_argument('--nproc', '-n', type=int, help="number of processes for searchlight", default=None)
 args = parser.parse_args()
 
 import os
@@ -44,22 +45,23 @@ zscore(ds, chunks_attr='chunks')
 print "Calculating average for each stimulus..."
 mtgs = mean_group_sample(['group'])
 mtds = mtgs(ds)
-
-mtds_face = mtds[mtds.sa['condition'][:]=='face']
-mtds_place = mtds[mtds.sa['condition'][:]=='scene']
+# was:
+# mtds_place = mtds[mtds.sa['condition'][:]=='scene']
+# below also works and is simpler (attributes can be accessed as a dict
+# or through a dot operator, and the second option returns an array)
+mtds_face = mtds[mtds.sa.condition=='face']
+mtds_place = mtds[mtds.sa.condition=='scene']
 mtds2use = mtds_face[:] if args.items=='faces' else mtds_place[:]
 print "Reading in model..." 
 model_path = os.path.join('/work/02837/elz226/lonestar/models/', args.model+ '.mat')
-model_contents = sio.loadmat(model_path)
-model_rdm = model_contents[args.model]
+model_rdm = sio.loadmat(model_path)[args.model] # unlike matlab, can index immediately without saving to a variable first
 
 model_face = model_rdm[0:60, 0:60]
 model_place = model_rdm[60:120, 60:120]
 model2use_pre = model_face[:] if args.items=='faces' else model_place[:]
 
 rand_ind_path = ('/work/02837/elz226/lonestar/models/rand_ind.mat')
-rand_ind_contents = sio.loadmat(rand_ind_path)
-rand_ind_all = rand_ind_contents['rand_ind']
+rand_ind_all = sio.loadmat(rand_ind_path)['rand_ind']
 
 items2remove = np.isnan(model2use_pre)
 
@@ -80,7 +82,7 @@ for ind in range(0,100):
     # searchlight
     print "Performing searchlight number %03d for %s..." % (ind, bp.subject)    
     tdsm = rsa.PDistTargetSimilarity(squareform(model2use))
-    sl_tdsm = sphere_searchlight(ChainLearner([tdsm, TransposeMapper()]), args.radius)
+    sl_tdsm = sphere_searchlight(ChainLearner([tdsm, TransposeMapper()]), args.radius, nproc=args.nproc)
     slres_tdsm = sl_tdsm(mtds2use[items2remove[1]==False])
     fischerz_slres = np.arctanh(slres_tdsm[0]) 
 
