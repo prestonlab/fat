@@ -9,7 +9,6 @@ import sys,os
 import subprocess
 from tempfile import *
 from launch_slurm import launch_slurm as launch_slurm
-import socket
 
 # set up argument parser
 parser = argparse.ArgumentParser(description='process SLURM job.')
