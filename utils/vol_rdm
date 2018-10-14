@@ -14,6 +14,7 @@ from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 from mvpa2.datasets.mri import fmri_dataset
 from mvpa2.base.dataset import vstack
+from mvpa2.mappers.detrend import poly_detrend
 
 output = sys.argv[1]
 mask = sys.argv[2]
@@ -31,7 +32,9 @@ if not os.path.exists(mask):
 dsets = []
 for image in images:
     print "Loading %s with %s mask..." % (image, mask)
-    dsets.append(fmri_dataset(image, mask=mask))
+    ds = fmri_dataset(image, mask=mask)
+    poly_detrend(ds)
+    dsets.append(ds)
 ds = vstack(dsets)
 
 print "Calculating RDM..."
