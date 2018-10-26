@@ -89,6 +89,7 @@ mkdir -p $outdir
 
 echo "Transforming z-statistic images to template space..."
 files=""
+incfiles=""
 for subject in $(echo $subjects | tr ':' ' '); do
     zstat_subj=$studydir/$subject/$filepath/${filename}.nii.gz
     if [ ! -f $zstat_subj ]; then
@@ -97,15 +98,21 @@ for subject in $(echo $subjects | tr ':' ' '); do
     fi
 
     flags=()
+    finc=()
     if [ -n "$mask" ]; then
 	flags+=("-p $mask")
+	finc+=("-p $mask")
     fi
     if [ -n "$anat" ]; then
 	flags+=("-a $anat")
+	finc+=("-a $anat")
     fi
     if [ -n "$interp" ]; then
 	flags+=("-n $interp")
     fi
+    finc+=("-n MultiLabel")
+
+    # transform z-stat image
     zstat_std=$studydir/$subject/$filepath/zstat_std.nii.gz
     if [ ! -f $zstat_std -o $overwrite = true ]; then
 	echo "transform_func2mni.sh ${flags[@]} $zstat_subj $zstat_std $subject"
@@ -114,6 +121,24 @@ for subject in $(echo $subjects | tr ':' ' '); do
 	echo "$zstat_std exists."
     fi
 
+    included=$studydir/$subject/$filepath/included.nii.gz
+    included_std=$studydir/$subject/$filepath/included_std.nii.gz
+    if [ -f $included ]; then
+	# if there is an image with included voxels, transform this to
+	# standard space
+	if [ ! -f $included_std -o $overwrite = true ]; then
+	    echo "transform_func2mni.sh ${finc[@]} $included $included_std $subject"
+	    transform_func2mni.sh "${finc[@]}" $included $included_std $subject
+	    echo "finished transform"
+	fi
+
+	if [ -z "$incfiles" ]; then
+	    incfiles=$included_std
+	else
+	    incfiles="$incfiles $included_std"
+	fi
+    fi
+    
     if [ -z "$files" ]; then
 	files=$zstat_std
     else
@@ -128,6 +153,21 @@ if [ ! -f $zstat_cat -o $overwrite = true ]; then
 fi
 
 echo "Running randomise..."
+if [ -n "$incfiles" ]; then
+    included_cat=$outdir/included_all.nii.gz
+    if [ ! -f $included_cat -o $overwrite = true ]; then
+	fslmerge -t $included_cat $incfiles
+    fi
+
+    # may want a (much) stricter threshold, but for the first pass
+    # we'll include any voxels that are defined for anyone
+    incprob=$outdir/included_prob.nii.gz
+    incmask=$outdir/included_tot.nii.gz
+    fslmaths $included_cat -Tmean $incprob
+    fslmaths $incprob -thr .01 -bin $incmask
+    mask=$incmask
+fi
+
 flags=()
 if [ -n "$mask" ]; then
     flags+=("-m $mask")
