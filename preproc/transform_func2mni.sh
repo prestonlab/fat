@@ -2,8 +2,8 @@
 
 if [ $# -lt 3 ]; then
     cat <<EOF
-Usage:   transform_func2mni.sh [-m] [-a anat] [-n interp] [-p postmask] input output subject
-Example: transform_func2mni.sh -n Linear bender_01_mat_item_w2v_faces.nii.gz bender_01_mat_item_w2v_faces_mni.nii.gz bender_01
+Usage:   transform_func2mni.sh [-a anat] [-n interp] [-p postmask] input output subject
+Example: transform_func2mni.sh bender_01_mat_item_w2v_faces.nii.gz bender_01_mat_item_w2v_faces_mni.nii.gz bender_01
 
 After running reg_anat2mni.py, can use this to transform any image
 in functional space to template space (MNI or custom).
@@ -28,16 +28,9 @@ OPTIONS
     scan to the anatomical. If not specified, no suffix will be
     used.
 
--m
-    Input image is a mask. This is only used to set the default
-    interpolation if it is not specified explicitly using the -n flag.
-    This option is deprecated and may be removed in a future version.
-
 -n interp
-    Type of interpolation to use. May be: Linear, BSpline,
+    Type of interpolation to use. May be: Linear (default), BSpline,
     NearestNeighbor, or any other types supported by antsApplyTransforms.
-    If -m is used, then the default is NearestNeighbor; otherwise, the
-    default is BSpline.
 
 -p postmask
     Post-mask to apply to the transformed image. This is useful
@@ -49,16 +42,12 @@ EOF
 fi
 
 refanat=""
-mask=0
-interp=""
+interp=Linear
 postmask=""
 while getopts ":a:mn:p:" opt; do
     case $opt in
 	a)
 	    refanat=$OPTARG
-	    ;;
-	m)
-	    mask=1
 	    ;;
 	n)
 	    interp=$OPTARG
@@ -106,14 +95,6 @@ if [ ! -f ${anat2func}.txt ]; then
 fi
 
 # transform input from functional to template space
-if [ -z $interp ]; then
-    if [ $mask = 1 ]; then
-	interp=NearestNeighbor
-    else
-	interp=BSpline
-    fi
-fi
-
 orig2temp_warp=$sdir/anatomy/antsreg/transforms/orig-template_Warp.nii.gz
 orig2temp=$sdir/anatomy/antsreg/transforms/orig-template_Affine.txt
 if [ ! -f $orig2temp_warp ]; then
