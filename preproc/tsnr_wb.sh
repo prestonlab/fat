@@ -10,6 +10,12 @@ fi
 input=$1
 subject=$2
 
+# check for existence
+if [ ! -f $input ]; then
+echo "ERROR: Input file not found."
+exit 1
+fi
+
 # input and output directories
 parentdir=$(dirname $input)
 image=$(basename $input .nii.gz)
