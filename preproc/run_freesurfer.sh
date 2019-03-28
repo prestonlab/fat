@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-    echo "Usage: run_freesurfer.sh [-cf] [-o outname] subject nthreads"
+    echo "Usage: run_freesurfer.sh [-cf] [-o outname] [ -b] subject nthreads"
     echo
     echo "Use highres anatomical image to run FreeSurfer standard"
     echo "reconstruction. Highres is expected to be in:"
@@ -21,6 +21,10 @@ if [ $# -lt 2 ]; then
     echo "    Use a FLAIR image to refine the pial surface. Expected to"
     echo '    be in: $STUDYDIR/$subject/anatomy/flair.nii.gz'
     echo
+    echo "-b"
+    echo "    If flagged the image will be bias corrected before running" 
+    echo "    freesurfer."
+    echo
     echo "-o outname"
     echo '    Set the name of the output directory. Default is $subject.'
     echo
@@ -39,7 +43,8 @@ fi
 
 coronal=false
 flair=false
-while getopts ":o:cf" opt; do
+bias=false
+while getopts ":o:cf:b" opt; do
     case $opt in
 	o)
 	    outname=$OPTARG
@@ -50,6 +55,9 @@ while getopts ":o:cf" opt; do
 	f)
 	    flair=true
 	    ;;
+        b)
+            bias=true
+            ;;
     esac
 done
 shift $((OPTIND-1))
@@ -90,5 +98,13 @@ if [ $coronal = true ]; then
     fi
     opt="$opt -hippocampal-subfields-T2 $subjdir/anatomy/coronal.nii.gz T2"
 fi
+if [ $bias = true ]; then
+        # correct image intensity
+    echo "Intensity normalization..."
+    N4BiasFieldCorrection -i ${subjdir}/anatomy/highres.nii.gz -o ${subjdir}/anatomy/highres_cor.nii.gz
+    input=highres_cor.nii.gz
+else
+    input=highres.nii.gz
+fi
 
-recon-all -s ${outname} -sd ${subjdir}/anatomy/ -i ${subjdir}/anatomy/highres.nii.gz -all -parallel -openmp $nthreads -itkthreads $nthreads $opt
+recon-all -s ${outname} -sd ${subjdir}/anatomy/ -i ${subjdir}/anatomy/${input} -all -parallel -openmp $nthreads -itkthreads $nthreads $opt
