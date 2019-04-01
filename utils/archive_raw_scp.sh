@@ -11,6 +11,9 @@ blacklist="$2"
 filelist=""
 for f in $(find "$datadir" -name "*.tar.gz"); do
     # if f in blacklist, continue (probably grep for the exact string,
+    if grep -Fxq $f $blacklist; then
+	continue
+    fi
     # check if anything was returned)
     if [ -z "$filelist" ]; then
         filelist="$f"
