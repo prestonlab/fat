@@ -22,10 +22,11 @@ for f in $(find "$datadir" -name "*.tar.gz"); do
     fi
 done
 
-echo "scp $filelist ranch.tacc.utexas.edu:raw"
+dir=$(dirname "${f}")
+echo "scp $filelist ranch.tacc.utexas.edu:raw/$dir"
 read -p "send files?" resp
 if [ "$resp" = "yes" ]; then
-    if scp $filelist ranch.tacc.utexas.edu:raw; then
+    if scp $filelist ranch.tacc.utexas.edu:raw/$dir; then
         echo "$filelist" | tr ' ' '\n' >> $blacklist
     fi
 fi

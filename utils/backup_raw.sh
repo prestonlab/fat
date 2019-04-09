@@ -43,7 +43,7 @@ destdir=$DATADIR/raw/$studytype/$study
 mkdir -p $destdir
 dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
-if [ $has_o_option == false ]; then
+if [ "$has_o_option" == false ]; then
    if [ -e $dest ]; then
       echo "This file already exists would you like to overwrite?"
       read varname
@@ -57,7 +57,7 @@ if [ $has_o_option == false ]; then
 fi 
 # sanity checks
 isvalid=false
-if [ $has_d_option == false ]; then
+if [ "$has_d_option" == false ]; then
 
 
     for subdir in $raw_dir/*; do
@@ -78,7 +78,7 @@ if [ $has_d_option == false ]; then
 fi 
 # is this a valid directory with dicom subdirectories?
 
-if [ $isvalid == false ] & [ $has_d_option == true ]; then
+if [ "$isvalid" == false ] & [ "$has_d_option" == true ]; then
     echo "There is no raw data in this directory"
 fi
 # compress raw files
