@@ -11,6 +11,9 @@ blacklist="$2"
 filelist=""
 for f in $(find "$datadir" -name "*.tar.gz"); do
     # if f in blacklist, continue (probably grep for the exact string,
+    if grep -Fxq $f $blacklist; then
+	continue
+    fi
     # check if anything was returned)
     if [ -z "$filelist" ]; then
         filelist="$f"
@@ -19,10 +22,11 @@ for f in $(find "$datadir" -name "*.tar.gz"); do
     fi
 done
 
-echo "scp $filelist ranch.tacc.utexas.edu:raw"
+dir=$(dirname "${f}")
+echo "scp $filelist ranch.tacc.utexas.edu:raw/$dir"
 read -p "send files?" resp
 if [ "$resp" = "yes" ]; then
-    if scp $filelist ranch.tacc.utexas.edu:raw; then
+    if scp $filelist ranch.tacc.utexas.edu:raw/$dir; then
         echo "$filelist" | tr ' ' '\n' >> $blacklist
     fi
 fi

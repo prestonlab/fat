@@ -4,19 +4,23 @@ if [ $# -eq 0 ]; then
     cat <<EOF
 Usage:   backup_raw.sh subject_dicom_dir studytype study subject
 Example: backup_raw.sh remind_202a fmri remind remind_202a
-Use the '-sk' flag to skip overwrite check
+Use the '-o' flag to skip overwrite check
 EOF
     exit 1
 fi
 
 DATADIR=/corral-repl/utexas/prestonlab
 has_sk_option=false
-while getopts ":sk:" opt; do 
+while getopts ":od" opt; do 
     case $opt in
-        sk) 
-           echo "-sk triggered overwrite check skipped" >&2
-           has_sk_option=true
+        o) 
+           echo "-o triggered overwrite check skipped" >&2
+           has_o_option=true
            ;;
+	d) 
+	   echo "-d triggered dicom check skipped" >&2 
+	   has_d_option=true
+	   ;;
     esac
 done 
 
@@ -39,7 +43,7 @@ destdir=$DATADIR/raw/$studytype/$study
 mkdir -p $destdir
 dest=$DATADIR/raw/$studytype/$study/raw_${subject}.tar.gz
 
-if [ $has_sk_option == false ]; then
+if [ "$has_o_option" == false ]; then
    if [ -e $dest ]; then
       echo "This file already exists would you like to overwrite?"
       read varname
@@ -53,25 +57,28 @@ if [ $has_sk_option == false ]; then
 fi 
 # sanity checks
 isvalid=false
-for subdir in $raw_dir/*; do
-    if [ -d $subdir ]; then
-	# this is a directory
-	# check for any dicoms
-	has_dicoms=false
-	for file in $subdir/*; do
-	    if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
-               # if good, set isvalid to true and break
-               isvalid=true
-               has_dicoms=true 
-	       break
-	    fi
-	done
-    fi
-done
+if [ "$has_d_option" == false ]; then
 
+
+    for subdir in $raw_dir/*; do
+	if [ -d $subdir ]; then
+	    # this is a directory
+	    # check for any dicoms
+	    has_dicoms=false
+	    for file in $subdir/*; do
+		if [ ${file: -4} == ".dcm" ] || [ ${file: -4} == ".IMA" ]; then 
+		    # if good, set isvalid to true and break
+		    isvalid=true
+		    has_dicoms=true 
+		    break
+		fi
+	    done
+	fi
+    done
+fi 
 # is this a valid directory with dicom subdirectories?
-#this is a test please disregard
-if [ isvalid == false ]; then
+
+if [ "$isvalid" == false ] & [ "$has_d_option" == true ]; then
     echo "There is no raw data in this directory"
 fi
 # compress raw files
