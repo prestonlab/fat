@@ -126,7 +126,7 @@ class SubjLog:
     def run(self, cmd):
         """Run a command with input and output logging."""
 
-        print cmd
+        print(cmd)
         if self.dry_run:
             return
         
@@ -140,18 +140,18 @@ class SubjLog:
         output, errors = p.communicate()
         outfile = open(self.log_file, 'a')
         if output:
-            print output
+            print(output)
             outfile.write(output)
         if errors:
             outfile.write('ERROR: ' + errors)
-            print '%s: ERROR: ' % self.subject + errors
+            print('%s: ERROR: ' % self.subject + errors)
         outfile.close()
 
     def write(self, message, wrap=True, main_log=False):
         """Write a message to the log."""
         
         if self.dry_run:
-            print message
+            print(message)
             return
 
         if main_log:
@@ -198,7 +198,7 @@ class SubjPath:
         
     def path(self, std, *args):
         """Get the path to file or directory within a standard directory."""
-        if self.d.has_key(std):
+        if std in self.d:
             fulldir = os.path.join(self.d[std.lower()], *args)
         else:
             fulldir = os.path.join(self.subj_dir, std, *args)
@@ -319,7 +319,7 @@ class SubjPath:
 
         # read in raw events
         if verbose:
-            print "Reading events from %s" % log
+            print("Reading events from %s" % log)
         events = patio.read_log(log)
 
         # add duration field if specified
