@@ -38,7 +38,7 @@ def main():
             mask_img = nib.Nifti1Image(mask, img.affine)
             filename = os.path.join(outdir,
                 '%s%02d.nii.gz' % (roi_name, i+1))
-            print filename
+            print(filename)
             #mask_img.to_filename(filename)
 
 if __name__ == "__main__":

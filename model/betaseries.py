@@ -108,13 +108,13 @@ if deriv:
     # temporal derivatives are included. FEAT interleaves them with
     # the original ones, starting with the first original regressor
     n_trial_evs = n_trial * 2
-    trial_evs = range(0, n_trial_evs, 2)
-    deriv_evs = range(1, n_trial_evs, 2)
+    trial_evs = list(range(0, n_trial_evs, 2))
+    deriv_evs = list(range(1, n_trial_evs, 2))
     print("Using derivatives of trial regressors.")
 else:
     # trial regressors are just the first N regressors
     n_trial_evs = n_trial
-    trial_evs = range(0, n_trial)
+    trial_evs = list(range(0, n_trial))
     deriv_evs = []
 
 # find input bold data
@@ -141,7 +141,7 @@ else:
 dm_extra = desmat.mat[:,n_trial_evs:]
 
 # additional confound regressors
-if design.has_key('confoundev_files'):
+if 'confoundev_files' in design:
     conf_file = design['confoundev_files']
     print("Loading confound file {}...".format(conf_file))
     dm_nuisance = N.loadtxt(conf_file)

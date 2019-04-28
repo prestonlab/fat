@@ -21,7 +21,7 @@ n_tp, n_evs = desmat.mat.shape
 
 # trial regressors are just the first N regressors
 n_trial_evs = n_trial
-trial_evs = range(0, n_trial)
+trial_evs = list(range(0, n_trial))
 
 # number of original regressors and all regressors including
 # derivatives

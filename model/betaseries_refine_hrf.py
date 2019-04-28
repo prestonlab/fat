@@ -33,7 +33,7 @@ n_tp, n_evs = desmat.mat.shape
 
 # trial regressors are just the first N regressors
 n_trial_evs = args.ntrials
-trial_evs = range(0, args.ntrials)
+trial_evs = list(range(0, args.ntrials))
 
 # number of original regressors and all regressors including
 # derivatives
@@ -80,7 +80,7 @@ else:
 dm_extra = desmat.mat[:,n_trial_evs:]
 
 # additional confound regressors
-if design.has_key('confoundev_files'):
+if 'confoundev_files' in design:
     conf_file = design['confoundev_files']
     print("Loading confound file {}...".format(conf_file))
     dm_nuisance = np.loadtxt(conf_file)

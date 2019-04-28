@@ -59,7 +59,7 @@ else:
 dm_extra = desmat.mat[:,n_evs:]
 
 # additional confound regressors
-if design.has_key('confoundev_files'):
+if 'confoundev_files' in design:
     conf_file = design['confoundev_files']
     print("Loading confound file {}...".format(conf_file))
     dm_nuisance = np.loadtxt(conf_file)
