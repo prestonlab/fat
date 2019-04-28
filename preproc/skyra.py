@@ -19,7 +19,7 @@ def dicom_filetype(hdr):
         file_type='derived'
         return file_type
     
-    for scan_type in scan_protocols.keys():
+    for scan_type in list(scan_protocols.keys()):
         for name in scan_protocols[scan_type]:
             if (hdr.ProtocolName.find(name) > -1) or (hdr.SequenceName.find(name) > -1) or (hdr.SeriesDescription.find(name) > -1):
                file_type = scan_type
@@ -63,7 +63,7 @@ def dicom_headers(sp):
 def dicom2nifti(sp, log):
     """Convert all DICOM files to NIfTI format."""
     hdrs, dirs = dicom_headers(sp)
-    for series in hdrs.keys():
+    for series in list(hdrs.keys()):
         # set the output directory (based on filetype)
         filetype = dicom_filetype(hdrs[series])
 
