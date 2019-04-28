@@ -10,7 +10,7 @@ import argparse
 import os,sys
 from datetime import datetime
 import dicom
-import cPickle as pickle
+import pickle as pickle
 import socket
 # import xnat_tools
 
@@ -23,7 +23,7 @@ def run_logged_cmd(cmd,cmdfile):
         outfile.write('%s: Output: '%subcode+output+'\n')
         if errors:
             outfile.write('%s: ERROR: '%subcode+errors+'\n')
-            print '%s: ERROR: '%subcode+errors
+            print('%s: ERROR: '%subcode+errors)
         outfile.close()
 
 def log_message(message,cmdfile):
@@ -116,11 +116,11 @@ def setup_dir(args):
     studyname=args['studyname']
     subcode=args['subcode']
     if args['verbose']:
-        print subcode
+        print(subcode)
 
     studydir=os.path.join(args['basedir'],studyname)
     if not os.path.exists(studydir):
-        print 'ERROR: study dir %s does not exist!'%studydir
+        print('ERROR: study dir %s does not exist!'%studydir)
         sys.exit()
         #subcode=sys.argv[1]
 
@@ -129,11 +129,11 @@ def setup_dir(args):
     if not os.path.exists(subdir):
         os.mkdir(subdir)
     else:
-        print 'subdir %s already exists'%subdir
+        print('subdir %s already exists'%subdir)
         if args['overwrite']==False:
             sys.exit()
         else:
-            print 'overwriting...'
+            print('overwriting...')
 
     subdirs=['BOLD','DTI','anatomy','logs','raw','model','behav','fieldmap']
     subdir_names={}
@@ -162,10 +162,10 @@ def load_dcmhdrs(subdir_names):
     dcmhdrs=pickle.load(f)
     f.close()
 
-    for d in dcmhdrs.iterkeys():
+    for d in dcmhdrs.keys():
     	if args['skip']:
 			if  not (hasattr(dcmhdrs[d], 'ProtocolName') and hasattr(dcmhdrs[d], 'SequenceName')):
-				print 'Detected unreadable headers for scan {}, skipping...'.format(d)
+				print('Detected unreadable headers for scan {}, skipping...'.format(d))
 				continue
 
         if dcmhdrs[d].SequenceName.find('epfid')>-1:
@@ -182,125 +182,125 @@ def save_dcmhdrs(dcmhdrs,subdir_names):
 
 def fs_setup(args,subdir_names):
     if args['verbose']:
-        print 'running freesurfer setup'
+        print('running freesurfer setup')
         # set up subdir
     if not os.path.exists(args['fs_subdir']):
-        print 'fs_subdir %s does not exist - skipping fs_setup'%args['fs_subdir']
+        print('fs_subdir %s does not exist - skipping fs_setup'%args['fs_subdir'])
     sub_fsdir=os.path.join(args['fs_subdir'],args['fs_subcode'])
     if os.path.exists(sub_fsdir):
         if not args['overwrite']:
-            print 'subject dir %s already exists - skipping fs_setup'
+            print('subject dir %s already exists - skipping fs_setup')
             return
         else:
-            print 'subject dir %s already exists - overwriting'
+            print('subject dir %s already exists - overwriting')
     else:
         cmd='recon-all -i %s -subjid %s -sd %s'%(os.path.join(subdir_names['anatomy'],'highres001.nii.gz'),args['fs_subcode'],args['fs_subdir'])
-        print cmd
+        print(cmd)
         if not args['testmode']:
             run_logged_cmd(cmd,outfile['main'])
 
 def run_autorecon1(args,subdir_names):
     if args['verbose']:
-        print 'running freesurfer autorecon1'
+        print('running freesurfer autorecon1')
         # set up subdir
     sub_fsdir=os.path.join(args['fs_subdir'],args['fs_subcode'])
     brainmask=os.path.join(sub_fsdir,'mri/brainmask.mgz')
 
     if not os.path.exists(sub_fsdir):
-        print 'subject dir %s does not exist - skipping autorecon1'%sub_fsdir
+        print('subject dir %s does not exist - skipping autorecon1'%sub_fsdir)
         return
     elif os.path.exists(brainmask):
-        print 'brainmask %s already exists - skipping autorecon1'%brainmask
+        print('brainmask %s already exists - skipping autorecon1'%brainmask)
         return
     else:
         cmd='recon-all -autorecon1 -subjid %s -sd %s'%(args['fs_subcode'],args['fs_subdir'])
-        print cmd
+        print(cmd)
         if not args['testmode']:
             run_logged_cmd(cmd,outfile['main'])
 
 def copy_stripped_T1(args,subdir_names):
     if args['verbose']:
-        print 'copying stripped T1'
+        print('copying stripped T1')
         # set up subdir
     sub_fsdir=os.path.join(args['fs_subdir'],args['fs_subcode'])
     brainmask=os.path.join(sub_fsdir,'mri/brainmask.mgz')
 
     if not os.path.exists(brainmask):
-        print 'brainmask %s does not exist - skipping copy'%brainmask
+        print('brainmask %s does not exist - skipping copy'%brainmask)
         return
     else:
         cmd='mri_convert --out_orientation LAS %s --reslice_like %s/highres001.nii.gz  %s/highres001_brain.nii'%(brainmask,
                                                                                                                  subdir_names['anatomy'],subdir_names['anatomy'])
-        print cmd
+        print(cmd)
         if not args['testmode']:
             run_logged_cmd(cmd,outfile['main'])
         cmd='gzip  %s/highres001_brain.nii'%subdir_names['anatomy']
-        print cmd
+        print(cmd)
         if not args['testmode']:
             run_logged_cmd(cmd,outfile['main'])
         cmd='fslmaths %s/highres001_brain.nii.gz -thr 1 -bin %s/highres001_brain_mask.nii.gz'%(subdir_names['anatomy'],subdir_names['anatomy'])
-        print cmd
+        print(cmd)
         if not args['testmode']:
             run_logged_cmd(cmd,outfile['main'])
 
 def bet_inplane(args,subdir_names):
     if args['verbose']:
-        print 'running bet on inplane'
+        print('running bet on inplane')
     inplane_file=os.path.join(subdir_names['anatomy'],'inplane001.nii.gz')
     if not os.path.exists(inplane_file):
-        print 'inplane file %s does not exist - skippping bet_inplane'%inplane_file
+        print('inplane file %s does not exist - skippping bet_inplane'%inplane_file)
         return
     cmd='bet %s %s -f 0.3 -R'%(os.path.join(subdir_names['anatomy'],'inplane001.nii.gz'),
                      os.path.join(subdir_names['anatomy'],'inplane001_brain.nii.gz'))
-    print cmd
+    print(cmd)
     if not args['testmode']:
         run_logged_cmd(cmd,outfile['main'])
 
 
 def process_fieldmap(args,subdir_names):
 	if args['verbose']:
-		print 'processing field maps'
+		print('processing field maps')
 	magfile='%s/fieldmap_mag.nii.gz'%subdir_names['fieldmap']
 	phasefile='%s/fieldmap_mag.nii.gz'%subdir_names['fieldmap']
 	if not os.path.exists(magfile) or not os.path.exists(phasefile):
-		print 'field map does not exist, skippping process_fieldmap'
+		print('field map does not exist, skippping process_fieldmap')
 		return
 
 
 	cmd='bet %s/fieldmap_mag.nii.gz %s/fieldmap_mag_brain -f 0.3 -F'%(subdir_names['fieldmap'],subdir_names['fieldmap'])
-	print cmd
+	print(cmd)
 	if not args['testmode']:
 		run_logged_cmd(cmd,outfile['main'])
 
 
 	cmd='fsl_prepare_fieldmap SIEMENS %s/fieldmap_phase.nii.gz %s/fieldmap_mag_brain.nii.gz %s/fm_prep 2.46'%(subdir_names['fieldmap'],subdir_names['fieldmap'],subdir_names['fieldmap'])
-	print cmd
+	print(cmd)
 	if not args['testmode']:
 		run_logged_cmd(cmd,outfile['main'])
 
 
 def dtiqa(args,subdir_names):
     if args['verbose']:
-        print 'running QC on DTI'
+        print('running QC on DTI')
     dtifiles=[i.strip() for i in os.listdir(subdir_names['DTI']) if (i.find('DTI_')==0 and i.find('.nii.gz')>0)]
     for dtifile in dtifiles:
-		    print 'found DTI file: %s'%dtifile
+		    print('found DTI file: %s'%dtifile)
 
 		    cmd='dtiqa.py %s'%os.path.join(subdir_names['DTI'],dtifile)
-		    print cmd
+		    print(cmd)
 		    if not args['testmode']:
 			    run_logged_cmd(cmd,outfile['main'])
 
 def topup(args,subdir_names):
     if args['verbose']:
-        print 'running topup on DTI'
+        print('running topup on DTI')
     if (not os.path.exists(os.path.join(subdir_names['DTI'],'DTI_1.nii.gz'))) or (not os.path.exists(os.path.join(subdir_names['DTI'],'DTI_2.nii.gz'))):
-	    print 'topup requires two DTI files - skipping'
+	    print('topup requires two DTI files - skipping')
 	    return
 
 
     cmd='run_topup.py %s %s'%(os.path.join(subdir_names['DTI'],'DTI_1.nii.gz'),os.path.join(subdir_names['DTI'],'DTI_2.nii.gz'))
-    print cmd
+    print(cmd)
     if not args['testmode']:
 	    run_logged_cmd(cmd,outfile['main'])
 
@@ -321,10 +321,10 @@ def topup(args,subdir_names):
 
 def do_unzipping(args,subdir):
 	    if not args['filename'] or not os.path.exists(args['filename']):
-	        print 'filename %s not found for unzipping - exiting'%args['filename']
+	        print('filename %s not found for unzipping - exiting'%args['filename'])
 	        sys.exit()
 	    cmd='unzip %s -d %s'%(args['filename'],subdir)
-	    print cmd
+	    print(cmd)
 	    if not args['testmode']:
 	        run_logged_cmd(cmd,outfile['unzip'])
 
@@ -360,13 +360,13 @@ def convert_dicom_to_nifti(args, subdir):
 		#if user wishes to skip over bad headers, check now
 		if args['skip']:
 			if  not (hasattr(dcmhdrs[d], 'ProtocolName') and hasattr(dcmhdrs[d], 'SequenceName')):
-				print 'Detected unreadable headers for scan {}, skipping...'.format(d)
+				print('Detected unreadable headers for scan {}, skipping...'.format(d))
 				continue
 
 		file_type='raw'
 		#print d, dcmhdrs[d].ImageType
 		if not dcmhdrs[d].ImageType[0]=='ORIGINAL':
-			print 'skipping derived series ',d
+			print('skipping derived series ',d)
 			file_type='derived'
 		# first look for anatomy
 		if file_type=='raw':
@@ -396,10 +396,10 @@ def convert_dicom_to_nifti(args, subdir):
 					file_type='fieldmap'
 
 
-		print 'detected %s: (%s) %s %s'%(file_type,d,dcmhdrs[d].ProtocolName,dcmhdrs[d].SeriesDescription)
+		print('detected %s: (%s) %s %s'%(file_type,d,dcmhdrs[d].ProtocolName,dcmhdrs[d].SeriesDescription))
 		if (not file_type=='localizer') and (not file_type=='derived') and (not file_type=='reference'):
 			cmd='%sdcm2nii -4 y -d n -i n -o %s %s'%(args['mricrondir'],subdir_names[file_type],dcmdir)
-			print cmd
+			print(cmd)
 			if not args['testmode']:
 				run_logged_cmd(cmd,outfile['main'])
 	# save dicom headers to pickle file
@@ -407,7 +407,7 @@ def convert_dicom_to_nifti(args, subdir):
 
 	if not args['keepdata']:
 		cmd='rm -rf %s'%dcmbase
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['main'])
 
@@ -426,11 +426,11 @@ def convert_dicom_to_nifti(args, subdir):
 		runname=dcmhdrs[runnum].ProtocolName.replace(' ','_')
 		#runname=dcmhdrs[runnum].ProtocolName
 		rundir=os.path.join(subdir_names['BOLD'],'%s_%s'%(runname,runnum))
-		print rundir
+		print(rundir)
 		if not os.path.exists(rundir):
 			os.mkdir(rundir)
 		cmd='mv %s %s/bold.nii.gz'%(os.path.join(subdir_names['BOLD'],f),rundir)
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['dcm2nii'])
 
@@ -457,7 +457,7 @@ def convert_dicom_to_nifti(args, subdir):
 	highresctr=1
 	inplanectr=1
 	for a in anatfiles:
-		print a
+		print(a)
 		runnum=a.rsplit('a')[-2].rsplit('s')[-1].lstrip('0')
 		mprage=0
 		for key in ['MPRAGE','mprage','t1w','T1w']:
@@ -465,24 +465,24 @@ def convert_dicom_to_nifti(args, subdir):
 				mprage=1
 			if a.find('o')==0 and mprage==1 :
 				cmd='mv %s %s/highres%03d.nii.gz'%(os.path.join(subdir_names['anatomy'],a),subdir_names['anatomy'],highresctr)
-				print cmd
+				print(cmd)
 				if not args['testmode']:
 					run_logged_cmd(cmd,outfile['main'])
 					highresctr+=1
-					print 'highresctr is at ',highresctr
+					print('highresctr is at ',highresctr)
 		if (mprage != 1) and a.find('PDT2')>0:
 				cmd='fslroi %s %s/inplane%03d.nii.gz 1 1'%(os.path.join(subdir_names['anatomy'],a),subdir_names['anatomy'],inplanectr)
-				print cmd
+				print(cmd)
 				if not args['testmode']:
 					run_logged_cmd(cmd,outfile['main'])
 					inplanectr+=1
 				cmd='mv %s %s'%(os.path.join(subdir_names['anatomy'],a),other_anat_dir)
-				print cmd
+				print(cmd)
 				if not args['testmode']:
 					run_logged_cmd(cmd,outfile['main'])
 		elif not mprage == 1:
 				cmd='mv %s %s'%(os.path.join(subdir_names['anatomy'],a),other_anat_dir)
-				print cmd
+				print(cmd)
 				if not args['testmode']:
 					run_logged_cmd(cmd,outfile['main'])
 
@@ -495,7 +495,7 @@ def convert_dicom_to_nifti(args, subdir):
 	fmtypes=['mag','phase']
 	for f in fmfiles:
 		cmd='mv %s/%s %s/fieldmap_%s.nii.gz'%(subdir_names['fieldmap'],f,subdir_names['fieldmap'],fmtypes[fmctr])
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['main'])
 		fmctr+=1
@@ -507,17 +507,17 @@ def convert_dicom_to_nifti(args, subdir):
 	dtictr=1
 	for f in dtifiles:
 		cmd='mv %s/%s %s/DTI_%d.nii.gz'%(subdir_names['DTI'],f,subdir_names['DTI'],dtictr)
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['main'])
 
 		cmd='mv %s/%s %s/DTI_%d.bvec'%(subdir_names['DTI'],f.replace('.nii.gz','.bvec'),subdir_names['DTI'],dtictr)
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['main'])
 
 		cmd='mv %s/%s %s/DTI_%d.bval'%(subdir_names['DTI'],f.replace('.nii.gz','.bval'),subdir_names['DTI'],dtictr)
-		print cmd
+		print(cmd)
 		if not args['testmode']:
 			run_logged_cmd(cmd,outfile['main'])
 		dtictr+=1
@@ -529,8 +529,8 @@ def execute_commands(args, subdir_names, TR):
 
 	bolddirs=[d for d in os.listdir(subdir_names['BOLD']) if os.path.isdir(os.path.join(subdir_names['BOLD'],d))]
 
-	print 'bolddirs:'
-	print bolddirs
+	print('bolddirs:')
+	print(bolddirs)
 
 	command_dict={'motcorr':"'mcflirt -in %s/bold.nii.gz -rmsrel -rmsabs %s'%(__import__('os').path.join(subdir_names['BOLD'],b),args['mcflirt_args'])",
 	    'qa':"'fmriqa.py %s/bold_mcf.nii.gz %f'%(__import__('os').path.join(subdir_names['BOLD'],b),TR[b])",
@@ -542,16 +542,16 @@ def execute_commands(args, subdir_names, TR):
 	 for k in bold_commands:
 	  if args[k]:
 	    if args['verbose']:
-	        print 'running %s'%k
+	        print('running %s'%k)
 	        # run betfunc
 	    else:
 	        for b in bolddirs:
-		    print k
-		    print command_dict
-		    print command_dict[k]
+		    print(k)
+		    print(command_dict)
+		    print(command_dict[k])
 				#  NO O_O
 	            cmd=eval(command_dict[k])
-	            print cmd
+	            print(cmd)
 	            if not args['testmode']:
 	                run_logged_cmd(cmd,outfile['main'])
 
@@ -601,7 +601,7 @@ if __name__ == "__main__":
 	    try:
 		    dcmhdrs,TR=load_dcmhdrs(subdir_names)
 	    except:
-		    print "can't load dicom headers from pickle, exiting (ignore this if just running --getdata)"
+		    print("can't load dicom headers from pickle, exiting (ignore this if just running --getdata)")
 		    sys.exit()
 	##from here
 	execute_commands(args,subdir_names, TR)
