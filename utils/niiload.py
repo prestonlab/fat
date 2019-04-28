@@ -15,7 +15,7 @@ def loadmask(srcfile, maskfile):
 def loadcat(srcfiles, maskfile):
 
     for i, file in enumerate(srcfiles):
-        print "Loading %s" % file
+        print("Loading %s" % file)
         if i == 0:
             ds = fmri_dataset(file, mask=maskfile)
             ds.sa['chunks'] = [i]

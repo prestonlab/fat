@@ -28,7 +28,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     
     if len(cmd) > 0:
         parametric = False
-        print 'Running serial command: ' + cmd
+        print('Running serial command: ' + cmd)
         ncmds = 1
         nnodes = 1
         ntasks = 1
@@ -37,7 +37,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         try:
             f = open(script_name, 'r')
         except:
-            print '%s does not exist!' % script_name
+            print('%s does not exist!' % script_name)
             sys.exit(0)
         script_cmds = f.readlines()
         f.close()
@@ -45,23 +45,23 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         # check for empty lines
         for s in script_cmds:
             if s.strip() == '':
-                print 'command file contains empty lines - please remove them first'
+                print('command file contains empty lines - please remove them first')
                 sys.exit()
                 
         # determine whether to use launcher
         ncmds = len(script_cmds)
-        print 'found %d commands' % ncmds
+        print('found %d commands' % ncmds)
         if ncmds == 1:
             # if only one, do not use launcher, which fails sometimes
             parametric = False
             cmd = script_cmds[0]
-            print 'Running serial command: ' + cmd
+            print('Running serial command: ' + cmd)
         else:
             parametric = True
-            print 'Submitting parametric job file: ' + script_name
+            print('Submitting parametric job file: ' + script_name)
         
     else:
-        print 'ERROR: you must either specify a script name (using -s) or a command to run\n\n'
+        print('ERROR: you must either specify a script name (using -s) or a command to run\n\n')
         sys.exit()
 
     if qsubfile is None:
@@ -71,7 +71,7 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
     else:
         qsubfilepath = qsubfile
 
-    print 'Outputting SLURM commands to %s' % qsubfilepath
+    print('Outputting SLURM commands to %s' % qsubfilepath)
     qsubfile = open(qsubfilepath, 'w')
     qsubfile.write('#!/bin/bash\n#\n')
     qsubfile.write('# SLURM control file automatically created by launch\n#\n')
@@ -90,20 +90,20 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
             # given that
             nnodes = int(math.ceil(float(ncmds)/float(CORES[queue])))
             ntasks = nnodes * float(CORES[queue])
-            print "Estimated %d nodes and %d tasks" % (nnodes, ntasks)
+            print("Estimated %d nodes and %d tasks" % (nnodes, ntasks))
         elif nnodes is None and ntasks is not None:
             # number of total tasks is specified, but not nodes or
             # tpn; cannot calculate tpn, so just minimize the number
             # of nodes
             ntasks = int(ntasks)
             nnodes = int(math.ceil(float(ntasks)/float(CORES[queue])))
-            print "Number of nodes not specified; estimated as %d" % nnodes
+            print("Number of nodes not specified; estimated as %d" % nnodes)
         elif ntasks is None and nnodes is not None:
             # tasks and tpn not specified; set tasks to the number of
             # commands
             nnodes = int(nnodes)
             ntasks = nnodes * float(CORES[queue])
-            print "Number of tasks not specified; estimated as %d" % ntasks
+            print("Number of tasks not specified; estimated as %d" % ntasks)
         else:
             nnodes = int(nnodes)
             ntasks = int(ntasks)
@@ -194,14 +194,14 @@ def launch_slurm(serialcmd='', script_name=None, runtime='01:00:00',
         process = subprocess.Popen('sbatch %s' % qsubfilepath,
                                    shell=True, stdout=subprocess.PIPE)
         for line in process.stdout:
-            print line.strip()
+            print(line.strip())
             
             if line.find('Submitted batch job') == 0:
                 jobid = int(line.strip().split(' ')[3])
         process.wait()
     
     if not keepqsubfile:
-        print 'Deleting qsubfile: %s' % qsubfilepath
+        print('Deleting qsubfile: %s' % qsubfilepath)
         os.remove(qsubfilepath)
     return jobid
     

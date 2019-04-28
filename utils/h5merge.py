@@ -8,7 +8,7 @@ outfile = sys.argv[1]
 
 # load and concatenate all input files
 for i, file in enumerate(sys.argv[2:]):
-    print file
+    print(file)
     if i == 0:
         ds = hdf5.h5load(file)
         ds.sa['chunks'] = [i]
