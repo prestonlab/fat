@@ -55,7 +55,7 @@ class Events(MutableSequence):
             if isinstance(data, dict):
                 # convert a dict of lists into a list of dicts
                 fields = list(data.keys())
-                n_field = [len(data[k]) for k in data.keys()]
+                n_field = [len(data[k]) for k in list(data.keys())]
                 if len(np.unique(n_field)) > 1:
                     raise ValueError('Fields are different length.')
                 
@@ -71,7 +71,7 @@ class Events(MutableSequence):
                 # assume some iterable of dicts
                 self._dlist = list(data)
                 if len(self._dlist) > 0 and isinstance(self._dlist[0], dict):
-                    self._fields = self._dlist[0].keys()
+                    self._fields = list(self._dlist[0].keys())
                 else:
                     self._fields = list()
         else:
@@ -100,7 +100,7 @@ class Events(MutableSequence):
         
     def insert(self, ind, val):
         # add new fields if necessary
-        new = [v for v in val.keys() if v not in self.keys()]
+        new = [v for v in list(val.keys()) if v not in list(self.keys())]
         self._fields.extend(new)
 
         # add the new event
@@ -187,7 +187,7 @@ class Events(MutableSequence):
 
         ev_merge = OrderedDict()
         varying = set()
-        for key in self.keys():
+        for key in list(self.keys()):
             # get all values for this field across all repeats
             vals = self.list(key)
             if len(set(vals)) == 1:
@@ -239,7 +239,7 @@ class Events(MutableSequence):
         if include is not None:
             fields = include
         else:
-            fields = self.keys()
+            fields = list(self.keys())
         if exclude is not None:
             fields = [f for f in fields if f not in exclude]
 
