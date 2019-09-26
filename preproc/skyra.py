@@ -9,7 +9,7 @@ def dicom_filetype(hdr):
         'anatomy': ['MPRAGE','FSE','T1w','T2w','PDT','PD-T2','tse2d','mprage','t1w','t2w','t2spc','t2_spc'],
         'BOLD':['epfid'],
         'DTI':['ep_b'],
-        'fieldmap':['fieldmap','field_mapping','FieldMap'],
+        'fieldmap':['fieldmap','field_mapping','FieldMap','Field_mapping'],
         'localizer':['Scout','scout'],
         'reference':['SBRef']
         }
