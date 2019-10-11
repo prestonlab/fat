@@ -84,7 +84,7 @@ imcp $copedir/example_func .
 cp $FSLDIR/etc/luts/ramp.gif ramp.gif
 
 # report corrected clusters
-cluster -i thresh_zstat1 -c cope1 -t $zthresh --minextent=$clust_extent --othresh=thresh_zstat1 -o cluster_mask_zstat1 --connectivity=26 --mm --olmax=lmax_zstat1_std.txt --scalarname=Z > cluster_zstat1_std.txt
+$FSLDIR/bin/cluster -i thresh_zstat1 -c cope1 -t $zthresh --minextent=$clust_extent --othresh=thresh_zstat1 -o cluster_mask_zstat1 --connectivity=26 --mm --olmax=lmax_zstat1_std.txt --scalarname=Z > cluster_zstat1_std.txt
 
 cluster2html . cluster_zstat1 -std
 range=$(fslstats thresh_zstat1 -l 0.0001 -R 2>/dev/null)
@@ -97,7 +97,7 @@ slicer rendered_thresh_zstat1 -S 2 750 rendered_thresh_zstat1.png
 
 # report uncorrected clusters
 fslmaths zstat1 -mas mask mask_zstat1
-cluster -i mask_zstat1 -c cope1 -t $zthresh --othresh=thresh_uncorr_zstat1 -o cluster_mask_uncorr_zstat1 --olmax=lmax_uncorr_zstat1_std.txt --connectivity=26 --mm --scalarname=Z > cluster_uncorr_zstat1_std.txt
+$FSLDIR/bin/cluster -i mask_zstat1 -c cope1 -t $zthresh --othresh=thresh_uncorr_zstat1 -o cluster_mask_uncorr_zstat1 --olmax=lmax_uncorr_zstat1_std.txt --connectivity=26 --mm --scalarname=Z > cluster_uncorr_zstat1_std.txt
 
 cluster2html . cluster_uncorr_zstat1 -std
 range=$(fslstats thresh_uncorr_zstat1 -l 0.0001 -R 2>/dev/null)
