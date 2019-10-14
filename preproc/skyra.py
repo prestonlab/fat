@@ -124,7 +124,7 @@ def rename_anat(sp, log):
     for f in anat_files:
         name = os.path.basename(f)
         hdr = find_header(hdrs, f)
-        if hdr.ProtocolName in ['MPRAGE','mprage','t1w','T1w']:
+        if hdr.ProtocolName in ['MPRAGE','mprage','t1w','T1w','MEMPRAGE']:
             # this is a highres scan
             if name.startswith('c'):
                 # only include the reoriented and cropped version
