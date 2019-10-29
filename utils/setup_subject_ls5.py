@@ -351,7 +351,7 @@ def convert_dicom_to_nifti(args, subdir):
 			dcmdir=os.path.join(dcmbase,d,'DICOM')
 		else:
 			dcmdir=os.path.join(dcmbase,d)
-			dcmfiles=[i for i in os.listdir(dcmdir) if i.find('.dcm')>0]
+			dcmfiles=[i for i in os.listdir(dcmdir) if i.find('.dcm')>0 or i.find('.IMA')>0]
 		try:
 			dcmhdrs[d]=dicom.read_file(os.path.join(dcmdir,dcmfiles[0]))
 		except:
