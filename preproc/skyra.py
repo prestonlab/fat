@@ -6,10 +6,10 @@ import os,re,pickle
 def dicom_filetype(hdr):
     """Determine the type of image from a DICOM header."""
     scan_protocols = {
-        'anatomy': ['MPRAGE','FSE','T1w','T2w','PDT','PD-T2','tse2d','mprage','t1w','t2w','t2spc','t2_spc'],
+        'anatomy': ['MPRAGE','FSE','T1w','T2w','PDT','PD-T2','tse2d','mprage','t1w','t2w','t2spc','t2_spc','MEMPRAGE'],
         'BOLD':['epfid'],
         'DTI':['ep_b'],
-        'fieldmap':['fieldmap','field_mapping','FieldMap'],
+        'fieldmap':['fieldmap','field_mapping','FieldMap','Field_mapping'],
         'localizer':['Scout','scout'],
         'reference':['SBRef']
         }
@@ -124,7 +124,7 @@ def rename_anat(sp, log):
     for f in anat_files:
         name = os.path.basename(f)
         hdr = find_header(hdrs, f)
-        if hdr.ProtocolName in ['MPRAGE','mprage','t1w','T1w']:
+        if hdr.ProtocolName in ['MPRAGE','mprage','t1w','T1w','MEMPRAGE']:
             # this is a highres scan
             if name.startswith('c'):
                 # only include the reoriented and cropped version
