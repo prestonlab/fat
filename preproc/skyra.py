@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-import dicom
+try:
+    # called pydicom after 1.0
+    import pydicom
+except:
+    # earlier module name was dicom
+    import dicom as pydicom
 import os,re,pickle
 
 def dicom_filetype(hdr):
@@ -52,7 +57,7 @@ def dicom_headers(sp):
 
         # attempt to read the first file's header
         try:
-            hdr = dicom.read_file(os.path.join(dcmdir, dcmfiles[0]))
+            hdr = pydicom.read_file(os.path.join(dcmdir, dcmfiles[0]))
         except:
             continue
         series = str(hdr.SeriesNumber)
