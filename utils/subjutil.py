@@ -62,7 +62,10 @@ class SubjLog:
 
         # set the log file
         if study_dir is None:
-            study_dir = os.environ['STUDYDIR']
+            if 'STUDYDIR' in os.environ:
+                study_dir = os.environ['STUDYDIR']
+            else:
+                raise ValueError('STUDYDIR not defined.')
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = base + '_' + timestamp + '.log'
         log_dir = os.path.join(study_dir, subject, 'logs')
