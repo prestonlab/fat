@@ -71,7 +71,8 @@ runifexist=false
 runifmissing=false
 ids=true
 jobname=Job
-while getopts ":f:n:tJ:g" opt; do
+verbose=1
+while getopts ":f:n:tJ:gq" opt; do
     case $opt in
 	t)
 	    test=true
@@ -89,6 +90,9 @@ while getopts ":f:n:tJ:g" opt; do
 	    ;;
 	g)
 	    ids=false
+	    ;;
+	q)
+	    verbose=0
 	    ;;
     esac
 done
@@ -122,14 +126,18 @@ for no in $nos; do
 	# check for a dependency file
 	subj_file=$(echo "$file" | sed s/{}/$subject/g)
 	if [ ! -a "$subj_file" ]; then
-	    echo "Missing file: $subj_file"
+	    if [ $verbose -gt 0 ]; then
+	       echo "Missing file: $subj_file"
+	    fi
 	    continue
 	fi
     elif [ $runifmissing = true ]; then
 	# check for a missing output file
 	subj_file=$(echo "$file" | sed s/{}/$subject/g)
 	if [ -a "$subj_file" ]; then
-	    echo "File exists: $subj_file"
+	    if [ $verbose -gt 0 ]; then
+		echo "File exists: $subj_file"
+	    fi
 	    continue
 	fi
     fi
