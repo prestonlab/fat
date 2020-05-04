@@ -60,9 +60,9 @@ rm -f acf*
 
 echo "Estimating null max cluster size using 3dClustSim..."
 acfpar=$(tail -n 1 < acf_smoothness | awk '{ print $1,$2,$3 }')
-#3dClustSim -mask mask.nii.gz -acf $acfpar -iter 2000 -nodec -prefix clustsim
-fwhm=$(head -n 1 < acf_smoothness | awk '{ print $4 }')
-3dClustSim -mask mask.nii.gz -fwhm $fwhm -iter 2000 -nodec -prefix clustsim
+3dClustSim -mask mask.nii.gz -acf $acfpar -iter 2000 -nodec -prefix clustsim
+#fwhm=$(head -n 1 < acf_smoothness | awk '{ print $4 }')
+#3dClustSim -mask mask.nii.gz -fwhm $fwhm -iter 2000 -nodec -prefix clustsim
 cfile=clustsim.NN3_2sided.1D # NN3 corresponds to connectivity 26
 clust_extent=$(grep '^ 0.01' < $cfile | awk '{ print $3 }')
 echo "Minimum cluster extent: $clust_extent"
