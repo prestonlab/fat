@@ -1,6 +1,11 @@
 FAT pipeline
 ============
 
+---
+This project is deprecated. See [fPrep](https://github.com/prestonlab/fprep) for an updated version of the core pipeline. Also see [MindStorm](https://github.com/mortonne/mindstorm), which has updated versions of some scripts.
+
+---
+
 Functional analysis toolbox: a set of scripts defining a pipeline for analysis of fMRI data. The pipeline uses FSL, ANTs, and FreeSurfer. It's designed to improve registration between functional images and high-resolution structural images, co-registration between functional images, and to deal with scan distortions caused by nonlinearities in field gradients.
 
 Scripts are written in Bash in Python, with a high-performance cluster environment in mind. Scripts are optimized for using resources of the Texas Advanced Computing Center (TACC), but should work on any Linux or Unix system. 
